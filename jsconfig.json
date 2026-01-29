@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+      "baseUrl": ".",
+      "paths": {
+        "@/*": ["src/*"],
+        "@ckeditor/*": ["node_modules/@ckeditor/*"]
+      }
+    },
+    "include": ["src"]
+  }
+  
