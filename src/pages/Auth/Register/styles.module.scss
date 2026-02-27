@@ -1,0 +1,112 @@
+@import "@/index.scss";
+
+.registerForm {
+    width: 100%;
+
+    .title {
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+
+    .description {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .labelTitle {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 0.5rem;
+    }
+
+    .formFooter {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+
+        .agreement {
+            font-size: 0.8125rem;
+            color: #64748b;
+        }
+    }
+
+    .createButton {
+        height: 48px;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 12px;
+        background-color: #b71c1c !important;
+        border-color: #b71c1c !important;
+        color: white !important;
+
+        &:hover {
+            background-color: #d32f2f !important;
+            border-color: #d32f2f !important;
+        }
+    }
+
+    .loginLink {
+        margin-top: 1.5rem;
+        text-align: center;
+        font-size: 0.875rem;
+        color: #64748b;
+
+        a {
+            color: #b71c1c;
+            font-weight: 600;
+            text-decoration: none;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+}
+
+:global {
+
+    .ant-input,
+    .ant-select-selector {
+        height: 44px !important;
+        border-radius: 10px !important;
+        border: 1px solid #e2e8f0 !important;
+        padding-left: 12px !important;
+
+        &:hover,
+        &:focus {
+            border-color: #b71c1c !important;
+        }
+    }
+
+    .ant-input-password {
+        height: 44px !important;
+        border-radius: 10px !important;
+        border: 1px solid #e2e8f0 !important;
+        padding: 0 12px !important;
+        display: flex;
+        align-items: center;
+
+        .ant-input {
+            height: 100% !important;
+            border: none !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+        }
+
+        &:hover,
+        &-focused {
+            border-color: #b71c1c !important;
+        }
+    }
+
+    .ant-select-selection-item {
+        line-height: 42px !important;
+    }
+}

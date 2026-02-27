@@ -2,13 +2,16 @@ import React, { useEffect } from 'react';
 import './styles.scss'
 import PropTypes from "prop-types";
 import styles from './styles.module.scss';
-import Logo from "@/assets/images/logos/logo-june-kids.png";
+import Logo from "@/assets/images/svg/ptit.svg";
+import BgLogin from "@/assets/images/svg/bg-login.svg";
+import DashboardMockup from "@/assets/images/svg/image 3.svg";
+import CalendarMockup from "@/assets/images/svg/image 2.svg";
 import { useNavigate } from "react-router-dom";
 import { useAppState } from "@/hooks/useAppState";
 
 AuthLayout.propTypes = {
-    title: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired
+    title: PropTypes.string,
+    description: PropTypes.string
 };
 
 AuthLayout.defaultProps = {
@@ -17,7 +20,7 @@ AuthLayout.defaultProps = {
 }
 
 function AuthLayout(props) {
-    const { children, title, description } = props;
+    const { children } = props;
     const { goToPage, setGoToPageRedirected } = useAppState();
     const navigate = useNavigate();
 
@@ -29,23 +32,20 @@ function AuthLayout(props) {
     }, [goToPage, navigate, setGoToPageRedirected]);
 
     return (
-        <div className={styles.authLoginWrap}>
-
-            <div className={styles.viewWrap}>
-                <div className={styles.contentWrap}>
-                    <div className={styles.contentContainer}>
-                        <div className={styles.companyMobile}>
-                            <img src={Logo} alt="" />
-                        </div>
-                        <div className={styles.formWrap}>
-                            <div className={styles.content}>
-                                <div className={styles.header}>{title}</div>
-                                <div>
-                                    {children}
-                                </div>
-                            </div>
-                        </div>
+        <div className={styles.authLayoutContainer}>
+            <div className={styles.leftSide}>
+                <div className={styles.formContainer}>
+                    <div className={styles.logoWrapper}>
+                        <img src={Logo} alt="PTIT Logo" className={styles.logo} />
                     </div>
+                    {children}
+                </div>
+            </div>
+            <div className={styles.rightSide}>
+                <img src={BgLogin} alt="Background" className={styles.bgImage} />
+                <div className={styles.decorativeContent}>
+                    <img src={DashboardMockup} alt="Dashboard" className={styles.dashboardImage} />
+                    <img src={CalendarMockup} alt="Calendar" className={styles.calendarImage} />
                 </div>
             </div>
         </div>
@@ -53,3 +53,4 @@ function AuthLayout(props) {
 }
 
 export default AuthLayout;
+

@@ -4,13 +4,13 @@ import IconWarning from "../../assets/images/icons/light/warning.svg";
 
 const ErrorMessage = ({ message }) => {
   return message ? (
-    <span className="error">
+    <div className="error">
       <div className="icon">
         <InlineSVG src={IconWarning} width={14} height="auto" />
       </div>
       {message}
-    </span>
-  ) : "";
+    </div>
+  ) : null;
 };
 
 export default ErrorMessage;

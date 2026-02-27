@@ -1,25 +1,93 @@
-.forgot {
-  .link {
-    cursor: pointer;
-    line-height: 20px;
-  }
-  text-align: right;
-  margin-top: 0.5rem;
-  color: #3385ff;
-  margin-bottom: 1.5rem;
-}
+.loginForm {
+  width: 100%;
 
-.title {
-  margin: 0px;
-  font-size: 0.75rem;
-  line-height: 1.25;
-  letter-spacing: 0.03333em;
-  opacity: 1;
-  text-transform: none;
-  vertical-align: unset;
-  text-decoration: none;
-  color: rgb(52, 71, 103);
-  font-weight: 700;
-  margin-bottom: 8px;
-  margin-left: 4px;
+  .title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .labelTitle {
+    font-size: 16px;
+    font-weight: 500;
+    color: #4a4a4a;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  :global {
+
+    .ant-input,
+    .ant-input-password,
+    .ant-select-selector {
+      height: 48px !important;
+      border-radius: 12px !important;
+      border-color: #d9d9d9 !important;
+      font-size: 15px !important;
+      display: flex !important;
+      align-items: center !important;
+
+      &:hover,
+      &:focus {
+        border-color: #c80000 !important;
+      }
+    }
+
+    .ant-btn-primary {
+      height: 48px !important;
+      background-color: #c80000 !important;
+      border-color: #c80000 !important;
+      border-radius: 12px !important;
+      font-size: 16px !important;
+      font-weight: 600 !important;
+      margin-top: 1rem;
+
+      &:hover {
+        background-color: #a00000 !important;
+        border-color: #a00000 !important;
+      }
+    }
+  }
+
+  .formFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1rem 0;
+
+    .rememberMe {
+      font-size: 14px;
+      color: #757575;
+    }
+
+    .forgotPassword {
+      font-size: 14px;
+      color: #757575;
+      text-decoration: none;
+
+      &:hover {
+        color: #c80000;
+      }
+    }
+  }
+
+  .createAccount {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 15px;
+    color: #757575;
+
+    a {
+      color: #757575;
+      font-weight: 600;
+      text-decoration: none;
+      margin-left: 4px;
+
+      &:hover {
+        color: #c80000;
+      }
+    }
+  }
 }
