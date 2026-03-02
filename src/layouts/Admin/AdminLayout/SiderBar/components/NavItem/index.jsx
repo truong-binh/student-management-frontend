@@ -62,7 +62,7 @@ function NavItem(props) {
                   return (
                     <li key={subMenu.path} className={`${styles.menuSubNavItem}`}>
                       <div
-                        onClick={() => {navigate(subMenu.path);   document.title = `${subMenu.label} | Hệ thống quản lý mầm non June Connect`}}
+                        onClick={() => {navigate(subMenu.path);   document.title = `${subMenu.label} | Hệ thống quản lý học tập`}}
                         className={`${styles.contentSubNavItemWrap} ${handleCheckRoute(subMenu.routeActive, location.pathname) ? styles.menuSubFoSubItemActive : ''}`}
                       >
                         <div className={styles.textWrap}>

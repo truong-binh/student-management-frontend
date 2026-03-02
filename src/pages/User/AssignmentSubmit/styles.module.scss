@@ -1,0 +1,451 @@
+.container {
+    padding: 48px;
+    max-width: 1440px;
+    margin: 32px auto;
+    background: white;
+    border-radius: 32px;
+    border: 1px solid #edf2f7;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.05);
+}
+
+.header {
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .backBtn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #edf2f7;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+            border-color: #b71c1c;
+            color: #b71c1c;
+        }
+    }
+
+    .titleInfo {
+        .titleRow {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 4px;
+
+            h1 {
+                margin: 0;
+                font-size: 24px;
+                font-weight: 700;
+                color: #2d3748;
+            }
+
+            .classCode {
+                background: #ebf8ff;
+                color: #3182ce;
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+        }
+
+        .breadcrumbs {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #718096;
+
+            .separator {
+                color: #cbd5e0;
+            }
+
+            span:last-child {
+                color: #b71c1c;
+                font-weight: 600;
+            }
+        }
+    }
+}
+
+.mainContent {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.leftCol {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.card {
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid #edf2f7;
+    position: relative;
+    overflow: hidden;
+
+    h3 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 24px;
+    }
+}
+
+.assignmentDescription {
+    color: #4a5568;
+    line-height: 1.6;
+    font-size: 14px;
+
+    ul {
+        padding-left: 20px;
+        margin-top: 12px;
+    }
+}
+
+.resourceFile {
+    background: #f8fafc;
+    padding: 16px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 20px;
+    border: 1px solid #edf2f7;
+
+    .fileIcon {
+        width: 48px;
+        height: 48px;
+        background: #fff;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #e53e3e;
+        font-size: 24px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .fileMeta {
+        flex: 1;
+
+        .fileName {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 14px;
+        }
+
+        .fileSize {
+            color: #718096;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+    }
+
+    .downloadBtn {
+        color: #718096;
+        cursor: pointer;
+
+        &:hover {
+            color: #b71c1c;
+        }
+    }
+}
+
+.infoGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.infoBox {
+    padding: 16px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    &.deadline {
+        background: #fff5f5;
+        border: 1px solid #fed7d7;
+    }
+
+    &.score {
+        background: #ebf8ff;
+        border: 1px solid #bee3f8;
+    }
+
+    .label {
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #718096;
+    }
+
+    .value {
+        font-size: 18px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    &.deadline .value {
+        color: #e53e3e;
+    }
+
+    &.score .value {
+        color: #3182ce;
+    }
+}
+
+.uploadArea {
+    margin: 24px 0;
+
+    :global {
+        .ant-upload-drag {
+            background: #fafafa;
+            border: 2px dashed #d9d9d9;
+            border-radius: 12px;
+
+            &:hover {
+                border-color: #b71c1c;
+            }
+        }
+
+        .ant-upload-drag-container {
+            padding: 40px 0;
+            display: block;
+        }
+    }
+
+    .uploadIcons {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 16px;
+        font-size: 32px;
+        color: #a0aec0;
+    }
+
+    .uploadText {
+        font-size: 16px;
+        color: #4a5568;
+
+        span {
+            color: #b71c1c;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    }
+
+    .uploadHint {
+        font-size: 13px;
+        color: #718096;
+        margin-top: 8px;
+    }
+
+    .limitTag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #fffaf0;
+        color: #b7791f;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 16px;
+        border: 1px solid #fbd38d;
+    }
+}
+
+.actionRow {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+
+    button {
+        flex: 1;
+        height: 48px;
+        font-weight: 600;
+        border-radius: 12px;
+    }
+}
+
+.rightCol {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.statusCard {
+    padding: 0;
+    overflow: hidden;
+
+    .statusHeader {
+        padding: 16px 20px;
+        border-bottom: 1px solid #edf2f7;
+        font-weight: 700;
+        color: #2d3748;
+    }
+
+    .statusList {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .statusItem {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+
+        .label {
+            color: #718096;
+        }
+
+        .value {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .tag {
+            background: #f7fafc;
+            color: #4a5568;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+    }
+}
+
+.timerBox {
+    margin-top: 24px;
+    background: #fff5f5;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+
+    .timerLabel {
+        font-size: 12px;
+        font-weight: 700;
+        color: #c53030;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 16px;
+    }
+
+    .timeDigits {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+
+        .digit {
+            font-size: 28px;
+            font-weight: 800;
+            color: #b71c1c;
+        }
+
+        .dots {
+            font-size: 24px;
+            font-weight: 800;
+            color: #b71c1c;
+        }
+    }
+
+    .timeLabels {
+        display: flex;
+        justify-content: center;
+        gap: 32px;
+        margin-top: 4px;
+        font-size: 10px;
+        color: #e53e3e;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+}
+
+.noteCard {
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid #edf2f7;
+
+    h4 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 15px;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 12px;
+    }
+
+    p {
+        font-size: 13px;
+        color: #718096;
+        line-height: 1.6;
+        margin: 0;
+    }
+}
+
+.historySection {
+    margin-top: 24px;
+}
+
+.historyTable {
+    :global {
+        .ant-table-thead>tr>th {
+            background: #f8fafc;
+            font-size: 12px;
+            color: #718096;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .ant-table-tbody>tr>td {
+            font-size: 14px;
+        }
+    }
+
+    .fileCell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 500;
+        color: #2d3748;
+
+        .icon {
+            color: #3182ce;
+        }
+    }
+
+    .actionCell {
+        display: flex;
+        gap: 16px;
+
+        .download {
+            color: #e53e3e;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    }
+}

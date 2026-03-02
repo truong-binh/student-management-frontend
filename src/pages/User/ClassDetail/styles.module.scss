@@ -1,0 +1,578 @@
+.classDetailPage {
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+
+    .headerBanner {
+        background: #b71c1c;
+        border-radius: 20px;
+        padding: 24px 32px;
+        color: white;
+        margin-bottom: 20px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(183, 28, 28, 0.2);
+
+        &::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+        }
+
+        .metaInfo {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+
+            .badge {
+                background: rgba(0, 0, 0, 0.2);
+                padding: 4px 12px;
+                border-radius: 6px;
+                font-size: 13px;
+                font-weight: 700;
+                backdrop-filter: blur(4px);
+            }
+
+            .status {
+                background: #48bb78;
+                padding: 4px 12px;
+                border-radius: 6px;
+                font-size: 13px;
+                font-weight: 700;
+            }
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        .details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 32px;
+            margin-bottom: 20px;
+
+            .detailItem {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 15px;
+                font-weight: 500;
+                opacity: 0.95;
+
+                .icon {
+                    font-size: 18px;
+                }
+            }
+        }
+
+        .progressBar {
+            max-width: 600px;
+
+            .progressInfo {
+                display: flex;
+                justify-content: space-between;
+                font-size: 13px;
+                margin-top: 8px;
+                opacity: 0.8;
+            }
+
+            :global(.ant-progress-inner) {
+                background: rgba(255, 255, 255, 0.2) !important;
+            }
+
+            :global(.ant-progress-bg) {
+                background: white !important;
+            }
+        }
+    }
+
+    .tabSection {
+        :global {
+            .ant-tabs-nav {
+                margin-bottom: 24px !important;
+
+                &::before {
+                    display: none;
+                }
+            }
+
+            .ant-tabs-tab {
+                padding: 12px 24px !important;
+                font-weight: 600 !important;
+                border: none !important;
+                background: transparent !important;
+                color: #718096 !important;
+                transition: all 0.3s !important;
+
+                &:hover {
+                    color: #b71c1c !important;
+                }
+
+                &.ant-tabs-tab-active {
+                    .ant-tabs-tab-btn {
+                        color: #b71c1c !important;
+                    }
+                }
+            }
+
+            .ant-tabs-ink-bar {
+                background: #b71c1c !important;
+                height: 3px !important;
+                border-radius: 3px 3px 0 0;
+            }
+        }
+    }
+
+    /* Section: Overview */
+    .overviewGrid {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 24px;
+        align-items: stretch;
+    }
+
+    .card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        border: 1px solid #edf2f7;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+
+        .cardHeader {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #2d3748;
+
+            .icon {
+                color: #b71c1c;
+            }
+        }
+
+        .description {
+            color: #4a5568;
+            line-height: 1.7;
+            font-size: 15px;
+            white-space: pre-line;
+            margin-bottom: 20px;
+        }
+
+        .fileList {
+            .fileItem {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 12px;
+                border-radius: 12px;
+                transition: all 0.2s;
+                margin-bottom: 8px;
+
+                &:hover {
+                    background: #f7fafc;
+                }
+
+                .fileInfo {
+                    display: flex;
+                    align-items: center;
+                    gap: 16px;
+
+                    .fileIcon {
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 10px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        background: #f1f5f9;
+                        color: #64748b;
+                        font-size: 18px;
+                    }
+
+                    .fileMeta {
+                        .fileName {
+                            font-size: 14px;
+                            font-weight: 600;
+                            color: #2d3748;
+                            margin-bottom: 2px;
+                        }
+
+                        .fileSize {
+                            font-size: 12px;
+                            color: #a0aec0;
+                        }
+                    }
+                }
+
+                .downloadBtn {
+                    color: #718096;
+                    cursor: pointer;
+
+                    &:hover {
+                        color: #b71c1c;
+                    }
+                }
+            }
+        }
+
+        .announcementList {
+            .annItem {
+                padding: 16px;
+                border-radius: 12px;
+                border-left: 4px solid #b71c1c;
+                background: #fffafa;
+                margin-bottom: 16px;
+
+                .annHeader {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 8px;
+
+                    .annTitle {
+                        font-weight: 700;
+                        color: #2d3748;
+                    }
+
+                    .annDate {
+                        font-size: 12px;
+                        color: #a0aec0;
+                    }
+                }
+
+                .annContent {
+                    font-size: 14px;
+                    color: #4a5568;
+                    line-height: 1.5;
+                }
+            }
+        }
+    }
+
+    .quickLinks {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+
+        .linkItem {
+            padding: 16px 8px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+
+            &:hover {
+                background: #f7fafc;
+
+                .linkIcon {
+                    transform: scale(1.05);
+                }
+            }
+
+            .linkIcon {
+                width: 44px;
+                height: 44px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: #f1f5f9;
+                color: #b71c1c;
+                font-size: 20px;
+                transition: all 0.2s;
+            }
+
+            span {
+                font-size: 13px;
+                font-weight: 600;
+                color: #4a5568;
+                text-align: center;
+            }
+        }
+    }
+
+    /* Section: Attendance */
+    .attendanceStats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+        margin-bottom: 32px;
+
+        .statItem {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid #edf2f7;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+
+            .statIcon {
+                width: 52px;
+                height: 52px;
+                border-radius: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+            }
+
+            .statMeta {
+                .statLabel {
+                    font-size: 14px;
+                    color: #718096;
+                    margin-bottom: 4px;
+                }
+
+                .statValue {
+                    font-size: 24px;
+                    font-weight: 800;
+                    color: #2d3748;
+                }
+            }
+        }
+    }
+
+    /* Section: Assignments */
+    .assignmentFilters {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        background: white;
+        padding: 16px 24px;
+        border-radius: 16px;
+        border: 1px solid #edf2f7;
+
+        .tabButtons {
+            display: flex;
+            gap: 12px;
+        }
+    }
+
+    .assignmentList {
+        .assignItem {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid #edf2f7;
+            margin-bottom: 16px;
+            display: grid;
+            grid-template-columns: 60px 1fr 100px 150px;
+            align-items: center;
+            gap: 24px;
+            transition: all 0.2s;
+
+            &:hover {
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+                border-color: #cbd5e0;
+            }
+
+            .assignIcon {
+                width: 52px;
+                height: 52px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: #f7fafc;
+                color: #b71c1c;
+                font-size: 22px;
+            }
+
+            .assignMain {
+                .assignTitle {
+                    font-size: 16px;
+                    font-weight: 700;
+                    color: #2d3748;
+                    margin-bottom: 6px;
+                }
+
+                .assignMeta {
+                    display: flex;
+                    gap: 20px;
+                    font-size: 13px;
+                    color: #718096;
+
+                    .deadline {
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+
+                        &.danger {
+                            color: #e53e3e;
+                            font-weight: 600;
+                        }
+                    }
+                }
+            }
+
+            .assignScore {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+                justify-content: center;
+                text-align: right;
+                width: 100px;
+
+                .scoreLabel {
+                    font-size: 12px;
+                    color: #a0aec0;
+                    margin-bottom: 4px;
+                }
+
+                .scoreValue {
+                    font-size: 18px;
+                    font-weight: 800;
+                    color: #b71c1c;
+
+                    span {
+                        font-size: 14px;
+                        color: #718096;
+                        font-weight: 500;
+                    }
+                }
+
+                :global(.ant-tag) {
+                    margin: 0;
+                    padding: 4px 12px;
+                    border-radius: 6px;
+                    font-weight: 600;
+                }
+            }
+
+            .assignAction {
+                display: flex;
+                justify-content: flex-end;
+                width: 150px;
+
+                :global(.ant-btn) {
+                    min-width: 120px;
+                }
+            }
+        }
+    }
+
+    .attendanceTable {
+        :global {
+            .ant-table-thead>tr>th {
+                background: #f8fafc;
+                font-size: 13px;
+                color: #718096;
+                font-weight: 700;
+                border-bottom: 1px solid #edf2f7;
+            }
+
+            .ant-table-tbody>tr>td {
+                padding: 16px;
+                font-size: 14px;
+                color: #2d3748;
+            }
+        }
+    }
+
+    .statusTag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 8px;
+        padding: 4px 12px;
+        font-weight: 700;
+        font-size: 13px;
+        border: none;
+
+        &::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        &.present {
+            background: #e6ffed;
+            color: #2da44e;
+
+            &::before {
+                background: #2da44e;
+            }
+        }
+
+        &.late {
+            background: #fff8e1;
+            color: #b45309;
+
+            &::before {
+                background: #b45309;
+            }
+        }
+
+        &.absent {
+            background: #ffebe9;
+            color: #cf222e;
+
+            &::before {
+                background: #cf222e;
+            }
+        }
+
+        &.pending {
+            background: #f1f5f9;
+            color: #64748b;
+
+            &::before {
+                background: #64748b;
+            }
+        }
+    }
+
+    :global {
+        .ant-pagination {
+            .ant-pagination-item-active {
+                background-color: #b71c1c !important;
+                border-color: #b71c1c !important;
+
+                a {
+                    color: white !important;
+                }
+            }
+
+            .ant-pagination-item:hover,
+            .ant-pagination-next:hover .ant-pagination-item-link,
+            .ant-pagination-prev:hover .ant-pagination-item-link {
+                border-color: #b71c1c !important;
+                color: #b71c1c !important;
+
+                a {
+                    color: #b71c1c !important;
+                }
+            }
+        }
+    }
+
+    .footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 12px;
+        padding-top: 10px;
+
+        .paginationInfo {
+            font-size: 14px;
+            color: #718096;
+        }
+    }
+}
