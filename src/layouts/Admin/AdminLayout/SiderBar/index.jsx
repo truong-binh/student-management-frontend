@@ -1,19 +1,19 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styles from "./styles.module.scss";
 import PropTypes from "prop-types";
-import {MenuFoldOutlined} from "@ant-design/icons";
+import { MenuFoldOutlined } from "@ant-design/icons";
 import Logo from "@/assets/images/logos/logo-june-kids.png";
 import IconLogo from "@/assets/images/logos/logo-june.png";
 import NavItem from "./components/NavItem";
-import {routeMap} from "@/router/routeMap.js";
-import {handleCheckRoute, hasPermissions} from "@/utils/helper.js";
-import {useLocation, useNavigate} from "react-router-dom";
+import { routeMap } from "@/router/routeMap.js";
+import { handleCheckRoute, hasPermissions } from "@/utils/helper.js";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAppState } from "@/hooks/useAppState";
 import { useAuth } from "@/hooks/useAuth";
 import useWindowSize from "@/utils/hooks/useWindowSize";
 import InlineSVG from "react-inlinesvg";
 import timeIcon from "@/assets/images/icons/duotone/times.svg";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 import _ from "lodash";
 
 SideBar.prototype = {
@@ -26,7 +26,7 @@ SideBar.defaultProps = {
 };
 
 function SideBar(props) {
-    const {isShowSideBar, handleToggleIsShowSideBar} = props;
+    const { isShowSideBar, handleToggleIsShowSideBar } = props;
     const [indexNavItemSelect, setIndexNavItemSelect] = useState(null);
     const [menuSub, setMenuSub] = useState([]);
     const [topMenuSub, setTopMenuSub] = useState(0);
@@ -43,7 +43,7 @@ function SideBar(props) {
         }
 
         if (_.isEmpty(menuNavItem.children) && menuNavItem.path) {
-            document.title = `${menuNavItem.label} | Hệ thống quản lý mầm non June Connect`
+            document.title = `${menuNavItem.label} | Hệ thống quản lý học tập`
             navigate(menuNavItem.path);
         }
         if (isShowSideBar) {
@@ -52,7 +52,7 @@ function SideBar(props) {
     };
 
     const handleHoverMenuNavItem = (e, menuNavItem) => {
-        const {top} = e.target.getBoundingClientRect();
+        const { top } = e.target.getBoundingClientRect();
         setTopMenuSub(top);
         if (menuNavItem.children) {
             setMenuSub(menuNavItem.children);
@@ -120,12 +120,11 @@ function SideBar(props) {
                 )}
 
                 <div
-                    className={`${styles.btnToggleSideBar} ${styles.btnToggleSideBarMobi} ${
-                        !isShowSideBar ? styles.btnToggleSideBarClose : ""
-                    }`}
+                    className={`${styles.btnToggleSideBar} ${styles.btnToggleSideBarMobi} ${!isShowSideBar ? styles.btnToggleSideBarClose : ""
+                        }`}
                     onClick={() => handleToggleIsShowSideBar()}
                 >
-                    <MenuFoldOutlined/>
+                    <MenuFoldOutlined />
                 </div>
             </div>
 
@@ -160,7 +159,7 @@ function SideBar(props) {
                             `}
                                                         >
                                                             <NavItem route={item}
-                                                                     isShowMenu={itemIndex === indexNavItemSelect}/>
+                                                                isShowMenu={itemIndex === indexNavItemSelect} />
                                                         </li>
                                                     );
                                                 }
@@ -194,8 +193,8 @@ function SideBar(props) {
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
                     >
-                        <path d="M13.5.5 7.5 8l6 7.5" stroke="currentColor"/>
-                        <path d="M8.5.5 2.5 8l6 7.5" stroke="currentColor"/>
+                        <path d="M13.5.5 7.5 8l6 7.5" stroke="currentColor" />
+                        <path d="M8.5.5 2.5 8l6 7.5" stroke="currentColor" />
                     </svg>
                 ) : (
                     ""
@@ -218,11 +217,10 @@ function SideBar(props) {
                                             onClick={() => navigate(menuSubItem.path)}
                                             className={`
                               ${styles.contentSubItemWrap} 
-                              ${
-                                                handleCheckRoute(menuSubItem.routeActive, location.pathname)
+                              ${handleCheckRoute(menuSubItem.routeActive, location.pathname)
                                                     ? styles.menuSubItemActive
                                                     : ""
-                                            }
+                                                }
                             `}
                                         >
                                             <div className={styles.textWrap}>
