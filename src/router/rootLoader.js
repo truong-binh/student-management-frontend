@@ -1,5 +1,5 @@
 import { redirect } from "react-router-dom";
-import { getMe } from "@/api/auth";
+import { getMe } from "@/api/user/auth/index.js";
 import { getAuthTokenAdmin, removeAuthTokenAdmin } from "../utils/localStorage.js";
 import { hasPermissions } from "../utils/helper.js";
 import { useAuthStore } from "../stores/authStore";
@@ -13,13 +13,13 @@ export const rootLoader = async ({ request, params }, requiredAuth, permissions 
   if (isAdminRoute) {
     const { isAuthAdminSuccess, setAuthAdmin } = useAuthStore.getState();
     const { setLocation } = useAppStore.getState();
-    
+
     if (!isAuthAdminSuccess && getAuthTokenAdmin()) {
       try {
         const { data: res } = await getMe();
-        setAuthAdmin({ 
-          isAuthAdminSuccess: true, 
-          data: res.data 
+        setAuthAdmin({
+          isAuthAdminSuccess: true,
+          data: res.data
         });
       } catch (error) {
         if (error.response?.data?.status === 401) {
@@ -30,7 +30,7 @@ export const rootLoader = async ({ request, params }, requiredAuth, permissions 
 
     // Get updated state after potential auth update
     const currentAuthState = useAuthStore.getState();
-    
+
     if (currentAuthState.isAuthAdminSuccess) {
       if (url.pathname === "/admin/login") {
         return redirect("/admin");

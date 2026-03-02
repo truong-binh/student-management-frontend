@@ -29,6 +29,7 @@ import {
 import MainLayout from '@/layouts/User/MainLayout';
 import styles from './styles.module.scss';
 import avatarImg from '@/assets/images/user/default-avatar-point.png';
+import { useAuth } from '@/hooks/useAuth';
 
 ChartJS.register(
     CategoryScale,
@@ -41,7 +42,12 @@ ChartJS.register(
 
 const Profile = () => {
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(false);
+    const { user, changePassword, isChangePasswordLoading } = useAuth();
+    const [passwordForm, setPasswordForm] = useState({
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+    });
 
     const chartData = {
         labels: ['KQ1', 'KQ2', 'KQ3', 'KQ4', 'KQ5', 'KQ6'],
@@ -99,11 +105,28 @@ const Profile = () => {
     };
 
     const handleUpdatePassword = () => {
-        setLoading(true);
-        setTimeout(() => {
-            setLoading(false);
-            message.success('Cập nhật mật khẩu thành công!');
-        }, 1500);
+        if (!passwordForm.oldPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+            message.error('Vui lòng điền đầy đủ các trường mật khẩu.');
+            return;
+        }
+
+        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+            message.error('Mật khẩu mới và xác nhận mật khẩu không khớp.');
+            return;
+        }
+
+        changePassword({
+            oldPassword: passwordForm.oldPassword,
+            newPassword: passwordForm.newPassword
+        }, {
+            onSuccess: (res) => {
+                message.success(res.message || 'Cập nhật mật khẩu thành công!');
+                setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
+            },
+            onError: (err) => {
+                message.error(err.message || 'Cập nhật mật khẩu thất bại. Mật khẩu cũ không chính xác.');
+            }
+        });
     };
 
     return (
@@ -114,9 +137,7 @@ const Profile = () => {
                 </div>
 
                 <div className={styles.profileGrid}>
-                    {/* Left Column */}
                     <div className={styles.leftColumn}>
-                        {/* Avatar Card */}
                         <div className={`${styles.card} ${styles.avatarCard}`}>
                             <div className={styles.avatarWrapper}>
                                 <img src={avatarImg} alt="Student" className={styles.avatarImg} />
@@ -124,11 +145,10 @@ const Profile = () => {
                                     <CheckCircleFilled />
                                 </div>
                             </div>
-                            <h2>Nguyễn Văn A</h2>
+                            <h2>{user?.fullName || "Nguyễn Văn A"}</h2>
                             <Tag className={styles.statusTag}>Sinh viên chính quy</Tag>
                         </div>
 
-                        {/* Personal Info Card */}
                         <div className={`${styles.card} ${styles.infoCard}`}>
                             <div className={styles.sectionTitle}>
                                 <h3>Thông tin cá nhân</h3>
@@ -139,7 +159,7 @@ const Profile = () => {
                                 <label>Họ và tên</label>
                                 <Input
                                     prefix={<UserOutlined style={{ color: '#a0aec0' }} />}
-                                    value="Nguyễn Văn A"
+                                    value={user?.fullName || ""}
                                     disabled
                                 />
                             </div>
@@ -148,7 +168,7 @@ const Profile = () => {
                                 <label>Mã sinh viên</label>
                                 <Input
                                     prefix={<IdcardOutlined style={{ color: '#a0aec0' }} />}
-                                    value="B21DCCN001"
+                                    value={user?.userCode || ""}
                                     disabled
                                 />
                             </div>
@@ -157,13 +177,12 @@ const Profile = () => {
                                 <label>Email trường</label>
                                 <Input
                                     prefix={<MailOutlined style={{ color: '#a0aec0' }} />}
-                                    value="b21dccn001@stu.ptit.edu.vn"
+                                    value={user?.email || ""}
                                     disabled
                                 />
                             </div>
                         </div>
 
-                        {/* Change Password Card */}
                         <div className={`${styles.card} ${styles.passwordCard}`}>
                             <div className={styles.cardHeader}>
                                 <KeyOutlined className={styles.icon} />
@@ -173,15 +192,27 @@ const Profile = () => {
                             <div className={styles.formContent}>
                                 <div className={styles.infoItem}>
                                     <label>Mật khẩu hiện tại</label>
-                                    <Input.Password placeholder="********" />
+                                    <Input.Password
+                                        placeholder="********"
+                                        value={passwordForm.oldPassword}
+                                        onChange={e => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })}
+                                    />
                                 </div>
                                 <div className={styles.infoItem}>
                                     <label>Mật khẩu mới</label>
-                                    <Input.Password placeholder="Nhập mật khẩu mới" />
+                                    <Input.Password
+                                        placeholder="Nhập mật khẩu mới"
+                                        value={passwordForm.newPassword}
+                                        onChange={e => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                                    />
                                 </div>
                                 <div className={styles.infoItem}>
                                     <label>Xác nhận mật khẩu mới</label>
-                                    <Input.Password placeholder="Nhập lại mật khẩu mới" />
+                                    <Input.Password
+                                        placeholder="Nhập lại mật khẩu mới"
+                                        value={passwordForm.confirmPassword}
+                                        onChange={e => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                                    />
                                 </div>
                             </div>
 
@@ -189,7 +220,7 @@ const Profile = () => {
                                 <Button
                                     type="primary"
                                     className={styles.updateBtn}
-                                    loading={loading}
+                                    loading={isChangePasswordLoading}
                                     onClick={handleUpdatePassword}
                                     icon={<SyncOutlined />}
                                 >

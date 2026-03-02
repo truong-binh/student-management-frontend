@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import styles from './styles.module.scss';
 import {
     AppstoreOutlined,
@@ -12,8 +12,17 @@ import {
     LogoutOutlined
 } from '@ant-design/icons';
 import logoPtit from '@/assets/images/svg/ptit.svg';
+import { useAuth } from '@/hooks/useAuth';
 
 const StudentSidebar = () => {
+    const navigate = useNavigate();
+    const { logout } = useAuth();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
+
     const menuItems = [
         { key: 'dashboard', label: 'Tổng quan', icon: <AppstoreOutlined />, path: '/dashboard' },
         { key: 'classes', label: 'Lớp học', icon: <ReadOutlined />, path: '/classes' },
@@ -47,13 +56,10 @@ const StudentSidebar = () => {
                 </ul>
 
                 <div className={styles.logoutSection}>
-                    <NavLink
-                        to="/login"
-                        className={({ isActive }) => `${styles.navLink} ${isActive ? styles.active : ''}`}
-                    >
+                    <div className={styles.navLink} onClick={handleLogout} style={{ cursor: 'pointer' }}>
                         <span className={styles.icon}><LogoutOutlined /></span>
                         <span className={styles.label}>Đăng xuất</span>
-                    </NavLink>
+                    </div>
                 </div>
             </nav>
         </div>

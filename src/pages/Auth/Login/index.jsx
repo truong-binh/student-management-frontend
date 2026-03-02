@@ -1,21 +1,19 @@
 import React, { useState } from "react";
 import AuthLayout from "@/layouts/Admin/AuthLayout";
-import { Alert, Button, Checkbox, Input, Select } from "antd";
+import { Alert, Button, Checkbox, Input, notification } from "antd";
 import styles from "./styles.module.scss";
-// import clsx from "clsx";
 import _ from "lodash";
 import ErrorMessage from "@/components/ErrorMessage/index.jsx";
 import { validate } from "@/utils/validates/validate.js";
 import { LoginSchema } from "./schema.js";
-import { setAuthTokenAdmin } from "@/utils/localStorage.js";
 import { useAuth } from "@/hooks/useAuth";
-
-const { Option } = Select;
+import { useNavigate } from "react-router-dom";
 
 function Login() {
-    const [dataFormLogin, setDataFormLogin] = useState({ phone: "", password: "", role: "student" });
+    const [dataFormLogin, setDataFormLogin] = useState({ email: "", password: "" });
     const [errorDataLogin, setErrorDataLogin] = useState({});
     const [messageErrorLogin, setMessageErrorLogin] = useState("");
+    const navigate = useNavigate();
 
     const { login, isLoginLoading } = useAuth();
 
@@ -33,23 +31,19 @@ function Login() {
                 setMessageErrorLogin("");
                 login(data, {
                     onSuccess: (res) => {
-                        const accessToken = res.data.access_token;
-                        setAuthTokenAdmin(accessToken);
-                        window.location.href = "/admin";
+                        notification.success({ message: "Đăng nhập thành công" });
+                        navigate("/");
                     },
                     onError: (error) => {
-                        if (error.response?.data) {
-                            const { message, detail } = error.response.data;
-                            if (detail) {
-                                setErrorDataLogin(detail);
-                            } else {
-                                setMessageErrorLogin(message);
-                            }
+                        if (error.error?.details) {
+                            setErrorDataLogin(error.error.details);
+                        } else {
+                            setMessageErrorLogin(error.message || "Đăng nhập thất bại");
                         }
                     }
                 });
             },
-            onError: setErrorDataLogin,
+            onError: setErrorDataRegister => setErrorDataLogin(setErrorDataRegister),
         });
     };
 
@@ -65,14 +59,14 @@ function Login() {
                 <div className="mb-5">
                     <span className={styles.labelTitle}>Địa chỉ email</span>
                     <Input
-                        className={errorDataLogin.phone ? "error-input" : ""}
+                        className={errorDataLogin.email ? "error-input" : ""}
                         placeholder="abcd@stu.ptit.edu.vn"
-                        value={dataFormLogin.phone}
-                        onChange={(e) => handleChangeInput(e.target.value, "phone")}
-                        onFocus={() => handleFocusInput("phone")}
+                        value={dataFormLogin.email}
+                        onChange={(e) => handleChangeInput(e.target.value, "email")}
+                        onFocus={() => handleFocusInput("email")}
                         onKeyDown={(e) => e.key === 'Enter' && handleConfirmLogin()}
                     />
-                    <ErrorMessage message={errorDataLogin?.phone} />
+                    <ErrorMessage message={errorDataLogin?.email} />
                 </div>
 
                 <div className="mb-5">
@@ -88,19 +82,8 @@ function Login() {
                     <ErrorMessage message={errorDataLogin?.password} />
                 </div>
 
-                <div className="mb-4">
-                    <Select
-                        className="w-full"
-                        value={dataFormLogin.role}
-                        onChange={(value) => handleChangeInput(value, "role")}
-                    >
-                        <Option value="student">Sinh viên đăng nhập</Option>
-                        <Option value="teacher">Giảng viên đăng nhập</Option>
-                    </Select>
-                </div>
-
                 <div className={styles.formFooter}>
-                    <Checkbox className={styles.rememberMe}>Nhớ mật khẩu</Checkbox>
+                    <div></div>
                     <a href="/forgot-password" className={styles.forgotPassword}>Quên mật khẩu?</a>
                 </div>
 

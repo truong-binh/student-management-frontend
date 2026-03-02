@@ -27,7 +27,9 @@
     }
 
     :global {
-        .ant-input {
+
+        .ant-input,
+        .ant-input-affix-wrapper {
             height: 48px !important;
             border-radius: 12px !important;
             border-color: #d9d9d9 !important;
@@ -36,8 +38,18 @@
             align-items: center !important;
 
             &:hover,
-            &:focus {
+            &:focus,
+            &-focused {
                 border-color: #c80000 !important;
+                box-shadow: 0 0 0 2px rgba(200, 0, 0, 0.1) !important;
+            }
+
+            .ant-input {
+                height: 100% !important;
+                border: none !important;
+                border-radius: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
             }
         }
 

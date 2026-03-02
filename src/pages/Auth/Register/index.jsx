@@ -17,13 +17,11 @@ function Register() {
         email: "",
         studentCode: "",
         password: "",
-        confirmPassword: "",
-        role: "student",
-        agreement: false
+        confirmPassword: ""
     });
     const [errorDataRegister, setErrorDataRegister] = useState({});
-
     const navigate = useNavigate();
+    const { register, isRegisterLoading } = useAuth();
 
     const handleChangeInput = (value, type) => {
         let data = _.cloneDeep(dataFormRegister);
@@ -35,10 +33,36 @@ function Register() {
 
     const handleConfirmRegister = () => {
         validate(RegisterSchema, dataFormRegister, {
-            onSuccess: () => {
-                notification.success({
-                    message: "Thông báo",
-                    description: "Hệ thống đang được nâng cấp tính năng đăng ký."
+            onSuccess: (data) => {
+                const yearMatch = data.studentCode.match(/\d{2}/);
+                const userCodeYear = yearMatch ? `20${yearMatch[0]}` : "2024";
+
+                const apiData = {
+                    userCode: data.studentCode,
+                    userCodeYear: userCodeYear,
+                    email: data.email,
+                    password: data.password,
+                    fullName: data.fullName
+                };
+
+                register(apiData, {
+                    onSuccess: (res) => {
+                        notification.success({
+                            message: "Đăng ký thành công",
+                            description: res.message || "Vui lòng kiểm tra email để xác thực tài khoản"
+                        });
+                        navigate("/login");
+                    },
+                    onError: (error) => {
+                        if (error.error?.details) {
+                            setErrorDataRegister(error.error.details);
+                        } else {
+                            notification.error({
+                                message: "Đăng ký thất bại",
+                                description: error.message
+                            });
+                        }
+                    }
                 });
             },
             onError: setErrorDataRegister,
@@ -106,29 +130,8 @@ function Register() {
                     <ErrorMessage message={errorDataRegister?.confirmPassword} />
                 </div>
 
-                <div className="mb-4">
-                    <Select
-                        className="w-full"
-                        value={dataFormRegister.role}
-                        onChange={(value) => handleChangeInput(value, "role")}>
-                        <Option value="student">Sinh viên đăng ký</Option>
-                        <Option value="teacher">Giảng viên đăng ký</Option>
-                    </Select>
-                </div>
-
-                <div className={styles.formFooter}>
-                    <Checkbox
-                        checked={dataFormRegister.agreement}
-                        onChange={(e) => handleChangeInput(e.target.checked, "agreement")}
-                        onFocus={() => handleFocusInput("agreement")}
-                        className={styles.agreement}
-                    >
-                        Tôi đồng ý với chính sách và điều kiện
-                    </Checkbox>
-                    <ErrorMessage message={errorDataRegister?.agreement} />
-                </div>
-
                 <Button
+                    loading={isRegisterLoading}
                     type="primary"
                     onClick={() => handleConfirmRegister()}
                     className={styles.createButton}

@@ -4,35 +4,32 @@ import { persist } from 'zustand/middleware'
 export const useAuthStore = create(
   persist(
     (set, get) => ({
-      // State
-      isAuthAdminSuccess: false,
-      authAdmin: {
-        x_name: ''
+      isAuthSuccess: false,
+      authUser: null,
+
+      setAuthUser: (payload) => set({
+        isAuthSuccess: payload.isAuthSuccess,
+        authUser: payload.data
+      }),
+
+      logout: () => {
+        localStorage.removeItem('token_student');
+        localStorage.removeItem('token_admin');
+        set({
+          isAuthSuccess: false,
+          authUser: null
+        });
       },
-      
-      // Actions
-      setAuthAdmin: (payload) => set({
-        isAuthAdminSuccess: payload.isAuthAdminSuccess,
-        authAdmin: payload.data
-      }),
-      
-      logout: () => set({
-        isAuthAdminSuccess: false,
-        authAdmin: {
-          x_name: ''
-        }
-      }),
-      
-      // Getters
-      getAuthAdmin: () => get().authAdmin,
-      isAuthenticated: () => get().isAuthAdminSuccess,
+
+      getAuthUser: () => get().authUser,
+      isAuthenticated: () => get().isAuthSuccess,
     }),
     {
-      name: 'auth-storage', // unique name for localStorage key
-      partialize: (state) => ({ 
-        isAuthAdminSuccess: state.isAuthAdminSuccess,
-        authAdmin: state.authAdmin 
-      }), // only persist these fields
+      name: 'auth-storage',
+      partialize: (state) => ({
+        isAuthSuccess: state.isAuthSuccess,
+        authUser: state.authUser
+      }),
     }
   )
-) 
+)
