@@ -4,9 +4,11 @@ import StudentSidebar from './Sidebar';
 import { Input, Badge, Avatar } from 'antd';
 import { SearchOutlined, BellOutlined, SettingOutlined } from '@ant-design/icons';
 import userDefault from '@/assets/images/logos/user_default.png';
+import { useAuth } from '@/hooks/useAuth';
 
 function MainLayout(props) {
     const { children } = props;
+    const { user } = useAuth();
 
     return (
         <div className={styles.container}>
@@ -36,8 +38,7 @@ function MainLayout(props) {
                             </div>
                         </div>
                         <div className={styles.userInfo}>
-                            <p className={styles.userName}>N. V. A</p>
-                            <p className={styles.status}>Đã đăng nhập</p>
+                            <p className={styles.userName}>{user?.fullName || user?.name || "N. V. A"}</p>
                         </div>
                         <Avatar size={40} src={userDefault} />
                     </div>

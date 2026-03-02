@@ -16,8 +16,4 @@ export const RegisterSchema = Joi.object({
             "any.only": "Mật khẩu xác nhận không khớp",
         })
         .label("Xác nhận lại mật khẩu"),
-    role: Joi.string().required().label("Vai trò"),
-    agreement: Joi.boolean().invalid(false).messages({
-        "any.invalid": "Bạn phải đồng ý với chính sách và điều kiện",
-    }),
 });

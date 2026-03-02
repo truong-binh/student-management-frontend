@@ -4,6 +4,7 @@ import { rootLoader } from "./rootLoader.js";
 import HomeAdmin from "@/pages/Home";
 import LoginAdmin from "@/pages/Auth/Login";
 import Register from "@/pages/Auth/Register";
+import VerifyEmail from "@/pages/Auth/VerifyEmail";
 import ForgotPassword from "@/pages/Auth/ForgotPassword";
 import StudentDashboard from "@/pages/User/Dashboard";
 import MyClasses from "@/pages/User/Classes";
@@ -12,7 +13,6 @@ import AssignmentSubmit from "@/pages/User/AssignmentSubmit";
 import AssignmentResult from "@/pages/User/AssignmentResult";
 import GradeFeedback from "@/pages/User/GradeFeedback";
 import Feedback from "@/pages/User/Feedback";
-
 import Profile from "@/pages/User/Profile";
 import Schedule from "@/pages/User/Schedule";
 
@@ -30,6 +30,11 @@ const router = createBrowserRouter([
   {
     path: "/register",
     element: <Register />,
+    loader: ({ request, params }) => rootLoader({ request, params }, false),
+  },
+  {
+    path: "/verify-email",
+    element: <VerifyEmail />,
     loader: ({ request, params }) => rootLoader({ request, params }, false),
   },
   {

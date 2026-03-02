@@ -11,7 +11,7 @@ import { queryClient } from './lib/queryClient';
 import 'animate.css';
 import Chart from "chart.js/auto";
 import { CategoryScale } from "chart.js";
-import {ToastContainer} from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
 Chart.register(CategoryScale);
