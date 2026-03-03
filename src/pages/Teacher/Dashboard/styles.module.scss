@@ -1,0 +1,480 @@
+.dashboard {
+    padding-top: 16px;
+
+    .mainGrid {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 32px;
+    }
+}
+
+/* ─── LEFT COLUMN ─── */
+.contentLeft {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Stats row */
+.statsRow {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.statCard {
+    border-radius: 16px;
+    padding: 18px 20px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+    color: white;
+
+    .statTitle {
+        margin: 0 0 12px 0;
+        font-size: 13px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.75);
+    }
+
+    .statBody {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+
+        .statValue {
+            font-size: 32px;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1;
+        }
+
+        .statIcon {
+            font-size: 26px;
+            color: #b71c1c;
+            background: rgba(183, 28, 28, 0.15);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+}
+
+/* Bar chart */
+.chartCard {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+
+    .chartHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+
+        h3 {
+            margin: 0;
+            font-size: 17px;
+            font-weight: 700;
+            color: #1a202c;
+        }
+
+        .chartLegend {
+            display: flex;
+            gap: 16px;
+        }
+
+        .legendItem {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #4a5568;
+
+            .dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                display: inline-block;
+                flex-shrink: 0;
+            }
+        }
+    }
+
+    .chartWrap {
+        height: 260px;
+    }
+}
+
+/* Assignments */
+.assignmentsCard {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+
+    .cardHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+
+        .headerTitle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+
+            h3 {
+                margin: 0;
+                font-size: 17px;
+                font-weight: 700;
+                color: #1a202c;
+            }
+        }
+
+        .viewAll {
+            padding: 0;
+            font-weight: 500;
+            color: #e53e3e;
+            font-size: 14px;
+
+            &:hover {
+                color: #c53030;
+            }
+        }
+    }
+}
+
+.assignmentList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.assignmentItem {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    border-radius: 16px;
+    background: #fafafa;
+    border: 1px solid #f0f0f0;
+    transition: box-shadow 0.2s, transform 0.2s;
+
+    &:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        transform: translateX(4px);
+    }
+
+    .assignmentIcon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .assignmentInfo {
+        flex: 1;
+        min-width: 0;
+
+        h4 {
+            margin: 0 0 2px 0;
+            font-size: 15px;
+            font-weight: 700;
+            color: #1a202c;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .classLabel {
+            margin: 0 0 4px 0;
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .timeTag {
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+
+            &.warning { color: #e53e3e; }
+            &.info    { color: #3182ce; }
+            &.success { color: #38a169; }
+        }
+    }
+
+    .progressSection {
+        min-width: 100px;
+
+        .progressMeta {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+
+            .progressCount {
+                font-size: 13px;
+                font-weight: 700;
+                color: #1a202c;
+            }
+
+            .progressTag {
+                font-size: 10px;
+                font-weight: 700;
+                color: #e53e3e;
+                background: #fff5f5;
+                padding: 2px 6px;
+                border-radius: 4px;
+            }
+        }
+
+        .progressBar {
+            height: 6px;
+            background: #edf2f7;
+            border-radius: 4px;
+            overflow: hidden;
+
+            .progressFill {
+                height: 100%;
+                background: #e53e3e;
+                border-radius: 4px;
+                transition: width 0.3s ease;
+            }
+        }
+    }
+
+    .arrowIcon {
+        color: #a0aec0;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+}
+
+/* ─── RIGHT COLUMN ─── */
+.contentRight {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Calendar — reuse student styles */
+.calendarCard {
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+    :global(.ant-card-body) {
+        padding: 16px;
+    }
+
+    .calendarHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+
+        h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a202c;
+        }
+
+        .calendarNav {
+            display: flex;
+            gap: 4px;
+        }
+    }
+}
+
+.customCalendar {
+    background: transparent;
+
+    :global(.ant-picker-calendar-header) {
+        display: none;
+    }
+
+    :global(.ant-picker-panel),
+    :global(.ant-picker-view),
+    :global(.ant-picker-body) {
+        padding: 0 !important;
+        border: none !important;
+    }
+
+    :global(.ant-picker-content) {
+        width: 100%;
+        border: none !important;
+    }
+
+    :global(.ant-picker-cell) {
+        padding: 4px 0 !important;
+    }
+
+    :global(.ant-picker-cell-out-view) {
+        display: none !important;
+    }
+
+    :global(.ant-picker-calendar-date) {
+        border-top: none !important;
+        margin: 0 !important;
+        min-height: unset !important;
+    }
+
+    :global(.ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-calendar-date-value) {
+        background: #b71c1c !important;
+        color: white !important;
+        border-radius: 50%;
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    :global(.ant-picker-cell-inner),
+    :global(.ant-picker-calendar-date) {
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+
+        &::before { display: none !important; }
+    }
+
+    :global(.ant-picker-cell) {
+        pointer-events: none;
+    }
+}
+
+.emptyDay {
+    display: none;
+}
+
+/* Section header shared */
+.sectionHeader {
+    font-size: 14px;
+    font-weight: 700;
+    color: #4a5568;
+    margin: 0 0 12px 0;
+    letter-spacing: 0.3px;
+}
+
+/* Upcoming classes */
+.upcomingSection {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.classItem {
+    display: flex;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid #f0f0f0;
+
+    &:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .classNo {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #b71c1c;
+        color: white;
+        font-size: 12px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .classContent {
+        flex: 1;
+
+        .classTopRow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .statusBadge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+
+            &.upcoming {
+                background: #fffbeb;
+                color: #b7791f;
+            }
+
+            &.active {
+                background: #f0fff4;
+                color: #276749;
+            }
+        }
+
+        .studentCount {
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .classCode {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a202c;
+        }
+
+        .classTime,
+        .classSubject,
+        .classRoom {
+            margin: 0 0 2px 0;
+            font-size: 12px;
+            color: #718096;
+        }
+    }
+}
+
+/* Recent activity */
+.activitySection {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.activityDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #b71c1c;
+}
+
+.activityItem {
+    p {
+        margin: 0 0 2px 0;
+        font-size: 13px;
+        color: #4a5568;
+        line-height: 1.5;
+    }
+
+    span {
+        font-size: 11px;
+        color: #a0aec0;
+    }
+}
