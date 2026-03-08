@@ -7,12 +7,12 @@ import userDefault from '@/assets/images/logos/user_default.png';
 import { useAuth } from '@/hooks/useAuth';
 
 function MainLayout(props) {
-    const { children } = props;
+    const { children, menuItems } = props;
     const { user } = useAuth();
 
     return (
         <div className={styles.container}>
-            <StudentSidebar />
+            <StudentSidebar menuItems={menuItems} />
             <div className={styles.mainContent}>
                 <header className={styles.header}>
                     <div className={styles.welcome}>

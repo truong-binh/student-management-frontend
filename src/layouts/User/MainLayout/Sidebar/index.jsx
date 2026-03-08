@@ -14,7 +14,15 @@ import {
 import logoPtit from '@/assets/images/svg/ptit.svg';
 import { useAuth } from '@/hooks/useAuth';
 
-const StudentSidebar = () => {
+const defaultMenuItems = [
+    { key: 'dashboard', label: 'Tổng quan', icon: <AppstoreOutlined />, path: '/dashboard' },
+    { key: 'classes', label: 'Lớp học', icon: <ReadOutlined />, path: '/classes' },
+    { key: 'schedule', label: 'Thời khóa biểu', icon: <CalendarOutlined />, path: '/schedule' },
+    { key: 'profile', label: 'Profile', icon: <UserOutlined />, path: '/profile' },
+    { key: 'feedback', label: 'Phản hồi', icon: <MessageOutlined />, path: '/feedback' },
+];
+
+const StudentSidebar = ({ menuItems }) => {
     const navigate = useNavigate();
     const { logout } = useAuth();
 
@@ -23,13 +31,7 @@ const StudentSidebar = () => {
         navigate('/login');
     };
 
-    const menuItems = [
-        { key: 'dashboard', label: 'Tổng quan', icon: <AppstoreOutlined />, path: '/dashboard' },
-        { key: 'classes', label: 'Lớp học', icon: <ReadOutlined />, path: '/classes' },
-        { key: 'schedule', label: 'Thời khóa biểu', icon: <CalendarOutlined />, path: '/schedule' },
-        { key: 'profile', label: 'Profile', icon: <UserOutlined />, path: '/profile' },
-        { key: 'feedback', label: 'Phản hồi', icon: <MessageOutlined />, path: '/feedback' },
-    ];
+    const items = menuItems || defaultMenuItems;
 
     return (
         <div className={styles.sidebar}>
@@ -42,7 +44,7 @@ const StudentSidebar = () => {
 
             <nav className={styles.nav}>
                 <ul className={styles.menuList}>
-                    {menuItems.map((item) => (
+                    {items.map((item) => (
                         <li key={item.key} className={styles.menuItem}>
                             <NavLink
                                 to={item.path}

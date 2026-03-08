@@ -15,6 +15,9 @@ import GradeFeedback from "@/pages/User/GradeFeedback";
 import Feedback from "@/pages/User/Feedback";
 import Profile from "@/pages/User/Profile";
 import Schedule from "@/pages/User/Schedule";
+import TeacherDashboard from "@/pages/Teacher/Dashboard";
+import TeacherClasses from "@/pages/Teacher/Classes";
+import TeacherClassDetail from "@/pages/Teacher/ClassDetail";
 
 const router = createBrowserRouter([
   {
@@ -103,6 +106,22 @@ const router = createBrowserRouter([
         element: <Navigate to="/login" replace />,
       },
     ],
+  },
+  //UI Teacher
+  {
+    path: "/teacher/dashboard",
+    element: <TeacherDashboard />,
+    loader: ({ request, params }) => rootLoader({ request, params }, true),
+  },
+  {
+    path: "/teacher/classes",
+    element: <TeacherClasses />,
+    loader: ({ request, params }) => rootLoader({ request, params }, true),
+  },
+  {
+    path: "/teacher/classes/:id",
+    element: <TeacherClassDetail />,
+    loader: ({ request, params }) => rootLoader({ request, params }, true),
   },
 ]);
 
