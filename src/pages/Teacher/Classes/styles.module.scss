@@ -5,18 +5,32 @@
 }
 
 /* ─── Header ─── */
-.pageHeader {
+.header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 28px;
-}
+    margin-bottom: 32px;
 
-.pageTitle {
-    font-size: 22px;
-    font-weight: 800;
-    color: #b71c1c;
-    margin: 0;
+    .title {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+
+        .icon {
+            font-size: 32px;
+            color: #29A8DF;
+            background-color: #E1F5FB;
+            padding: 12px;
+            border-radius: 12px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1a202c;
+            margin: 0;
+        }
+    }
 }
 
 .filters {
@@ -194,7 +208,7 @@
             .completedText {
                 font-size: 12px;
                 font-weight: 700;
-                color: #38a169;
+                color: #b71c1c;
             }
         }
     }
@@ -235,7 +249,7 @@
 
     :global {
         .ant-pagination-item-active {
-            background-color: #b71c1c !important;
+            background_color: #b71c1c !important;
             border-color: #b71c1c !important;
 
             a {

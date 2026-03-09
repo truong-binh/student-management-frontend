@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import AuthLayout from "@/layouts/Admin/AuthLayout";
-import { Alert, Button, Checkbox, Input, Select, notification } from "antd";
+import { Button, Input, Select, notification } from "antd";
 import styles from "./styles.module.scss";
 import _ from "lodash";
 import ErrorMessage from "@/components/ErrorMessage/index.jsx";

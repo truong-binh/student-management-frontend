@@ -24,39 +24,36 @@
 
 .statCard {
     border-radius: 16px;
-    padding: 18px 20px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
-    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    overflow: hidden;
+
+    :global(.ant-card-body) {
+        padding: 16px;
+    }
 
     .statTitle {
-        margin: 0 0 12px 0;
-        font-size: 13px;
+        margin: 0;
+        font-size: 14px;
+        color: #718096;
         font-weight: 500;
-        color: rgba(255, 255, 255, 0.75);
     }
 
     .statBody {
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
+        margin-top: 8px;
 
         .statValue {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 800;
-            color: #fff;
-            line-height: 1;
+            color: #2d3748;
         }
 
         .statIcon {
-            font-size: 26px;
-            color: #b71c1c;
-            background: rgba(183, 28, 28, 0.15);
-            border-radius: 50%;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-size: 24px;
+            opacity: 0.8;
         }
     }
 }
@@ -206,9 +203,17 @@
             display: flex;
             align-items: center;
 
-            &.warning { color: #e53e3e; }
-            &.info    { color: #3182ce; }
-            &.success { color: #38a169; }
+            &.warning {
+                color: #e53e3e;
+            }
+
+            &.info {
+                color: #e53e3e;
+            }
+
+            &.success {
+                color: #b71c1c;
+            }
         }
     }
 
@@ -346,7 +351,9 @@
         box-shadow: none !important;
         border: none !important;
 
-        &::before { display: none !important; }
+        &::before {
+            display: none !important;
+        }
     }
 
     :global(.ant-picker-cell) {
@@ -390,7 +397,7 @@
         width: 32px;
         height: 32px;
         border-radius: 50%;
-        background: #b71c1c;
+        background: #29A8DF;
         color: white;
         font-size: 12px;
         font-weight: 800;
@@ -424,7 +431,7 @@
 
             &.active {
                 background: #f0fff4;
-                color: #276749;
+                color: #38a169;
             }
         }
 

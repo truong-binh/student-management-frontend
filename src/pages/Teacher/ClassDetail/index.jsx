@@ -56,42 +56,26 @@ const TeacherClassDetail = () => {
             <div className={styles.classDetailPage}>
                 {/* Banner */}
                 <div className={styles.headerBanner}>
-                    <div className={styles.bannerLeft}>
-                        <div className={styles.classIconBox} style={{ background: classInfo.color }}>
-                            <CodeOutlined />
+                    <div className={styles.metaInfo}>
+                        <span className={styles.badge}>{classInfo.code}</span>
+                        <span className={styles.status} style={{ background: statusColorMap[classInfo.statusType] }}>
+                            {classInfo.status}
+                        </span>
+                    </div>
+                    <h1 className={styles.title}>{classInfo.title}</h1>
+                    <div className={styles.details}>
+                        <div className={styles.detailItem}>
+                            <UserOutlined className={styles.icon} /> GV: {classInfo.teacher}
+                        </div>
+                        <div className={styles.detailItem}>
+                            <FormOutlined className={styles.icon} /> Mã lớp: {classInfo.groupCode}
+                        </div>
+                        <div className={styles.detailItem}>
+                            <CalendarOutlined className={styles.icon} /> Học kỳ: {classInfo.semester}
                         </div>
                     </div>
-                    <div className={styles.bannerRight}>
-                        <div className={styles.bannerTopRow}>
-                            <h1 className={styles.title}>{classInfo.title}</h1>
-                            <span
-                                className={styles.statusBadge}
-                                style={{ background: statusColorMap[classInfo.statusType] }}
-                            >
-                                {classInfo.status}
-                            </span>
-                        </div>
-                        <p className={styles.school}>{classInfo.school}</p>
-                        <div className={styles.details}>
-                            <div className={styles.detailItem}>
-                                <span className={styles.detailLabel}>GIẢNG VIÊN</span>
-                                <span className={styles.detailValue}>
-                                    <UserOutlined /> {classInfo.teacher}
-                                </span>
-                            </div>
-                            <div className={styles.detailItem}>
-                                <span className={styles.detailLabel}>MÃ LỚP</span>
-                                <span className={styles.detailValue}>
-                                    <FormOutlined /> {classInfo.groupCode}
-                                </span>
-                            </div>
-                            <div className={styles.detailItem}>
-                                <span className={styles.detailLabel}>HỌC KỲ</span>
-                                <span className={styles.detailValue}>
-                                    <CalendarOutlined /> {classInfo.semester}
-                                </span>
-                            </div>
-                        </div>
+                    <div className={styles.schoolInfo}>
+                        {classInfo.school}
                     </div>
                 </div>
 
