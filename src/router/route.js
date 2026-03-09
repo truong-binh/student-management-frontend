@@ -18,6 +18,10 @@ import Schedule from "@/pages/User/Schedule";
 import TeacherDashboard from "@/pages/Teacher/Dashboard";
 import TeacherClasses from "@/pages/Teacher/Classes";
 import TeacherClassDetail from "@/pages/Teacher/ClassDetail";
+import TeacherGradeEdit from "@/pages/Teacher/GradeEdit";
+import TeacherFeedback from "@/pages/Teacher/Feedback";
+import TeacherSchedule from "@/pages/Teacher/Schedule";
+import TeacherProfile from "@/pages/Teacher/Profile";
 
 const router = createBrowserRouter([
   {
@@ -121,6 +125,26 @@ const router = createBrowserRouter([
   {
     path: "/teacher/classes/:id",
     element: <TeacherClassDetail />,
+    loader: ({ request, params }) => rootLoader({ request, params }, true),
+  },
+  {
+    path: "/teacher/classes/:id/assignments/:assignmentId/grade-edit/:studentId",
+    element: <TeacherGradeEdit />,
+    loader: ({ request, params }) => rootLoader({ request, params }, true),
+  },
+  {
+    path: "/teacher/feedback",
+    element: <TeacherFeedback />,
+    loader: ({ request, params }) => rootLoader({ request, params }, true),
+  },
+  {
+    path: "/teacher/schedule",
+    element: <TeacherSchedule />,
+    loader: ({ request, params }) => rootLoader({ request, params }, true),
+  },
+  {
+    path: "/teacher/profile",
+    element: <TeacherProfile />,
     loader: ({ request, params }) => rootLoader({ request, params }, true),
   },
 ]);

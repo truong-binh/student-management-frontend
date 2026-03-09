@@ -10,6 +10,7 @@ import {
     MessageOutlined,
     SearchOutlined,
 } from '@ant-design/icons';
+import { useNavigate, useParams } from 'react-router-dom';
 import styles from '../styles.module.scss';
 
 const PAGE_SIZE = 4;
@@ -38,6 +39,8 @@ const STUDENT_FILTERS = [
 ];
 
 const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
+    const navigate = useNavigate();
+    const { id } = useParams();
     const [studentFilter, setStudentFilter] = useState('all');
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -205,6 +208,7 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
                                             danger
                                             icon={<EditOutlined />}
                                             className={styles.adGradeBtn}
+                                            onClick={() => navigate(`/teacher/classes/${id}/assignments/${assignment?.id || 1}/grade-edit/${s.id}`)}
                                         >
                                             SỬA ĐIỂM
                                         </Button>
