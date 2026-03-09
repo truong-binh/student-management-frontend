@@ -15,50 +15,50 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 /* ── icon colours per assignment type ── */
 const typeIcon = {
-    lab:     { bg: '#eff6ff', color: '#3b82f6', symbol: '>_' },
-    object:  { bg: '#fff7ed', color: '#f97316', symbol: '{}' },
-    check:   { bg: '#f0fdf4', color: '#22c55e', symbol: '✓'  },
-    alert:   { bg: '#fef2f2', color: '#ef4444', symbol: '!'  },
+    lab: { bg: '#ebf8ff', color: '#3182ce', symbol: '>_' },
+    object: { bg: '#f0fff4', color: '#38a169', symbol: '{}' },
+    check: { bg: '#fffbeb', color: '#d69e2e', symbol: '✓' },
+    alert: { bg: '#fff5f5', color: '#e53e3e', symbol: '!' },
 };
 
 const assignments = [
-    { id: 1,  title: 'Bài tbp 3: Thực hành React Router & Context API', deadline: '23:59 - 30/05/2024', status: 'opening',   type: 'lab'    },
-    { id: 2,  title: 'Bài tbp 2: Xử lý mảng và Object nâng cao',         deadline: '23:59 - 15/05/2024', status: 'completed', type: 'object' },
-    { id: 3,  title: 'Lab 1: Giới thiệu hệ sinh thái Javascript',         deadline: '23:59 - 01/05/2024', status: 'graded',    type: 'check'  },
-    { id: 4,  title: 'Đmán giữa kỳ: Phát triển Web E-Commerce',          deadline: '23:59 - 15/06/2024', status: 'opening',   type: 'alert'  },
-    { id: 5,  title: 'Bài tbp 1: Nhập môn HTML & CSS',                   deadline: '23:59 - 10/04/2024', status: 'graded',    type: 'lab'    },
-    { id: 6,  title: 'Quiz chương 2: CSS Flexbox & Grid',                 deadline: '23:59 - 20/04/2024', status: 'completed', type: 'object' },
-    { id: 7,  title: 'Bài thực hành: Responsive Design',                  deadline: '23:59 - 25/04/2024', status: 'completed', type: 'check'  },
-    { id: 8,  title: 'Quiz JS cơ bản',                                    deadline: '23:59 - 05/05/2024', status: 'opening',   type: 'lab'    },
-    { id: 9,  title: 'Bài tbp 4: Async/Await & Fetch API',               deadline: '23:59 - 10/06/2024', status: 'opening',   type: 'object' },
-    { id: 10, title: 'Lab 2: DOM Manipulation',                           deadline: '23:59 - 08/05/2024', status: 'completed', type: 'check'  },
-    { id: 11, title: 'Bài tập cuối kỳ: Full-stack App',                  deadline: '23:59 - 30/06/2024', status: 'opening',   type: 'alert'  },
-    { id: 12, title: 'Quiz React Hooks',                                  deadline: '23:59 - 12/05/2024', status: 'completed', type: 'lab'    },
-    { id: 13, title: 'Bài tbp 5: State Management với Redux',            deadline: '23:59 - 25/05/2024', status: 'opening',   type: 'object' },
-    { id: 14, title: 'Lab 3: TypeScript Basics',                          deadline: '23:59 - 18/05/2024', status: 'graded',    type: 'check'  },
-    { id: 15, title: 'Quiz CSS Animation',                                deadline: '23:59 - 22/04/2024', status: 'completed', type: 'lab'    },
-    { id: 16, title: 'Bài tbp 6: Next.js Introduction',                  deadline: '23:59 - 05/06/2024', status: 'opening',   type: 'object' },
-    { id: 17, title: 'Lab 4: Testing với Jest',                           deadline: '23:59 - 01/06/2024', status: 'completed', type: 'check'  },
-    { id: 18, title: 'Bài tbp 7: Tối ưu hiệu năng React',               deadline: '23:59 - 20/06/2024', status: 'opening',   type: 'alert'  },
-    { id: 19, title: 'Quiz Node.js cơ bản',                              deadline: '23:59 - 28/05/2024', status: 'completed', type: 'lab'    },
-    { id: 20, title: 'Lab 5: RESTful API với Express',                   deadline: '23:59 - 15/06/2024', status: 'graded',    type: 'object' },
-    { id: 21, title: 'Bài tbp 8: MongoDB & Mongoose',                    deadline: '23:59 - 25/06/2024', status: 'opening',   type: 'check'  },
-    { id: 22, title: 'Quiz React Router v6',                              deadline: '23:59 - 03/05/2024', status: 'completed', type: 'lab'    },
-    { id: 23, title: 'Lab 6: Authentication với JWT',                    deadline: '23:59 - 28/06/2024', status: 'opening',   type: 'alert'  },
-    { id: 24, title: 'Quiz tổng kết môn học',                            deadline: '23:59 - 30/06/2024', status: 'graded',    type: 'object' },
+    { id: 1, title: 'Bài tbp 3: Thực hành React Router & Context API', deadline: '23:59 - 30/05/2024', status: 'opening', type: 'lab' },
+    { id: 2, title: 'Bài tbp 2: Xử lý mảng và Object nâng cao', deadline: '23:59 - 15/05/2024', status: 'completed', type: 'object' },
+    { id: 3, title: 'Lab 1: Giới thiệu hệ sinh thái Javascript', deadline: '23:59 - 01/05/2024', status: 'graded', type: 'check' },
+    { id: 4, title: 'Đmán giữa kỳ: Phát triển Web E-Commerce', deadline: '23:59 - 15/06/2024', status: 'opening', type: 'alert' },
+    { id: 5, title: 'Bài tbp 1: Nhập môn HTML & CSS', deadline: '23:59 - 10/04/2024', status: 'graded', type: 'lab' },
+    { id: 6, title: 'Quiz chương 2: CSS Flexbox & Grid', deadline: '23:59 - 20/04/2024', status: 'completed', type: 'object' },
+    { id: 7, title: 'Bài thực hành: Responsive Design', deadline: '23:59 - 25/04/2024', status: 'completed', type: 'check' },
+    { id: 8, title: 'Quiz JS cơ bản', deadline: '23:59 - 05/05/2024', status: 'opening', type: 'lab' },
+    { id: 9, title: 'Bài tbp 4: Async/Await & Fetch API', deadline: '23:59 - 10/06/2024', status: 'opening', type: 'object' },
+    { id: 10, title: 'Lab 2: DOM Manipulation', deadline: '23:59 - 08/05/2024', status: 'completed', type: 'check' },
+    { id: 11, title: 'Bài tập cuối kỳ: Full-stack App', deadline: '23:59 - 30/06/2024', status: 'opening', type: 'alert' },
+    { id: 12, title: 'Quiz React Hooks', deadline: '23:59 - 12/05/2024', status: 'completed', type: 'lab' },
+    { id: 13, title: 'Bài tbp 5: State Management với Redux', deadline: '23:59 - 25/05/2024', status: 'opening', type: 'object' },
+    { id: 14, title: 'Lab 3: TypeScript Basics', deadline: '23:59 - 18/05/2024', status: 'graded', type: 'check' },
+    { id: 15, title: 'Quiz CSS Animation', deadline: '23:59 - 22/04/2024', status: 'completed', type: 'lab' },
+    { id: 16, title: 'Bài tbp 6: Next.js Introduction', deadline: '23:59 - 05/06/2024', status: 'opening', type: 'object' },
+    { id: 17, title: 'Lab 4: Testing với Jest', deadline: '23:59 - 01/06/2024', status: 'completed', type: 'check' },
+    { id: 18, title: 'Bài tbp 7: Tối ưu hiệu năng React', deadline: '23:59 - 20/06/2024', status: 'opening', type: 'alert' },
+    { id: 19, title: 'Quiz Node.js cơ bản', deadline: '23:59 - 28/05/2024', status: 'completed', type: 'lab' },
+    { id: 20, title: 'Lab 5: RESTful API với Express', deadline: '23:59 - 15/06/2024', status: 'graded', type: 'object' },
+    { id: 21, title: 'Bài tbp 8: MongoDB & Mongoose', deadline: '23:59 - 25/06/2024', status: 'opening', type: 'check' },
+    { id: 22, title: 'Quiz React Router v6', deadline: '23:59 - 03/05/2024', status: 'completed', type: 'lab' },
+    { id: 23, title: 'Lab 6: Authentication với JWT', deadline: '23:59 - 28/06/2024', status: 'opening', type: 'alert' },
+    { id: 24, title: 'Quiz tổng kết môn học', deadline: '23:59 - 30/06/2024', status: 'graded', type: 'object' },
 ];
 
 const STATUS_CONFIG = {
-    opening:   { label: 'ĐANG MỞ',    cls: styles.badgeOpening   },
+    opening: { label: 'ĐANG MỞ', cls: styles.badgeOpening },
     completed: { label: 'HOÀN THÀNH', cls: styles.badgeCompleted },
-    graded:    { label: 'ĐÃ CHẤM',    cls: styles.badgeGraded    },
+    graded: { label: 'ĐÃ CHẤM', cls: styles.badgeGraded },
 };
 
 const PAGE_SIZE = 4;
 
 const AssignmentsTab = ({ classInfo }) => {
-    const [filter, setFilter]             = useState('all');
-    const [showAll, setShowAll]           = useState(false);
+    const [filter, setFilter] = useState('all');
+    const [showAll, setShowAll] = useState(false);
     const [selectedAssignment, setSelectedAssignment] = useState(null);
 
     if (selectedAssignment) {
@@ -72,13 +72,13 @@ const AssignmentsTab = ({ classInfo }) => {
     }
 
     const counts = {
-        all:       assignments.length,
-        opening:   assignments.filter(a => a.status === 'opening').length,
+        all: assignments.length,
+        opening: assignments.filter(a => a.status === 'opening').length,
         completed: assignments.filter(a => a.status === 'completed').length,
-        graded:    assignments.filter(a => a.status === 'graded').length,
+        graded: assignments.filter(a => a.status === 'graded').length,
     };
 
-    const filtered  = filter === 'all' ? assignments : assignments.filter(a => a.status === filter);
+    const filtered = filter === 'all' ? assignments : assignments.filter(a => a.status === filter);
     const displayed = showAll ? filtered : filtered.slice(0, PAGE_SIZE);
     const remaining = filtered.length - displayed.length;
 
@@ -86,7 +86,7 @@ const AssignmentsTab = ({ classInfo }) => {
     const donutData = {
         datasets: [{
             data: [counts.opening, counts.completed, counts.graded],
-            backgroundColor: ['#22c55e', '#3b82f6', '#9ca3af'],
+            backgroundColor: ['#38a169', '#3182ce', '#e53e3e'],
             borderWidth: 0,
             hoverOffset: 6,
         }],
@@ -97,10 +97,10 @@ const AssignmentsTab = ({ classInfo }) => {
     };
 
     const FILTERS = [
-        ['all',       'TẤT CẢ',     counts.all],
-        ['opening',   'ĐANG MỞ',    counts.opening],
+        ['all', 'TẤT CẢ', counts.all],
+        ['opening', 'ĐANG MỞ', counts.opening],
         ['completed', 'HOÀN THÀNH', counts.completed],
-        ['graded',    'ĐÃ CHẤM',    counts.graded],
+        ['graded', 'ĐÃ CHẤM', counts.graded],
     ];
 
     return (
@@ -177,17 +177,17 @@ const AssignmentsTab = ({ classInfo }) => {
 
                 <div className={styles.statsLegend}>
                     <div className={styles.legendItem}>
-                        <span className={styles.legendDot} style={{ background: '#22c55e' }} />
+                        <span className={styles.legendDot} style={{ background: '#38a169' }} />
                         <span className={styles.legendText}>Đang mở</span>
                         <span className={styles.legendCount}>{String(counts.opening).padStart(2, '0')} bài</span>
                     </div>
                     <div className={styles.legendItem}>
-                        <span className={styles.legendDot} style={{ background: '#3b82f6' }} />
+                        <span className={styles.legendDot} style={{ background: '#3182ce' }} />
                         <span className={styles.legendText}>Hoàn thành</span>
                         <span className={styles.legendCount}>{String(counts.completed).padStart(2, '0')} bài</span>
                     </div>
                     <div className={styles.legendItem}>
-                        <span className={styles.legendDot} style={{ background: '#9ca3af' }} />
+                        <span className={styles.legendDot} style={{ background: '#e53e3e' }} />
                         <span className={styles.legendText}>Đã chấm</span>
                         <span className={styles.legendCount}>{String(counts.graded).padStart(2, '0')} bài</span>
                     </div>

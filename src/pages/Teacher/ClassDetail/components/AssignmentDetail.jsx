@@ -8,32 +8,33 @@ import {
     EditOutlined,
     DownCircleOutlined,
     MessageOutlined,
+    SearchOutlined,
 } from '@ant-design/icons';
 import styles from '../styles.module.scss';
 
 const PAGE_SIZE = 4;
 
 const allStudents = [
-    { id: 1, name: 'Nguyhn Hoàng Anh', initials: 'HA', color: '#e53e3e', msv: 'B21DCCN001', status: 'graded',   hasFeedback: true,  score: 9.5  },
-    { id: 2, name: 'Lê Trcn Minh',      initials: 'TM', color: '#d69e2e', msv: 'B21DCCN042', status: 'submitted', hasFeedback: false, score: null },
-    { id: 3, name: 'Phạm Văn Vinh',     initials: 'PV', color: '#805ad5', msv: 'B21DCCN115', status: 'missing',   hasFeedback: false, score: null },
-    { id: 4, name: 'Trcn Thị Lan',      initials: 'TL', color: '#3182ce', msv: 'B21DCCN210', status: 'graded',   hasFeedback: true,  score: 8.0  },
-    { id: 5, name: 'Hoàng Minh Đức',    initials: 'HĐ', color: '#38b2ac', msv: 'B21DCCN078', status: 'graded',   hasFeedback: false, score: 7.5  },
-    { id: 6, name: 'Nguyễn Thị Mai',    initials: 'NM', color: '#ed64a6', msv: 'B21DCCN033', status: 'submitted', hasFeedback: false, score: null },
-    { id: 7, name: 'Trần Quốc Hùng',   initials: 'TH', color: '#48bb78', msv: 'B21DCCN156', status: 'missing',   hasFeedback: false, score: null },
-    { id: 8, name: 'Bùi Thị Hoa',      initials: 'BH', color: '#f6ad55', msv: 'B21DCCN094', status: 'graded',   hasFeedback: true,  score: 8.5  },
-    { id: 9, name: 'Đinh Văn Long',     initials: 'ĐL', color: '#c53030', msv: 'B21DCCN201', status: 'submitted', hasFeedback: false, score: null },
-    { id: 10, name: 'Vũ Hải Anh',       initials: 'VA', color: '#5a67d8', msv: 'B21DCCN047', status: 'graded',   hasFeedback: false, score: 9.0  },
-    { id: 11, name: 'Đỗ Thị Ngọc',      initials: 'ĐN', color: '#e53e3e', msv: 'B21DCCN088', status: 'missing',   hasFeedback: false, score: null },
-    { id: 12, name: 'Cao Văn Tùng',     initials: 'CT', color: '#d69e2e', msv: 'B21DCCN125', status: 'graded',   hasFeedback: true,  score: 6.5  },
+    { id: 1, name: 'Nguyhn Hoàng Anh', initials: 'HA', color: '#e53e3e', msv: 'B21DCCN001', status: 'graded', hasFeedback: true, score: 9.5 },
+    { id: 2, name: 'Lê Trcn Minh', initials: 'TM', color: '#d69e2e', msv: 'B21DCCN042', status: 'submitted', hasFeedback: false, score: null },
+    { id: 3, name: 'Phạm Văn Vinh', initials: 'PV', color: '#805ad5', msv: 'B21DCCN115', status: 'missing', hasFeedback: false, score: null },
+    { id: 4, name: 'Trcn Thị Lan', initials: 'TL', color: '#3182ce', msv: 'B21DCCN210', status: 'graded', hasFeedback: true, score: 8.0 },
+    { id: 5, name: 'Hoàng Minh Đức', initials: 'HĐ', color: '#38b2ac', msv: 'B21DCCN078', status: 'graded', hasFeedback: false, score: 7.5 },
+    { id: 6, name: 'Nguyễn Thị Mai', initials: 'NM', color: '#ed64a6', msv: 'B21DCCN033', status: 'submitted', hasFeedback: false, score: null },
+    { id: 7, name: 'Trần Quốc Hùng', initials: 'TH', color: '#48bb78', msv: 'B21DCCN156', status: 'missing', hasFeedback: false, score: null },
+    { id: 8, name: 'Bùi Thị Hoa', initials: 'BH', color: '#f6ad55', msv: 'B21DCCN094', status: 'graded', hasFeedback: true, score: 8.5 },
+    { id: 9, name: 'Đinh Văn Long', initials: 'ĐL', color: '#c53030', msv: 'B21DCCN201', status: 'submitted', hasFeedback: false, score: null },
+    { id: 10, name: 'Vũ Hải Anh', initials: 'VA', color: '#5a67d8', msv: 'B21DCCN047', status: 'graded', hasFeedback: false, score: 9.0 },
+    { id: 11, name: 'Đỗ Thị Ngọc', initials: 'ĐN', color: '#e53e3e', msv: 'B21DCCN088', status: 'missing', hasFeedback: false, score: null },
+    { id: 12, name: 'Cao Văn Tùng', initials: 'CT', color: '#d69e2e', msv: 'B21DCCN125', status: 'graded', hasFeedback: true, score: 6.5 },
 ];
 
 const STUDENT_FILTERS = [
-    { key: 'all',       label: 'Tất cả' },
+    { key: 'all', label: 'Tất cả' },
     { key: 'submitted', label: 'Đã nộp' },
-    { key: 'missing',   label: 'Chưa nộp' },
-    { key: 'graded',    label: 'Đã chấm' },
-    { key: 'feedback',  label: 'Phản hồi', hasDot: true },
+    { key: 'missing', label: 'Chưa nộp' },
+    { key: 'graded', label: 'Đã chấm' },
+    { key: 'feedback', label: 'Phản hồi', hasDot: true },
 ];
 
 const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
@@ -41,25 +42,25 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
 
-    const groupCode  = classInfo.groupCode || classInfo.code || 'D21CQCN01-B';
-    const classTitle = classInfo.title     || 'Lập trình hướng đối tượng';
-    const semester   = classInfo.semester  || 'Học kỳ 1 - 2023-2024';
+    const groupCode = classInfo.groupCode || classInfo.code || 'D21CQCN01-B';
+    const classTitle = classInfo.title || 'Lập trình hướng đối tượng';
+    const semester = classInfo.semester || 'Học kỳ 1 - 2023-2024';
 
     const feedbackCount = allStudents.filter(s => s.hasFeedback).length;
 
     const filtered = allStudents.filter(s => {
         const matchSearch = s.name.toLowerCase().includes(search.toLowerCase()) ||
-                            s.msv.toLowerCase().includes(search.toLowerCase());
+            s.msv.toLowerCase().includes(search.toLowerCase());
         if (!matchSearch) return false;
-        if (studentFilter === 'all')       return true;
-        if (studentFilter === 'feedback')  return s.hasFeedback;
+        if (studentFilter === 'all') return true;
+        if (studentFilter === 'feedback') return s.hasFeedback;
         return s.status === studentFilter;
     });
 
     const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
     const statusBadge = (s) => {
-        if (s.status === 'graded')    return <span className={`${styles.stBadge} ${styles.stGraded}`}>ĐÃ CHẤM</span>;
+        if (s.status === 'graded') return <span className={`${styles.stBadge} ${styles.stGraded}`}>ĐÃ CHẤM</span>;
         if (s.status === 'submitted') return <span className={`${styles.stBadge} ${styles.stSubmitted}`}>ĐÃ NỘP</span>;
         return <span className={`${styles.stBadge} ${styles.stMissing}`}>CHƯA NỘP</span>;
     };
@@ -144,7 +145,7 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
                         ))}
                     </div>
                     <Input
-                        prefix={<span style={{ color: '#9ca3af' }}>🔍</span>}
+                        prefix={<SearchOutlined />}
                         placeholder="Tìm kiếm sinh viên..."
                         value={search}
                         onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}

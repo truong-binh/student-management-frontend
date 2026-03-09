@@ -21,9 +21,9 @@ import userDefault from '@/assets/images/logos/user_default.png';
 const { TextArea } = Input;
 
 const files = [
-    { name: 'Bài giảng chương 1 - Tổng quan O...', size: '2.4 MB', date: 'Đã tải lên 2 ngày trước', icon: <FilePdfOutlined />, iconBg: '#fee2e2', iconColor: '#ef4444' },
-    { name: 'Danh sách bài tập thực hành tuần...', size: '512 KB', date: 'Đã tải lên 1 ngày trước', icon: <FilePdfOutlined />, iconBg: '#dbeafe', iconColor: '#3b82f6' },
-    { name: 'Source Code mẫu Java_Lab1.zip', size: '15.6 MB', date: 'Đã tải lên 5 giờ trước', icon: <FileZipOutlined />, iconBg: '#dcfce7', iconColor: '#22c55e' },
+    { name: 'Bài giảng chương 1 - Tổng quan O...', size: '2.4 MB', date: 'Đã tải lên 2 ngày trước', icon: <FilePdfOutlined />, iconBg: '#ebf8ff', iconColor: '#3b82f6' },
+    { name: 'Danh sách bài tập thực hành tuần...', size: '512 KB', date: 'Đã tải lên 1 ngày trước', icon: <FilePdfOutlined />, iconBg: '#f0fff4', iconColor: '#22c55e' },
+    { name: 'Source Code mẫu Java_Lab1.zip', size: '15.6 MB', date: 'Đã tải lên 5 giờ trước', icon: <FileZipOutlined />, iconBg: '#fffbeb', iconColor: '#d69e2e' },
 ];
 
 const posts = [

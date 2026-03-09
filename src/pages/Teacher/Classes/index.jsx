@@ -161,8 +161,11 @@ const TeacherClasses = () => {
         <MainLayout menuItems={teacherMenuItems}>
             <div className={styles.classesPage}>
                 {/* Header */}
-                <header className={styles.pageHeader}>
-                    <h1 className={styles.pageTitle}>Các lớp học phần</h1>
+                <header className={styles.header}>
+                    <div className={styles.title}>
+                        <ReadOutlined className={styles.icon} />
+                        <h1>Các lớp học phần</h1>
+                    </div>
                     <div className={styles.filters}>
                         <Input
                             placeholder="Tìm tên môn học, mã môn..."
@@ -221,7 +224,7 @@ const TeacherClasses = () => {
                                         <Progress
                                             percent={percent}
                                             showInfo={false}
-                                            strokeColor={item.completed ? '#38a169' : item.color}
+                                            strokeColor={item.completed ? '#b71c1c' : item.color}
                                             trailColor="#edf2f7"
                                             size={['100%', 6]}
                                         />

@@ -116,13 +116,13 @@ export default {
           50: "#F3E5F1"
         },
         brandb: {
-          base: "#29A8DF",
-          500: "#239BD1",
-          400: "#3EB5E3",
-          300: "#5BC2E6",
-          200: "#85D3ED",
-          100: "#B4E5F4",
-          50: "#E1F5FB"
+          base: "#b71c1c",
+          500: "#9b2c2c",
+          400: "#c53030",
+          300: "#e53e3e",
+          200: "#f56565",
+          100: "#feb2b2",
+          50: "#fff5f5"
         },
       },
       keyframes: {
@@ -141,7 +141,7 @@ export default {
         'sub-wrap': 'subWrap 0.3s',
       },
       screens: {
-        'max-sm': { 'max': '639px' },  
+        'max-sm': { 'max': '639px' },
       },
       boxShadow: {
         'card-box': '0px 3px 4px 0px rgba(0, 0, 0, 0.03)',

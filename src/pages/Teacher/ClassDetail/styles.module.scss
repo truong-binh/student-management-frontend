@@ -6,94 +6,78 @@
 
 /* ─── Banner ─── */
 .headerBanner {
-    background: white;
+    background: #b71c1c;
     border-radius: 20px;
-    padding: 24px 28px;
+    padding: 24px 32px;
+    color: white;
     margin-bottom: 20px;
-    border: 1px solid #edf2f7;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
-    display: flex;
-    align-items: flex-start;
-    gap: 24px;
-}
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(183, 28, 28, 0.2);
 
-.bannerLeft {
-    flex-shrink: 0;
-
-    .classIconBox {
-        width: 80px;
-        height: 80px;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 36px;
+    &::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 500px;
+        height: 500px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
     }
-}
 
-.bannerRight {
-    flex: 1;
-
-    .bannerTopRow {
+    .metaInfo {
         display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 4px;
+        gap: 12px;
+        margin-bottom: 12px;
+
+        .badge {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            backdrop-filter: blur(4px);
+        }
+
+        .status {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+        }
     }
 
     .title {
-        font-size: 24px;
+        font-size: 28px;
         font-weight: 800;
-        color: #1a202c;
-        margin: 0;
-        line-height: 1.3;
-    }
-
-    .statusBadge {
         color: white;
-        font-size: 11px;
-        font-weight: 700;
-        padding: 4px 12px;
-        border-radius: 6px;
-        flex-shrink: 0;
-        margin-left: 16px;
-        margin-top: 4px;
-        letter-spacing: 0.3px;
-    }
-
-    .school {
-        margin: 0 0 16px 0;
-        font-size: 14px;
-        color: #718096;
+        margin-bottom: 12px;
     }
 
     .details {
         display: flex;
         flex-wrap: wrap;
         gap: 32px;
+        margin-bottom: 20px;
 
         .detailItem {
             display: flex;
-            flex-direction: column;
-            gap: 4px;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            opacity: 0.95;
 
-            .detailLabel {
-                font-size: 11px;
-                font-weight: 700;
-                color: #a0aec0;
-                letter-spacing: 0.5px;
-            }
-
-            .detailValue {
-                font-size: 14px;
-                font-weight: 600;
-                color: #2d3748;
-                display: flex;
-                align-items: center;
-                gap: 6px;
+            .icon {
+                font-size: 18px;
             }
         }
+    }
+
+    .schoolInfo {
+        font-size: 13px;
+        opacity: 0.8;
     }
 }
 
@@ -151,7 +135,7 @@
 }
 
 .overviewRight {
-    // stretches full height with flex
+    flex: 1;
 }
 
 /* ─── Shared Card ─── */
@@ -437,7 +421,7 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 24px;
-    margin-bottom: 32px;
+    margin-bottom: 0;
 
     .statItem {
         background: white;
@@ -447,6 +431,12 @@
         display: flex;
         align-items: center;
         gap: 20px;
+        transition: all 0.3s;
+
+        &:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
 
         .statIcon {
             width: 52px;
@@ -463,6 +453,7 @@
                 font-size: 14px;
                 color: #718096;
                 margin-bottom: 4px;
+                font-weight: 600;
             }
 
             .statValue {
@@ -476,7 +467,7 @@
 
 .attendanceTable {
     :global {
-        .ant-table-thead > tr > th {
+        .ant-table-thead>tr>th {
             background: #f8fafc;
             font-size: 13px;
             color: #718096;
@@ -484,7 +475,7 @@
             border-bottom: 1px solid #edf2f7;
         }
 
-        .ant-table-tbody > tr > td {
+        .ant-table-tbody>tr>td {
             padding: 14px 16px;
             font-size: 14px;
             color: #2d3748;
@@ -919,6 +910,12 @@
 
 .attendanceWrap {
     display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.attendanceMain {
+    display: flex;
     gap: 20px;
     align-items: flex-start;
 }
@@ -1154,18 +1151,20 @@
 
 .radioPresent {
     :global(.ant-radio-checked .ant-radio-inner) {
-        border-color: #38a169;
-        background-color: #38a169;
+        border-color: #b71c1c;
+        background-color: #b71c1c;
     }
-    color: #276749;
+
+    color: #b71c1c;
 }
 
 .radioExcused {
     :global(.ant-radio-checked .ant-radio-inner) {
-        border-color: #d97706;
-        background-color: #d97706;
+        border-color: #e53e3e;
+        background-color: #e53e3e;
     }
-    color: #92400e;
+
+    color: #e53e3e;
 }
 
 .radioAbsent {
@@ -1173,6 +1172,7 @@
         border-color: #e53e3e;
         background-color: #e53e3e;
     }
+
     color: #c53030;
 }
 
@@ -1184,7 +1184,31 @@
     padding: 14px 20px;
     border-top: 1px solid #f0f0f0;
     background: #fafafa;
+
+    :global {
+        .ant-pagination-item-active {
+            background-color: #b71c1c !important;
+            border-color: #b71c1c !important;
+
+            a {
+                color: white !important;
+            }
+        }
+
+        .ant-pagination-item:hover,
+        .ant-pagination-next:hover .ant-pagination-item-link,
+        .ant-pagination-prev:hover .ant-pagination-item-link {
+            border-color: #b71c1c !important;
+            color: #b71c1c !important;
+
+            a {
+                color: #b71c1c !important;
+            }
+        }
+    }
 }
+
+
 
 .tableInfo {
     font-size: 13px;
@@ -1318,13 +1342,13 @@
 }
 
 .badgeOpening {
-    background: #dcfce7;
-    color: #16a34a;
+    background: #fff1f1;
+    color: #ef4444;
 }
 
 .badgeCompleted {
-    background: #dbeafe;
-    color: #1d4ed8;
+    background: #fff5f5;
+    color: #e53e3e;
 }
 
 .badgeGraded {
@@ -1496,7 +1520,9 @@
     width: fit-content;
     transition: opacity 0.15s;
 
-    &:hover { opacity: 0.7; }
+    &:hover {
+        opacity: 0.7;
+    }
 }
 
 /* ── Header card ── */
@@ -1617,7 +1643,9 @@
     color: #4b5563;
     line-height: 1.7;
 
-    p { margin: 0 0 8px; }
+    p {
+        margin: 0 0 8px;
+    }
 }
 
 .adList {
@@ -1693,10 +1721,34 @@
 }
 
 .adSearchInput {
-    width: 220px;
-    border-radius: 8px !important;
-    border-color: #d1d5db !important;
-    font-size: 13px;
+    width: 240px;
+    height: 38px !important;
+    border-radius: 10px !important;
+    border: 1px solid #d1d5db !important;
+    background: #fff !important;
+    display: flex !important;
+    align-items: center;
+    transition: all 0.2s;
+
+    &:hover,
+    &:focus-within {
+        border-color: #b71c1c !important;
+        box-shadow: 0 2px 8px rgba(183, 28, 28, 0.08) !important;
+    }
+
+    :global(.ant-input) {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding-left: 8px !important;
+        font-size: 13px !important;
+        color: #1a202c !important;
+    }
+
+    :global(.ant-input-prefix) {
+        color: #9ca3af;
+        margin-right: 4px;
+    }
 }
 
 /* ── Student table ── */
@@ -1722,8 +1774,13 @@
         vertical-align: middle;
     }
 
-    tbody tr:last-child td { border-bottom: none; }
-    tbody tr:hover td { background: #fffafa; }
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    tbody tr:hover td {
+        background: #fffafa;
+    }
 }
 
 .adStudentName {
@@ -1820,7 +1877,9 @@
     cursor: pointer;
     transition: color 0.15s;
 
-    &:hover { color: #b71c1c; }
+    &:hover {
+        color: #b71c1c;
+    }
 }
 
 .adNoFile {

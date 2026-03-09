@@ -44,10 +44,10 @@ const TeacherDashboard = () => {
     const [calendarValue, setCalendarValue] = useState(dayjs());
 
     const stats = [
-        { title: 'Tổng số sinh viên', value: '184', icon: <TeamOutlined />, bg: '#1a202c' },
-        { title: 'Lớp học của bạn', value: '3', icon: <BookOutlined />, bg: '#1a202c' },
-        { title: 'Bài chưa chấm', value: '24', icon: <ClockCircleOutlined />, bg: '#1a202c' },
-        { title: 'Bài đã chấm', value: '160', icon: <CheckCircleOutlined />, bg: '#1a202c' },
+        { title: 'Tổng số sinh viên', value: '184', icon: <TeamOutlined />, color: '#3182ce' },
+        { title: 'Lớp học của bạn', value: '3', icon: <BookOutlined />, color: '#38a169' },
+        { title: 'Bài chưa chấm', value: '24', icon: <ClockCircleOutlined />, color: '#d69e2e' },
+        { title: 'Bài đã chấm', value: '160', icon: <CheckCircleOutlined />, color: '#3182ce' },
     ];
 
     const chartData = {
@@ -168,13 +168,13 @@ const TeacherDashboard = () => {
                         {/* Stats */}
                         <div className={styles.statsRow}>
                             {stats.map((stat, i) => (
-                                <div key={i} className={styles.statCard} style={{ background: stat.bg }}>
+                                <Card key={i} className={styles.statCard}>
                                     <p className={styles.statTitle}>{stat.title}</p>
                                     <div className={styles.statBody}>
                                         <span className={styles.statValue}>{stat.value}</span>
-                                        <span className={styles.statIcon}>{stat.icon}</span>
+                                        <span className={styles.statIcon} style={{ color: stat.color }}>{stat.icon}</span>
                                     </div>
-                                </div>
+                                </Card>
                             ))}
                         </div>
 
@@ -203,7 +203,7 @@ const TeacherDashboard = () => {
                         <div className={styles.assignmentsCard}>
                             <div className={styles.cardHeader}>
                                 <div className={styles.headerTitle}>
-                                    <ClockCircleOutlined style={{ color: '#e53e3e' }} />
+                                    <ClockCircleOutlined style={{ color: '#3182ce' }} />
                                     <h3>Bài tập sắp hết hạn</h3>
                                 </div>
                                 <Button type="link" className={styles.viewAll}>Xem tất cả</Button>
