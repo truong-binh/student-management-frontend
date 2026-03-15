@@ -15,6 +15,7 @@ import {
     UserOutlined,
     MessageOutlined,
     ReadOutlined,
+    BookOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import MainLayout from '@/layouts/User/MainLayout';

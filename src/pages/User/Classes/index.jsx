@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/layouts/User/MainLayout';
 import { Input, Select, Progress, Button, Pagination } from 'antd';
@@ -13,112 +13,36 @@ import {
     SafetyCertificateOutlined,
     TranslationOutlined
 } from '@ant-design/icons';
+import { useCourse } from '@/hooks/useCourse';
 import styles from './styles.module.scss';
 
 const { Option } = Select;
 
+const COLORS = ['#e53e3e', '#3182ce', '#805ad5', '#d69e2e', '#38b2ac', '#5a67d8', '#ed64a6', '#c53030'];
+const ICONS = [<CodeOutlined />, <GlobalOutlined />, <DesktopOutlined />, <ApartmentOutlined />, <RadiusUprightOutlined />, <TranslationOutlined />, <SafetyCertificateOutlined />];
+
 const MyClasses = () => {
     const navigate = useNavigate();
-    const [semester, setSemester] = useState('Học kỳ 2 - 2025-2026');
+    const { courses, isLoading } = useCourse();
 
-    const classesData = [
-        {
-            id: 1,
-            title: 'Cấu trúc dữ liệu và Giải thuật',
-            code: 'INT1302',
-            semester: 'Học kỳ 2 - 2025-2026',
-            teacher: 'Lê Thị Hoa',
-            progress: 8,
-            total: 12,
-            type: 'assignment',
-            color: '#e53e3e',
-            icon: <CodeOutlined />
-        },
-        {
-            id: 2,
-            title: 'Mạng máy tính',
-            code: 'INT1434',
-            semester: 'Học kỳ 2 - 2025-2026',
-            teacher: 'Nguyễn Văn B',
-            progress: 4,
-            total: 10,
-            type: 'assignment',
-            color: '#3182ce',
-            icon: <GlobalOutlined />
-        },
-        {
-            id: 3,
-            title: 'Hệ điều hành',
-            code: 'INT1332',
-            semester: 'Học kỳ 2 - 2025-2026',
-            teacher: 'Trần Văn C',
-            progress: 6,
-            total: 8,
-            type: 'assignment',
-            color: '#805ad5',
-            icon: <DesktopOutlined />
-        },
-        {
-            id: 4,
-            title: 'Công nghệ phần mềm',
-            code: 'INT1340',
-            semester: 'Học kỳ 2 - 2025-2026',
-            teacher: 'Phạm Văn D',
-            progress: 2,
-            total: 5,
-            type: 'project',
-            color: '#d69e2e',
-            icon: <ApartmentOutlined />
-        },
-        {
-            id: 5,
-            title: 'Triết học Mác - Lênin',
-            code: 'BAS1203',
-            semester: 'Học kỳ 2 - 2025-2026',
-            teacher: 'Nguyễn Thị E',
-            progress: 100,
-            total: 100,
-            type: 'assignment',
-            color: '#38b2ac',
-            icon: <RadiusUprightOutlined />
-        },
-        {
-            id: 6,
-            title: 'Tiếng Anh chuyên ngành',
-            code: 'FLS1103',
-            semester: 'Học kỳ 2 - 2025-2026',
-            teacher: 'Cristiano Ronaldo',
-            progress: 3,
-            total: 15,
-            type: 'assignment',
-            color: '#5a67d8',
-            icon: <TranslationOutlined />
-        },
-        {
-            id: 7,
-            title: 'An toàn thông tin',
-            code: 'INT1319',
-            semester: 'Học kỳ 2 - 2025-2026',
-            teacher: 'Hoàng Văn F',
-            progress: 0,
-            total: 5,
-            type: 'assignment',
-            color: '#f56565',
-            icon: <SafetyCertificateOutlined />
-        },
-        {
-            id: 8,
-            title: 'Lập trình hướng đối tượng',
-            code: 'INT1325',
-            semester: 'Học kỳ 2 - 2025-2026',
-            teacher: 'Vũ Thị G',
-            progress: 12,
-            total: 12,
-            type: 'assignment',
-            color: '#c53030',
-            icon: <CodeOutlined />
-        }
-    ];
+    const [searchText, setSearchText] = useState('');
+    const [semesterFilter, setSemesterFilter] = useState('All');
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 8;
+
+    const uniqueSemesters = useMemo(() => {
+        return Array.from(new Set((Array.isArray(courses) ? courses : []).map(c => c.semester).filter(Boolean)));
+    }, [courses]);
+
+    const filtered = (Array.isArray(courses) ? courses : []).filter((c) => {
+        const matchSearch =
+            c.courseName?.toLowerCase().includes(searchText.toLowerCase()) ||
+            c.courseCode?.toLowerCase().includes(searchText.toLowerCase());
+        const matchSemester = semesterFilter === 'All' || c.semester === semesterFilter;
+        return matchSearch && matchSemester;
+    });
+
+    const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
     return (
         <MainLayout>
@@ -134,92 +58,93 @@ const MyClasses = () => {
                             placeholder="Tìm tên môn học, mã môn..."
                             prefix={<SearchOutlined />}
                             className={styles.searchInput}
+                            value={searchText}
+                            onChange={(e) => {
+                                setSearchText(e.target.value);
+                                setCurrentPage(1);
+                            }}
                         />
                         <Select
-                            defaultValue="Học kỳ 2 - 2025-2026"
+                            value={semesterFilter}
                             className={styles.statusSelect}
-                            onChange={(value) => setSemester(value)}
+                            onChange={(value) => { setSemesterFilter(value); setCurrentPage(1); }}
                         >
-                            <Option value="Học kỳ 2 - 2025-2026">Học kỳ 2 - 2025-2026</Option>
-                            <Option value="Học kỳ 1 - 2025-2026">Học kỳ 1 - 2025-2026</Option>
-                            <Option value="Học kỳ 2 - 2024-2025">Học kỳ 2 - 2024-2025</Option>
-                            <Option value="Học kỳ 1 - 2024-2025">Học kỳ 1 - 2024-2025</Option>
-                            <Option value="Học kỳ 2 - 2023-2024">Học kỳ 2 - 2023-2024</Option>
-                            <Option value="Học kỳ 1 - 2023-2024">Học kỳ 1 - 2023-2024</Option>
+                            <Option value="All">Tất cả học kỳ</Option>
+                            {uniqueSemesters.map(sem => (
+                                <Option key={sem} value={sem}>{sem}</Option>
+                            ))}
                         </Select>
                     </div>
                 </header>
 
                 <div className={styles.classGrid}>
-                    {classesData.map((item) => (
-                        <div key={item.id} className={styles.classCard}>
-                            <div
-                                className={styles.cardHeader}
-                                style={{ backgroundColor: item.color }}
-                            >
-                                <div className={styles.subjectIcon}>
-                                    {item.icon}
-                                </div>
-                                <div className={styles.subjectCode}>
-                                    {item.code}
-                                </div>
-                            </div>
+                    {isLoading ? (
+                        <div className="w-full text-center py-10" style={{ gridColumn: '1 / -1' }}>Đang tải danh sách...</div>
+                    ) : paginated.length === 0 ? (
+                        <div className="w-full text-center py-10" style={{ gridColumn: '1 / -1' }}>Không có lớp học nào phù hợp.</div>
+                    ) : (
+                        paginated.map((item, index) => {
+                            const color = COLORS[index % COLORS.length];
+                            const icon = ICONS[index % ICONS.length];
 
-                            <div className={styles.cardBody}>
-                                <h3 className={styles.subjectTitle}>{item.title}</h3>
-
-                                <div className={styles.teacherInfo}>
-                                    <div className={styles.avatar}>GV</div>
-                                    <span className={styles.name}>{item.teacher}</span>
-                                </div>
-
-                                <div className={styles.progressSection}>
-                                    <div className={styles.progressHeader}>
-                                        {item.status === 'completed' ? (
-                                            <span className={styles.statusText}>Hoàn thành</span>
-                                        ) : (
-                                            <>
-                                                <span className={styles.progressLabel}>Tiến độ</span>
-                                                <span className={styles.progressValue}>
-                                                    {item.progress}/{item.total} {item.type === 'project' ? 'bài tập lớn' : 'bài tập'}
-                                                </span>
-                                            </>
-                                        )}
+                            return (
+                                <div key={item._id} className={styles.classCard}>
+                                    <div
+                                        className={styles.cardHeader}
+                                        style={{ backgroundColor: color }}
+                                    >
+                                        <div className={styles.subjectIcon}>
+                                            {icon}
+                                        </div>
+                                        <div className={styles.subjectCode}>
+                                            {item.courseCode}
+                                        </div>
                                     </div>
-                                    <Progress
-                                        percent={item.status === 'completed' ? 100 : (item.progress / item.total) * 100}
-                                        showInfo={false}
-                                        strokeColor={item.status === 'completed' ? '#38a169' : item.color}
-                                        trailColor="#edf2f7"
-                                    />
+
+                                    <div className={styles.cardBody}>
+                                        <h3 className={styles.subjectTitle}>{item.courseName || '---'}</h3>
+
+                                        <div className={styles.teacherInfo}>
+                                            <div className={styles.avatar}>GV</div>
+                                            <span className={styles.name}>{item.lecturerId?.fullName || '---'}</span>
+                                        </div>
+
+                                        <div className={styles.progressSection} style={{ marginBottom: '16px' }}>
+                                            <div className={styles.progressHeader}>
+                                                <span className={styles.progressLabel}>Mô tả</span>
+                                            </div>
+                                            <div style={{ color: '#718096', fontSize: '13px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginTop: '8px', minHeight: '39px', lineHeight: '1.5' }}>
+                                                {item.description || 'Chưa có mô tả cho học phần này.'}
+                                            </div>
+                                        </div>
+
+                                        <Button
+                                            className={`${styles.actionBtn} ${styles.accessBtn}`}
+                                            style={{
+                                                backgroundColor: `${color}15`,
+                                                color: color
+                                            }}
+                                            onClick={() => navigate(`/classes/${item._id}`)}
+                                        >
+                                            Truy cập lớp học
+                                        </Button>
+                                    </div>
                                 </div>
-
-
-                                <Button
-                                    className={`${styles.actionBtn} ${styles.accessBtn}`}
-                                    style={{
-                                        backgroundColor: `${item.color}15`,
-                                        color: item.color
-                                    }}
-                                    onClick={() => navigate(`/classes/${item.id}`)}
-                                >
-                                    Truy cập lớp học
-                                </Button>
-
-                            </div>
-                        </div>
-                    ))}
+                            );
+                        })
+                    )}
                 </div>
 
                 <footer className={styles.footer}>
                     <div className={styles.paginationInfo}>
-                        Hiển thị 1 đến 8 của 12 lớp học
+                        Hiển thị {Math.min((currentPage - 1) * pageSize + 1, filtered.length) || 0} đến {Math.min(currentPage * pageSize, filtered.length)} của {filtered.length} lớp học
                     </div>
                     <Pagination
-                        defaultCurrent={1}
-                        total={12}
-                        pageSize={8}
+                        current={currentPage}
+                        total={filtered.length}
+                        pageSize={pageSize}
                         showSizeChanger={false}
+                        onChange={(page) => setCurrentPage(page)}
                     />
                 </footer>
             </div>

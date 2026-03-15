@@ -28,7 +28,6 @@ export const rootLoader = async ({ request, params }, requiredAuth, permissions 
       }
     }
 
-    // Get updated state after potential auth update
     const currentAuthState = useAuthStore.getState();
 
     if (currentAuthState.isAuthAdminSuccess) {
@@ -51,7 +50,30 @@ export const rootLoader = async ({ request, params }, requiredAuth, permissions 
       params,
     });
   } else {
-    console.log("Check User");
+    const { isAuthSuccess, authUser } = useAuthStore.getState();
+    const isAuthRoute = ["/login", "/register", "/verify-email", "/forgot-password"].includes(url.pathname);
+
+    if (isAuthSuccess && authUser) {
+      const isLecturer = authUser.role === "LECTURER";
+      const isTeacherRoute = url.pathname.startsWith("/teacher");
+      const isStudentRoute = ["/dashboard", "/classes", "/schedule", "/feedback", "/profile"].some(p => url.pathname.startsWith(p));
+
+      const dashboardPath = isLecturer ? "/teacher/dashboard" : "/dashboard";
+
+      if (url.pathname === "/" || isAuthRoute) {
+        return redirect(dashboardPath);
+      }
+
+      if (isLecturer && isStudentRoute) {
+        return redirect("/teacher/dashboard");
+      }
+
+      if (!isLecturer && isTeacherRoute) {
+        return redirect("/dashboard");
+      }
+    } else if (requiredAuth && !isAuthSuccess) {
+      return redirect("/login");
+    }
   }
 
   return null;

@@ -32,7 +32,12 @@ function Login() {
                 login(data, {
                     onSuccess: (res) => {
                         notification.success({ message: "Đăng nhập thành công" });
-                        navigate("/");
+                        const userRole = res.data?.user?.role;
+                        if (userRole === "LECTURER") {
+                            navigate("/teacher/dashboard");
+                        } else {
+                            navigate("/dashboard");
+                        }
                     },
                     onError: (error) => {
                         if (error.error?.details) {

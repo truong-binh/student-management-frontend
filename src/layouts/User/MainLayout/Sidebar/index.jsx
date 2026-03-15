@@ -9,7 +9,9 @@ import {
     BarChartOutlined,
     UserOutlined,
     MessageOutlined,
-    LogoutOutlined
+    LogoutOutlined,
+    MenuFoldOutlined,
+    MenuUnfoldOutlined
 } from '@ant-design/icons';
 import logoPtit from '@/assets/images/svg/ptit.svg';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,24 +24,25 @@ const defaultMenuItems = [
     { key: 'feedback', label: 'Phản hồi', icon: <MessageOutlined />, path: '/feedback' },
 ];
 
-const StudentSidebar = ({ menuItems }) => {
+const StudentSidebar = ({ menuItems, collapsed, setCollapsed, setIsMobileMenuOpen }) => {
     const navigate = useNavigate();
     const { logout } = useAuth();
 
     const handleLogout = () => {
         logout();
+        setIsMobileMenuOpen(false);
         navigate('/login');
     };
 
     const items = menuItems || defaultMenuItems;
 
     return (
-        <div className={styles.sidebar}>
+        <div className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''}`}>
             <div className={styles.logo}>
                 <div className={styles.logoIcon}>
                     <img src={logoPtit} alt="Logo" />
                 </div>
-                <h1 className={styles.logoText}>EDU PTIT</h1>
+                {!collapsed && <h1 className={styles.logoText}>EDU PTIT</h1>}
             </div>
 
             <nav className={styles.nav}>
@@ -49,18 +52,28 @@ const StudentSidebar = ({ menuItems }) => {
                             <NavLink
                                 to={item.path}
                                 className={({ isActive }) => `${styles.navLink} ${isActive ? styles.active : ''}`}
+                                onClick={() => setIsMobileMenuOpen(false)}
                             >
                                 <span className={styles.icon}>{item.icon}</span>
-                                <span className={styles.label}>{item.label}</span>
+                                {!collapsed && <span className={styles.label}>{item.label}</span>}
                             </NavLink>
                         </li>
                     ))}
                 </ul>
 
-                <div className={styles.logoutSection}>
+                <div className={styles.bottomSection}>
+                    <div className={styles.divider} />
+
+                    <div className={styles.navLink} onClick={() => setCollapsed(!collapsed)} style={{ cursor: 'pointer', marginBottom: '8px' }}>
+                        <span className={styles.icon}>
+                            {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                        </span>
+                        {!collapsed && <span className={styles.label}>Thu gọn</span>}
+                    </div>
+
                     <div className={styles.navLink} onClick={handleLogout} style={{ cursor: 'pointer' }}>
                         <span className={styles.icon}><LogoutOutlined /></span>
-                        <span className={styles.label}>Đăng xuất</span>
+                        {!collapsed && <span className={styles.label}>Đăng xuất</span>}
                     </div>
                 </div>
             </nav>

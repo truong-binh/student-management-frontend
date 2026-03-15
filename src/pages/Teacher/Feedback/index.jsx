@@ -20,6 +20,7 @@ import {
     LinkOutlined,
     PaperClipOutlined,
     CaretRightOutlined,
+    BookOutlined,
 } from '@ant-design/icons';
 import MainLayout from '@/layouts/User/MainLayout';
 import styles from './styles.module.scss';
