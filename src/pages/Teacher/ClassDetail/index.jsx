@@ -13,12 +13,16 @@ import {
     UnorderedListOutlined,
     EditOutlined,
     CodeOutlined,
+    BookOutlined,
 } from '@ant-design/icons';
 import styles from './styles.module.scss';
 import OverviewTab from './components/OverviewTab';
 import AttendanceTab from './components/AttendanceTab';
 import AssignmentsTab from './components/AssignmentsTab';
 import CreateAssignmentTab from './components/CreateAssignmentTab';
+
+import { useCourse } from '@/hooks/useCourse';
+import { Spin } from 'antd';
 
 const teacherMenuItems = [
     { key: 'dashboard', label: 'Tổng quan', icon: <AppstoreOutlined />, path: '/teacher/dashboard' },
@@ -28,22 +32,44 @@ const teacherMenuItems = [
     { key: 'feedback', label: 'Phản hồi', icon: <MessageOutlined />, path: '/teacher/feedback' },
 ];
 
-const classesData = [
-    { id: 1, title: 'Cấu trúc dữ liệu và Giải thuật', code: 'INT1302', groupCode: 'INT1302 - Nhóm 01', semester: 'Học kỳ 2 - 2025-2026', school: 'Học viện Công nghệ Bưu chính Viễn thông', teacher: 'Nguyễn Văn A', status: 'ĐANG DIỄN RA', statusType: 'active', color: '#e53e3e', icon: <CodeOutlined /> },
-    { id: 2, title: 'Mạng máy tính', code: 'INT1434', groupCode: 'INT1434 - Nhóm 01', semester: 'Học kỳ 2 - 2025-2026', school: 'Học viện Công nghệ Bưu chính Viễn thông', teacher: 'Nguyễn Văn A', status: 'ĐANG DIỄN RA', statusType: 'active', color: '#3182ce', icon: <CodeOutlined /> },
-    { id: 3, title: 'Hệ điều hành', code: 'INT1332', groupCode: 'INT1332 - Nhóm 01', semester: 'Học kỳ 2 - 2025-2026', school: 'Học viện Công nghệ Bưu chính Viễn thông', teacher: 'Nguyễn Văn A', status: 'ĐANG DIỄN RA', statusType: 'active', color: '#805ad5', icon: <CodeOutlined /> },
-    { id: 4, title: 'Công nghệ phần mềm', code: 'INT1340', groupCode: 'INT1340 - Nhóm 01', semester: 'Học kỳ 2 - 2025-2026', school: 'Học viện Công nghệ Bưu chính Viễn thông', teacher: 'Nguyễn Văn A', status: 'SẮP DIỄN RA', statusType: 'upcoming', color: '#d69e2e', icon: <CodeOutlined /> },
-    { id: 5, title: 'Triết học Mác - Lênin', code: 'BAS1203', groupCode: 'BAS1203 - Nhóm 01', semester: 'Học kỳ 2 - 2025-2026', school: 'Học viện Công nghệ Bưu chính Viễn thông', teacher: 'Nguyễn Văn A', status: 'HOÀN THÀNH', statusType: 'completed', color: '#38b2ac', icon: <CodeOutlined /> },
-    { id: 6, title: 'Tiếng Anh chuyên ngành', code: 'FLS1103', groupCode: 'FLS1103 - Nhóm 01', semester: 'Học kỳ 2 - 2025-2026', school: 'Học viện Công nghệ Bưu chính Viễn thông', teacher: 'Nguyễn Văn A', status: 'ĐANG DIỄN RA', statusType: 'active', color: '#5a67d8', icon: <CodeOutlined /> },
-    { id: 7, title: 'An toàn thông tin', code: 'INT1319', groupCode: 'INT1319 - Nhóm 01', semester: 'Học kỳ 2 - 2025-2026', school: 'Học viện Công nghệ Bưu chính Viễn thông', teacher: 'Nguyễn Văn A', status: 'ĐANG DIỄN RA', statusType: 'active', color: '#ed64a6', icon: <CodeOutlined /> },
-    { id: 8, title: 'Lập trình hướng đối tượng', code: 'INT1325', groupCode: 'INT1506 - Nhóm 02', semester: 'Học kỳ 1 - 2023-2024', school: 'Học viện Công nghệ Bưu chính Viễn thông', teacher: 'Nguyễn Văn A', status: 'ĐANG DIỄN RA', statusType: 'active', color: '#c53030', icon: <CodeOutlined /> },
-];
-
 const TeacherClassDetail = () => {
     const { id } = useParams();
+    const { getCourseDetailQuery } = useCourse();
+    const { data: course, isLoading } = getCourseDetailQuery(id);
     const [activeTab, setActiveTab] = useState('1');
 
-    const classInfo = classesData.find(c => c.id === Number(id)) || classesData[0];
+    if (isLoading) {
+        return (
+            <MainLayout menuItems={teacherMenuItems}>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                    <Spin size="large" tip="Đang tải chi tiết lớp học..." />
+                </div>
+            </MainLayout>
+        );
+    }
+
+    if (!course) {
+        return (
+            <MainLayout menuItems={teacherMenuItems}>
+                <div style={{ padding: '24px', textAlign: 'center' }}>
+                    <h2>Không tìm thấy thông tin lớp học</h2>
+                </div>
+            </MainLayout>
+        );
+    }
+
+    const classInfo = {
+        title: course.courseName,
+        code: course.courseCode,
+        groupCode: course.courseCode,
+        semester: course.semester,
+        school: 'Học viện Công nghệ Bưu chính Viễn thông',
+        teacher: course.lecturerId?.fullName || 'Chưa xác định',
+        status: 'ĐANG DIỄN RA',
+        statusType: 'active',
+        color: '#3182ce',
+        description: course.description
+    };
 
     const statusColorMap = {
         active: '#48bb78',
@@ -54,7 +80,6 @@ const TeacherClassDetail = () => {
     return (
         <MainLayout menuItems={teacherMenuItems}>
             <div className={styles.classDetailPage}>
-                {/* Banner */}
                 <div className={styles.headerBanner}>
                     <div className={styles.metaInfo}>
                         <span className={styles.badge}>{classInfo.code}</span>
@@ -79,7 +104,6 @@ const TeacherClassDetail = () => {
                     </div>
                 </div>
 
-                {/* Tabs */}
                 <div className={styles.tabSection}>
                     <Tabs
                         activeKey={activeTab}
@@ -89,7 +113,7 @@ const TeacherClassDetail = () => {
                             {
                                 key: '1',
                                 label: <span><InfoCircleOutlined /> Tổng quan</span>,
-                                children: <OverviewTab color={classInfo.color} />,
+                                children: <OverviewTab color={classInfo.color} description={classInfo.description} />,
                             },
                             {
                                 key: '2',

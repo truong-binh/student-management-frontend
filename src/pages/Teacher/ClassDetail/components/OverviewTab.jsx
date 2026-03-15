@@ -47,11 +47,11 @@ const posts = [
     },
 ];
 
-const OverviewTab = ({ color }) => {
+const OverviewTab = ({ color, description: defaultDesc }) => {
     const [announcement, setAnnouncement] = useState('');
     const [postList, setPostList] = useState(posts);
     const [description, setDescription] = useState(
-        'Học phần cung cấp kiến thức nền tảng về tư duy lập trình hướng đối tượng (OOP) sử dụng ngôn ngữ Java hoặc C++. Nội dung bao gồm các nguyên lý: Đóng gói (Encapsulation), Kế thừa (Inheritance), Đa hình (Polymorphism) và Trừu tượng (Abstraction).\n\nSinh viên sẽ được thực hành thiết kế hệ thống, quản lý bộ nhớ và xử lý ngoại lệ trong môi trường phát triển chuyên nghiệp.'
+        defaultDesc || 'Chưa có mô tả cho học phần này.'
     );
     const [editingDesc, setEditingDesc] = useState(false);
 
@@ -74,11 +74,8 @@ const OverviewTab = ({ color }) => {
 
     return (
         <div className={styles.overviewWrap}>
-            {/* Top two-column section */}
             <div className={styles.overviewGrid}>
-                {/* LEFT: Mô tả + Đề cương */}
                 <div className={styles.overviewLeft}>
-                    {/* Mô tả học phần */}
                     <div className={styles.card}>
                         <div className={styles.cardHeader}>
                             <span className={styles.cardHeaderLeft}>
@@ -106,7 +103,6 @@ const OverviewTab = ({ color }) => {
                         )}
                     </div>
 
-                    {/* Đề cương */}
                     <div className={styles.card}>
                         <div className={styles.cardHeader}>
                             <span className={styles.cardHeaderLeft}>
@@ -122,7 +118,6 @@ const OverviewTab = ({ color }) => {
                     </div>
                 </div>
 
-                {/* RIGHT: Tài liệu học tập */}
                 <div className={styles.overviewRight}>
                     <div className={styles.card} style={{ height: '100%' }}>
                         <div className={styles.cardHeader}>
@@ -166,7 +161,6 @@ const OverviewTab = ({ color }) => {
                 </div>
             </div>
 
-            {/* Thông báo lớp học */}
             <div className={`${styles.card} ${styles.announcementSection}`}>
                 <div className={styles.cardHeader}>
                     <span className={styles.cardHeaderLeft}>
@@ -175,7 +169,6 @@ const OverviewTab = ({ color }) => {
                     </span>
                 </div>
 
-                {/* Input area */}
                 <div className={styles.postInput}>
                     <TextArea
                         rows={3}
@@ -205,7 +198,6 @@ const OverviewTab = ({ color }) => {
                     </div>
                 </div>
 
-                {/* Post list */}
                 <div className={styles.postList}>
                     {postList.map((post) => (
                         <div key={post.id} className={styles.postItem}>

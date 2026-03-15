@@ -52,7 +52,7 @@
     @apply text-black-20 #{!important}
   }
 
-  @apply text-black-20 py-2.5 px-5 rounded-[0.425rem] text-sm font-medium h-[44px]
+  @apply text-black-20 py-2.5 px-5 rounded-[0.425rem] text-sm font-medium h-[44px];
 }
 
 .main-input-teacher {
@@ -139,7 +139,7 @@
       inset-inline-start: 20px;
     }
 
-    @apply text-black-20 py-1.5 px-5 rounded-[0.425rem] text-[13px] font-medium #{!important}
+    @apply text-black-20 py-1.5 px-5 rounded-[0.425rem] text-[13px] font-medium #{!important};
   }
 }
 
@@ -233,7 +233,7 @@
     @apply text-[13px];
   }
 
-  @apply text-black-20 py-[9px] px-5 rounded-[0.425rem] text-sm font-medium #{!important}
+  @apply text-black-20 py-[9px] px-5 rounded-[0.425rem] text-sm font-medium #{!important};
 }
 
 /* Input Number */
@@ -300,6 +300,16 @@
 
   .ant-table-cell-row-hover, .ant-table-column-sort {
     @apply bg-transparent #{!important}
+  }
+
+  @media (max-width: 768px) {
+    .ant-table-content {
+      overflow-x: auto !important;
+    }
+
+    .ant-table-cell {
+      white-space: nowrap;
+    }
   }
 }
 

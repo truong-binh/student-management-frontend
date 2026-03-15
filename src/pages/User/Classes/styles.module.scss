@@ -297,32 +297,5 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-
-        .paginationInfo {
-            font-size: 14px;
-            color: #718096;
-        }
-
-        :global {
-            .ant-pagination-item-active {
-                background-color: #b71c1c !important;
-                border-color: #b71c1c !important;
-
-                a {
-                    color: white !important;
-                }
-            }
-
-            .ant-pagination-item:hover,
-            .ant-pagination-next:hover .ant-pagination-item-link,
-            .ant-pagination-prev:hover .ant-pagination-item-link {
-                border-color: #b71c1c !important;
-                color: #b71c1c !important;
-
-                a {
-                    color: #b71c1c !important;
-                }
-            }
-        }
     }
 }

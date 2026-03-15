@@ -5,7 +5,7 @@ import { PERMISSION } from "../utils/constants";
 export const routeMap = [
   {
     label: '',
-    menu : true,
+    menu: true,
     routes: [
       {
         label: 'Tổng quan',

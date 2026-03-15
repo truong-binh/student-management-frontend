@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './styles.module.scss';
 import './styles.scss';
-import {Popover} from "antd";
+import { Popover } from "antd";
 import contentInfo from './components/PopoverProfile';
 import ImageUser from '@/assets/images/logos/user_default.png'
 import InlineSVG from 'react-inlinesvg';
@@ -9,7 +9,7 @@ import barsIcon from '@/assets/images/icons/duotone/bars.svg'
 import { useAppState } from '@/hooks/useAppState';
 import { useAuth } from '@/hooks/useAuth';
 import useWindowSize from '@/utils/hooks/useWindowSize';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const Header = () => {
     const { breadcrumb, titlePage, setIsShowSideBar } = useAppState();
@@ -38,9 +38,9 @@ const Header = () => {
         <header className={styles.headerWrap}>
             <div className={styles.headerLeftWrap}>
                 {
-                    ((windowSize.width <= 576)) ?
+                    ((windowSize.width <= 768)) ?
                         <InlineSVG onClick={() => setIsShowSideBar(true)} src={barsIcon} width={20}
-                                   alt="" className={`cursor-pointer`}/> : ""
+                            alt="" className={`cursor-pointer mr-3`} /> : ""
                 }
                 <div>
                     {
@@ -54,7 +54,7 @@ const Header = () => {
                                 {
                                     breadcrumb.map((item, index) => {
                                         return <span key={index}
-                                                     className='text-sm text-gray-45 cursor-pointer transition-all duration-300 hover:text-blue-65'>{(handleRenderItemBreadCrumb(index, item))}</span>
+                                            className='text-sm text-gray-45 cursor-pointer transition-all duration-300 hover:text-blue-65'>{(handleRenderItemBreadCrumb(index, item))}</span>
                                     })
                                 }
                             </div> : ''
@@ -67,10 +67,10 @@ const Header = () => {
                         {/**/}
                     </div>
                     <Popover className={`popover-info-wrap`} placement="bottomRight" content={contentInfo}
-                             trigger="click">
+                        trigger="click">
                         <div className={styles.infoWrap}>
                             <div className={styles.avatarWrap}>
-                                <img src={authUser.avatar ? authUser.avatar : ImageUser} alt=""/>
+                                <img src={authUser.avatar ? authUser.avatar : ImageUser} alt="" />
                             </div>
                         </div>
                     </Popover>
