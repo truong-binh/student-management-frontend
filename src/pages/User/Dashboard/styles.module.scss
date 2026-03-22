@@ -454,3 +454,118 @@
         }
     }
 }
+
+@media (max-width: 1200px) {
+    .dashboard {
+        .mainGrid {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+    }
+
+    .middleSection {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 992px) {
+    .statsRow {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .deadlinesCard,
+    .gradesCard,
+    .activityCard,
+    .calendarCard {
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+    .deadlineList {
+        .deadlineItem {
+            .deadlineInfo {
+                min-width: 0;
+
+                h4 {
+                    font-size: 14px;
+                }
+            }
+        }
+    }
+
+    .upcomingEvents {
+        .eventItem {
+            padding: 12px;
+            gap: 10px;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .contentLeft {
+        gap: 20px;
+    }
+
+    .statsRow {
+        .statCard {
+            :global(.ant-card-body) {
+                padding: 12px;
+            }
+        }
+    }
+
+    .deadlineList {
+        .deadlineItem {
+            align-items: flex-start;
+            gap: 12px;
+
+            :global(.ant-btn) {
+                width: 32px;
+                min-width: 32px;
+                height: 32px;
+            }
+        }
+    }
+
+    .gradeList {
+        .gradeItem {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+
+            .gradeScore {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    }
+
+    .upcomingEvents {
+        .eventItem {
+            flex-direction: column;
+
+            .eventTimeBox {
+                border-right: none;
+                border-bottom: 2px solid #fff5f5;
+                padding-right: 0;
+                padding-bottom: 8px;
+                align-items: flex-start;
+                width: 100%;
+            }
+        }
+    }
+}
+
+@media (max-width: 576px) {
+    .statsRow {
+        grid-template-columns: 1fr;
+    }
+
+    .activityCard {
+        .activityContent {
+            p {
+                font-size: 13px;
+            }
+        }
+    }
+}

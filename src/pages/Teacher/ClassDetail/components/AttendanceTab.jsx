@@ -11,8 +11,8 @@ import styles from '../styles.module.scss';
 const { Option } = Select;
 
 const initialStudents = [
-    { key: 1, name: 'Nguyhn Thành Long', initials: 'NL', color: '#e53e3e', msv: 'B20DCCN001', dob: '12/05/2002', status: 'present' },
-    { key: 2, name: 'Trcn Thu Anh', initials: 'TA', color: '#3182ce', msv: 'B20DCCN002', dob: '20/08/2002', status: 'excused' },
+    { key: 1, name: 'Nguyễn Thành Long', initials: 'NL', color: '#e53e3e', msv: 'B20DCCN001', dob: '12/05/2002', status: 'present' },
+    { key: 2, name: 'Trần Thu Anh', initials: 'TA', color: '#3182ce', msv: 'B20DCCN002', dob: '20/08/2002', status: 'excused' },
     { key: 3, name: 'Lê Văn Minh', initials: 'LM', color: '#38a169', msv: 'B20DCCN003', dob: '05/01/2002', status: 'absent' },
     { key: 4, name: 'Hoàng Lan Phương', initials: 'HP', color: '#d69e2e', msv: 'B20DCCN004', dob: '18/11/2002', status: 'present' },
     { key: 5, name: 'Phạm Quốc Hùng', initials: 'PH', color: '#805ad5', msv: 'B20DCCN005', dob: '03/03/2002', status: 'present' },

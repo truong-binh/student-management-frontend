@@ -1,20 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './styles.module.scss';
 import StudentSidebar from './Sidebar';
 import { Input, Badge, Avatar } from 'antd';
-import { SearchOutlined, BellOutlined, SettingOutlined } from '@ant-design/icons';
+import { SearchOutlined, BellOutlined, SettingOutlined, MenuOutlined } from '@ant-design/icons';
 import userDefault from '@/assets/images/logos/user_default.png';
 import { useAuth } from '@/hooks/useAuth';
 
 function MainLayout(props) {
     const { children, menuItems } = props;
     const { user } = useAuth();
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     return (
         <div className={styles.container}>
-            <StudentSidebar menuItems={menuItems} />
+            <StudentSidebar menuItems={menuItems} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+            {sidebarOpen && <div className={styles.overlay} onClick={() => setSidebarOpen(false)} />}
             <div className={styles.mainContent}>
                 <header className={styles.header}>
+                    <button className={styles.menuBtn} onClick={() => setSidebarOpen(true)}>
+                        <MenuOutlined />
+                    </button>
                     <div className={styles.welcome}>
                         <h2>Chào mừng quay trở lại !</h2>
                     </div>
