@@ -16,10 +16,10 @@ import styles from '../styles.module.scss';
 const PAGE_SIZE = 4;
 
 const allStudents = [
-    { id: 1, name: 'Nguyhn Hoàng Anh', initials: 'HA', color: '#e53e3e', msv: 'B21DCCN001', status: 'graded', hasFeedback: true, score: 9.5 },
-    { id: 2, name: 'Lê Trcn Minh', initials: 'TM', color: '#d69e2e', msv: 'B21DCCN042', status: 'submitted', hasFeedback: false, score: null },
+    { id: 1, name: 'Nguyễn Hoàng Anh', initials: 'HA', color: '#e53e3e', msv: 'B21DCCN001', status: 'graded', hasFeedback: true, score: 9.5 },
+    { id: 2, name: 'Lê Trần Minh', initials: 'TM', color: '#d69e2e', msv: 'B21DCCN042', status: 'submitted', hasFeedback: false, score: null },
     { id: 3, name: 'Phạm Văn Vinh', initials: 'PV', color: '#805ad5', msv: 'B21DCCN115', status: 'missing', hasFeedback: false, score: null },
-    { id: 4, name: 'Trcn Thị Lan', initials: 'TL', color: '#3182ce', msv: 'B21DCCN210', status: 'graded', hasFeedback: true, score: 8.0 },
+    { id: 4, name: 'Trần Thị Lan', initials: 'TL', color: '#3182ce', msv: 'B21DCCN210', status: 'graded', hasFeedback: true, score: 8.0 },
     { id: 5, name: 'Hoàng Minh Đức', initials: 'HĐ', color: '#38b2ac', msv: 'B21DCCN078', status: 'graded', hasFeedback: false, score: 7.5 },
     { id: 6, name: 'Nguyễn Thị Mai', initials: 'NM', color: '#ed64a6', msv: 'B21DCCN033', status: 'submitted', hasFeedback: false, score: null },
     { id: 7, name: 'Trần Quốc Hùng', initials: 'TH', color: '#48bb78', msv: 'B21DCCN156', status: 'missing', hasFeedback: false, score: null },

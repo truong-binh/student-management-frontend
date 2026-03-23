@@ -570,3 +570,119 @@
         }
     }
 }
+
+@media (max-width: 1200px) {
+    .container {
+        padding: 24px 12px;
+    }
+
+    .profileGrid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .leftColumn {
+        display: contents;
+    }
+
+    .rightColumn {
+        display: contents;
+    }
+
+    /* Reorder cards on mobile */
+    .profileGrid {
+        .avatarCard {
+            order: 1;
+        }
+
+        .infoCard {
+            order: 2;
+        }
+
+        .reportCard {
+            order: 3;
+        }
+
+        .achievementCard {
+            order: 4;
+        }
+
+        .noticeCard {
+            order: 5;
+        }
+
+        .passwordCard {
+            order: 6;
+        }
+    }
+}
+
+@media (max-width: 992px) {
+    .reportCard {
+        .reportHeader {
+            flex-wrap: wrap;
+            gap: 12px;
+
+            .batchTag {
+                margin-left: auto;
+            }
+        }
+
+        .statsRow {
+            grid-template-columns: 1fr;
+            gap: 12px;
+            padding: 16px;
+        }
+
+        .chartSection {
+            padding: 0 16px 16px;
+
+            .chartWrapper {
+                height: 220px;
+                padding: 12px;
+            }
+        }
+    }
+}
+
+@media (max-width: 640px) {
+    .header {
+        margin-bottom: 18px;
+
+        h1 {
+            font-size: 20px;
+        }
+    }
+
+    .card {
+        border-radius: 12px;
+        padding: 12px;
+    }
+
+    .avatarCard {
+        padding: 20px 12px;
+
+        .avatarWrapper {
+            width: 112px;
+            height: 112px;
+            margin-bottom: 12px;
+        }
+
+        h2 {
+            font-size: 18px;
+        }
+    }
+
+    .reportCard {
+        .reportHeader {
+            padding: 14px;
+
+            .titleWrap {
+                h3 {
+                    font-size: 16px;
+                }
+            }
+        }
+    }
+}

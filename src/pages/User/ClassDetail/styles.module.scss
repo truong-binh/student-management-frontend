@@ -576,3 +576,159 @@
         }
     }
 }
+
+@media (max-width: 1200px) {
+    .classDetailPage {
+        padding: 18px 12px;
+
+        .overviewGrid {
+            grid-template-columns: 1fr;
+        }
+
+        .assignmentList {
+            .assignItem {
+                grid-template-columns: 52px 1fr;
+                align-items: flex-start;
+                row-gap: 10px;
+
+                .assignScore,
+                .assignAction {
+                    width: 100%;
+                    justify-content: flex-start;
+                    align-items: flex-start;
+                    text-align: left;
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 992px) {
+    .classDetailPage {
+        .headerBanner {
+            padding: 18px;
+
+            .title {
+                font-size: 24px;
+            }
+
+            .details {
+                gap: 14px;
+                margin-bottom: 14px;
+            }
+        }
+
+        .tabSection {
+            :global {
+                .ant-tabs-nav-wrap {
+                    overflow-x: auto;
+                }
+
+                .ant-tabs-tab {
+                    padding: 10px 14px !important;
+                    white-space: nowrap;
+                }
+            }
+        }
+
+        .attendanceStats {
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+
+        .assignmentFilters {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+
+            .tabButtons {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 2px;
+            }
+        }
+
+        .attendanceTable {
+            :global(.ant-table-content) {
+                overflow-x: auto;
+            }
+
+            :global(table) {
+                min-width: 760px;
+            }
+        }
+
+        .footer {
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .classDetailPage {
+        .headerBanner {
+            border-radius: 14px;
+
+            .metaInfo {
+                flex-wrap: wrap;
+            }
+
+            .title {
+                font-size: 20px;
+            }
+
+            .details {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+        }
+
+        .card {
+            padding: 16px;
+            border-radius: 14px;
+            margin-bottom: 16px;
+
+            .description {
+                font-size: 14px;
+            }
+        }
+
+        .quickLinks {
+            grid-template-columns: 1fr;
+        }
+
+        .assignmentList {
+            .assignItem {
+                padding: 14px;
+                gap: 12px;
+
+                .assignMain {
+                    .assignTitle {
+                        font-size: 14px;
+                    }
+
+                    .assignMeta {
+                        flex-wrap: wrap;
+                        gap: 8px;
+                    }
+                }
+
+                .assignAction {
+                    :global(.ant-btn) {
+                        width: 100%;
+                        min-width: 0;
+                    }
+                }
+            }
+        }
+
+        .footer {
+            .paginationInfo {
+                width: 100%;
+                font-size: 12px;
+            }
+        }
+    }
+}

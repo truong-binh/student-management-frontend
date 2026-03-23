@@ -1,7 +1,7 @@
 .sidebar {
     width: 250px;
     height: 100vh;
-    background-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(12px);
     border-right: 1px solid rgba(255, 255, 255, 0.2);
     display: flex;
@@ -13,6 +13,7 @@
     z-index: 1000;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 10px 0 40px rgba(0, 0, 0, 0.03);
+    transition: transform 0.3s ease;
 
     &.collapsed {
         width: 80px;
@@ -145,5 +146,46 @@
             border-top: 1px solid rgba(0, 0, 0, 0.03);
             padding-top: 12px;
         }
+    }
+}
+
+/* ── Close button (mobile only) ── */
+.closeBtn {
+    display: none;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    background: #fff5f5;
+    border: 1px solid #feb2b2;
+    border-radius: 8px;
+    color: #b71c1c;
+    font-size: 14px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+
+    &:hover {
+        background: #fee2e2;
+    }
+}
+
+/* ── Sidebar open state (mobile) ── */
+.sidebarOpen {
+    transform: translateX(0) !important;
+}
+
+/* ── Responsive ── */
+@media (max-width: 992px) {
+    .sidebar {
+        transform: translateX(-100%);
+        background-color: rgba(255, 255, 255, 0.98);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .closeBtn {
+        display: flex;
     }
 }

@@ -480,3 +480,108 @@
         color: #a0aec0;
     }
 }
+
+@media (max-width: 1200px) {
+    .dashboard {
+        .mainGrid {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+    }
+
+    .contentRight {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        align-items: start;
+    }
+
+    .chartCard {
+        .chartHeader {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+    }
+}
+
+@media (max-width: 992px) {
+    .statsRow {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .assignmentItem {
+        flex-wrap: wrap;
+        align-items: flex-start;
+
+        .progressSection {
+            width: 100%;
+            min-width: 0;
+
+            .progressMeta {
+                justify-content: space-between;
+            }
+        }
+    }
+
+    .contentRight {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .chartCard,
+    .assignmentsCard,
+    .upcomingSection,
+    .activitySection {
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+    .chartCard {
+        .chartWrap {
+            height: 220px;
+        }
+
+        .chartLegend {
+            flex-wrap: wrap;
+            row-gap: 8px;
+        }
+    }
+
+    .assignmentItem {
+        .arrowIcon {
+            display: none;
+        }
+    }
+
+    .classItem {
+        .classContent {
+            .classTopRow {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+            }
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .statsRow {
+        grid-template-columns: 1fr;
+    }
+
+    .statCard {
+        .statBody {
+            .statValue {
+                font-size: 24px;
+            }
+        }
+    }
+
+    .assignmentItem {
+        padding: 12px;
+        gap: 12px;
+    }
+}

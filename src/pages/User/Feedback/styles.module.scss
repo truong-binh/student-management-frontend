@@ -844,3 +844,122 @@
         transform: translateY(0);
     }
 }
+
+@media (max-width: 1200px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .statsGrid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .filterBar {
+        flex-wrap: wrap;
+
+        .searchInput {
+            max-width: none;
+            width: 100%;
+            flex: 1 1 100%;
+        }
+    }
+
+    .feedbackTable {
+        :global(.ant-table-content) {
+            overflow-x: auto;
+        }
+
+        :global(table) {
+            min-width: 900px;
+        }
+    }
+
+    .tableFooter {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 992px) {
+    .container {
+        padding: 20px 0;
+    }
+
+    .detailHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .alertSuccess {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+
+        .alertRight {
+            text-align: left;
+        }
+    }
+
+    .detailBody {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        position: static;
+    }
+
+    .detailCard,
+    .sideCard {
+        padding: 18px;
+        border-radius: 16px;
+        margin-bottom: 16px;
+    }
+}
+
+@media (max-width: 640px) {
+    .header {
+        .titleSection {
+            h1 {
+                font-size: 24px;
+            }
+        }
+
+        .createBtn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    .filterBar {
+        padding: 12px;
+
+        .selectFilter,
+        .datePicker {
+            width: 100%;
+        }
+    }
+
+    .scoreComparison {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .infoStrip {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .tableFooter {
+        padding: 14px 16px;
+
+        .paginationInfo {
+            width: 100%;
+            font-size: 12px;
+        }
+    }
+}

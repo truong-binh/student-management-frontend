@@ -1908,3 +1908,208 @@
     font-size: 13px;
     color: #9ca3af;
 }
+
+@media (max-width: 1200px) {
+    .classDetailPage {
+        padding: 18px 12px;
+    }
+
+    .overviewGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .attendanceMain,
+    .assignWrap {
+        flex-direction: column;
+    }
+
+    .filterPanel,
+    .assignStatsCard {
+        width: 100%;
+        flex: none;
+    }
+
+    .assignStatsCard {
+        max-width: 420px;
+    }
+
+    .adHeaderTop {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .adActions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 992px) {
+    .headerBanner {
+        padding: 18px;
+
+        .title {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .details {
+            gap: 14px;
+            margin-bottom: 14px;
+
+            .detailItem {
+                font-size: 14px;
+                gap: 8px;
+            }
+        }
+    }
+
+    .tabSection {
+        :global {
+            .ant-tabs-nav-wrap {
+                overflow-x: auto;
+            }
+
+            .ant-tabs-tab {
+                padding: 10px 14px !important;
+            }
+        }
+    }
+
+    .attendanceStats,
+    .attendanceCards {
+        grid-template-columns: 1fr;
+    }
+
+    .studentListHeader,
+    .tableFooter,
+    .adTableFooter {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .studentTable,
+    .adTable {
+        min-width: 760px;
+    }
+
+    .studentListCard,
+    .adTableCard {
+        overflow-x: auto;
+    }
+
+    .assignCard {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .viewDetailBtn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .headerBanner {
+        border-radius: 14px;
+
+        .metaInfo {
+            flex-wrap: wrap;
+        }
+
+        .title {
+            font-size: 20px;
+        }
+    }
+
+    .card,
+    .createAssignmentWrap,
+    .successCard,
+    .adHeaderCard,
+    .adTableCard {
+        border-radius: 12px;
+    }
+
+    .createAssignmentWrap {
+        padding: 18px;
+    }
+
+    .formRow {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .successCard {
+        padding: 28px 18px 24px;
+    }
+
+    .successActions {
+        width: 100%;
+        flex-direction: column;
+
+        button {
+            width: 100%;
+        }
+    }
+
+    .adTableHeader {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .adSearchInput {
+        width: 100%;
+    }
+
+    .adStudentFilters {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 2px;
+    }
+
+    .adFilterBtn {
+        white-space: nowrap;
+    }
+
+    .adTableInfo,
+    .tableInfo {
+        width: 100%;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 576px) {
+    .headerBanner {
+        .details {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .schoolInfo {
+            font-size: 12px;
+        }
+    }
+
+    .attendanceMain {
+        gap: 12px;
+    }
+
+    .filterPanel,
+    .studentListCard,
+    .assignCard,
+    .assignStatsCard,
+    .adHeaderCard {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .studentTable,
+    .adTable {
+        min-width: 680px;
+    }
+
+    .assignCardMeta {
+        flex-wrap: wrap;
+    }
+}

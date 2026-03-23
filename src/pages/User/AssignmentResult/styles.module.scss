@@ -447,3 +447,97 @@
         border-radius: 12px;
     }
 }
+
+@media (max-width: 1200px) {
+    .container {
+        margin: 16px auto;
+        padding: 24px 16px;
+        border-radius: 20px;
+    }
+
+    .mainContent {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 992px) {
+    .header {
+        align-items: flex-start;
+
+        .titleInfo {
+            .titleRow {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+
+                h1 {
+                    font-size: 22px;
+                }
+            }
+        }
+    }
+
+    .bottomActions {
+        justify-content: stretch;
+        flex-direction: column-reverse;
+
+        button {
+            width: 100%;
+        }
+    }
+
+    .scoreCard,
+    .feedbackCard,
+    .fileCard,
+    .aiFeedbackSection {
+        border-radius: 14px;
+    }
+}
+
+@media (max-width: 640px) {
+    .container {
+        padding: 16px 10px;
+        border-radius: 14px;
+    }
+
+    .header {
+        gap: 10px;
+
+        .titleInfo {
+            .titleRow {
+                h1 {
+                    font-size: 18px;
+                }
+            }
+
+            .breadcrumbs {
+                font-size: 12px;
+                gap: 5px;
+                flex-wrap: wrap;
+            }
+        }
+    }
+
+    .scoreCard,
+    .feedbackCard,
+    .fileCard {
+        padding: 16px;
+    }
+
+    .aiFeedbackSection {
+        .aiHeader {
+            padding: 14px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .aiBody {
+            padding: 14px;
+        }
+    }
+
+    .codeWindow {
+        padding: 12px;
+        font-size: 12px;
+    }
+}
