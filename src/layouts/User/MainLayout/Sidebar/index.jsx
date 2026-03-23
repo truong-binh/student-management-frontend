@@ -8,9 +8,9 @@ import {
     UserOutlined,
     MessageOutlined,
     LogoutOutlined,
-    CloseOutlined, // Giữ lại từ teacher2 cho mobile
-    MenuFoldOutlined, // Giữ lại từ develop cho desktop
-    MenuUnfoldOutlined // Giữ lại từ develop cho desktop
+    CloseOutlined,
+    MenuFoldOutlined,
+    MenuUnfoldOutlined
 } from '@ant-design/icons';
 import logoPtit from '@/assets/images/svg/ptit.svg';
 import { useAuth } from '@/hooks/useAuth';
@@ -23,7 +23,6 @@ const defaultMenuItems = [
     { key: 'feedback', label: 'Phản hồi', icon: <MessageOutlined />, path: '/feedback' },
 ];
 
-// Gộp tất cả các props từ cả 2 nhánh
 const StudentSidebar = ({
     menuItems,
     isOpen,
@@ -35,7 +34,6 @@ const StudentSidebar = ({
     const navigate = useNavigate();
     const { logout } = useAuth();
 
-    // Logic đóng menu trên điện thoại từ nhánh teacher2
     const closeMobileMenu = () => {
         if (onClose) {
             onClose();
@@ -48,17 +46,14 @@ const StudentSidebar = ({
 
     const handleLogout = () => {
         logout();
-        closeMobileMenu(); // Sử dụng hàm đóng menu chung
+        closeMobileMenu();
         navigate('/login');
     };
 
     const items = menuItems || defaultMenuItems;
 
     return (
-        // Kết hợp class cho cả trạng thái thu gọn (desktop) và mở (mobile)
         <div className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''} ${isOpen ? styles.sidebarOpen : ''}`}>
-            
-            {/* Nút đóng menu trên mobile từ teacher2 */}
             <button className={styles.closeBtn} onClick={closeMobileMenu}>
                 <CloseOutlined />
             </button>
@@ -76,4 +71,28 @@ const StudentSidebar = ({
                         <li key={item.key} className={styles.menuItem}>
                             <NavLink
                                 to={item.path}
-                                className={({ isActive }) => `${styles.navLink
+                                className={({ isActive }) => `${styles.navLink} ${isActive ? styles.active : ''}`}
+                            >
+                                <span className={styles.icon}>{item.icon}</span>
+                                {!collapsed && <span className={styles.label}>{item.label}</span>}
+                            </NavLink>
+                        </li>
+                    ))}
+                </ul>
+            </nav>
+
+            <button className={styles.collapseBtn} onClick={() => setCollapsed(!collapsed)}>
+                {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            </button>
+
+            <div className={styles.logoutSection}>
+                <button className={styles.logoutBtn} onClick={handleLogout}>
+                    <LogoutOutlined />
+                    {!collapsed && <span>Đăng xuất</span>}
+                </button>
+            </div>
+        </div>
+    );
+};
+
+export default StudentSidebar;
