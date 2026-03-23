@@ -9,6 +9,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import styles from '../styles.module.scss';
 import clsx from 'clsx';
 
+import { useCourseAssignments } from '@/hooks/useCourseAssignment';
+import { useMySubmissions } from '@/hooks/useSubmission';
+import dayjs from 'dayjs';
+
 const { Option } = Select;
 
 const AssignmentsTab = () => {
@@ -16,13 +20,43 @@ const AssignmentsTab = () => {
     const { id: classId } = useParams();
     const [filter, setFilter] = useState('all');
 
-    const assignments = [
-        { id: 1, title: 'Bài tập tuần 5 - Cây nhị phân (Binary Tree)', deadline: 'Hạn nộp: 23:59, Hôm nay', instructor: 'Lê Thị Hoa', status: 'opening', type: 'assignment' },
-        { id: 2, title: 'Trắc nghiệm chương 3: Ngăn xếp và Hàng đợi', deadline: 'Hạn nộp: 20/05/2026', time: 'Thời gian làm bài: 45 phút', status: 'opening', type: 'quiz' },
-        { id: 3, title: 'Bài tập lớn: Quản lý thư viện', deadline: 'Đã nộp: 10/05/2026 - 14:30', status: 'submitted', type: 'project' },
-        { id: 4, title: 'Bài tập tuần 3 - Danh sách liên kết', score: '9.5', total: '10', comment: 'Bài làm tốt, code sạch.', status: 'graded', type: 'assignment' },
-        { id: 5, title: 'Bài thực hành số 1', score: '8.0', total: '10', status: 'graded', type: 'assignment' },
-    ];
+    const { assignments: rawAssignments, isLoading: isAssignmentsLoading } = useCourseAssignments(classId);
+    const { mySubmissions, isLoading: isSubmissionsLoading } = useMySubmissions();
+
+    const assignments = useMemo(() => {
+        if (!rawAssignments) return [];
+        return rawAssignments.map(assignment => {
+            const submission = mySubmissions.find(sub =>
+                (sub.assignment?.id || sub.assignment?._id || sub.assignment) === (assignment.id || assignment._id)
+            );
+
+            let status = 'opening';
+            let score = null;
+            let comment = null;
+
+            if (submission) {
+                if (submission.status === 'GRADED' || submission.score !== null) {
+                    status = 'graded';
+                    score = submission.score;
+                    comment = submission.aiFeedback;
+                } else {
+                    status = 'submitted';
+                }
+            } else if (assignment.dueDate && dayjs().isAfter(dayjs(assignment.dueDate))) {
+                status = 'overdue';
+            }
+
+            return {
+                id: assignment.id || assignment._id,
+                title: assignment.title,
+                deadline: assignment.dueDate ? `Hạn nộp: ${dayjs(assignment.dueDate).format('DD/MM/YYYY - HH:mm')}` : 'Không có hạn',
+                status: status,
+                score: score,
+                comment: comment,
+                type: 'assignment'
+            };
+        });
+    }, [rawAssignments, mySubmissions]);
 
     const filteredAssignments = useMemo(() => {
         if (filter === 'all') return assignments;
@@ -30,19 +64,25 @@ const AssignmentsTab = () => {
     }, [filter, assignments]);
 
     const handleAction = (item) => {
-        if (item.status === 'opening') {
+        if (item.status === 'opening' || item.status === 'overdue') {
             navigate(`/classes/${classId}/assignments/${item.id}`);
-        } else if (item.status === 'graded' || item.status === 'submitted') {
+        } else if (item.status === 'submitted') {
+            navigate(`/classes/${classId}/assignments/${item.id}`);
+        } else if (item.status === 'graded') {
             navigate(`/classes/${classId}/assignments/${item.id}/result`);
         }
     };
 
     const counts = {
         all: assignments.length,
-        opening: assignments.filter(a => a.status === 'opening').length,
+        opening: assignments.filter(a => a.status === 'opening' || a.status === 'overdue').length,
         submitted: assignments.filter(a => a.status === 'submitted').length,
         graded: assignments.filter(a => a.status === 'graded').length,
     };
+
+    if (isAssignmentsLoading || isSubmissionsLoading) {
+        return <div style={{ padding: 40, textAlign: 'center' }}>Đang tải bài tập...</div>;
+    }
 
     return (
         <div>
@@ -101,20 +141,20 @@ const AssignmentsTab = () => {
                             </div>
                         </div>
                         <div className={styles.assignScore}>
-                            {item.score ? (
+                            {item.score !== null ? (
                                 <>
                                     <div className={styles.scoreLabel}>Điểm số</div>
                                     <div className={styles.scoreValue}>{item.score}<span>/10</span></div>
                                 </>
                             ) : (
-                                <Tag color={item.status === 'submitted' ? 'gold' : 'blue'}>
-                                    {item.status === 'submitted' ? 'Đã nộp' : 'Đang mở'}
+                                <Tag color={item.status === 'submitted' ? 'gold' : item.status === 'overdue' ? 'error' : 'blue'}>
+                                    {item.status === 'submitted' ? 'Đã nộp' : item.status === 'overdue' ? 'Quá hạn' : 'Đang mở'}
                                 </Tag>
                             )}
                         </div>
                         <div className={styles.assignAction}>
-                            {item.status === 'opening' && (
-                                <Button type="primary" danger onClick={() => handleAction(item)}>
+                            {(item.status === 'opening' || item.status === 'overdue') && (
+                                <Button type="primary" danger={item.status === 'opening'} onClick={() => handleAction(item)}>
                                     Làm bài ngay
                                 </Button>
                             )}

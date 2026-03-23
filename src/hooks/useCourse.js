@@ -14,15 +14,7 @@ export const useCourse = () => {
         },
     });
 
-    const getCourseDetailQuery = (id) => useQuery({
-        queryKey: ['courses', id],
-        queryFn: async () => {
-            const res = await courseApi.getCourseById(id);
-            if (!res.success) throw res;
-            return res.data;
-        },
-        enabled: !!id,
-    });
+    // Extracted useCourseDetail to the root level.
 
     const createCourseMutation = useMutation({
         mutationFn: async (data) => {
@@ -75,7 +67,6 @@ export const useCourse = () => {
         isLoading: coursesQuery.isLoading,
         error: coursesQuery.error,
         coursesQuery,
-        getCourseDetailQuery,
         createCourse: (data, options = {}) => createCourseMutation.mutate(data, options),
         updateCourse: (id, data, options = {}) => updateCourseMutation.mutate({ id, data }, options),
         deleteCourse: (id, options = {}) => deleteCourseMutation.mutate(id, options),
@@ -84,3 +75,16 @@ export const useCourse = () => {
         isDeleting: deleteCourseMutation.isPending,
     };
 };
+
+export const useCourseDetail = (id) => {
+    return useQuery({
+        queryKey: ['courses', id],
+        queryFn: async () => {
+            const res = await courseApi.getCourseById(id);
+            if (!res.success) throw res;
+            return res.data;
+        },
+        enabled: !!id,
+    });
+};
+

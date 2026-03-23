@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/layouts/User/MainLayout';
-import { Input, Select, Progress, Button, Pagination, Modal, Form, InputNumber, Popconfirm, message, Tag, Space, Dropdown } from 'antd';
+import { Input, Select, Progress, Button, Pagination, Popconfirm, message, Dropdown } from 'antd';
 import {
     SearchOutlined,
     CodeOutlined,
@@ -24,9 +24,9 @@ import {
 } from '@ant-design/icons';
 import { useCourse } from '@/hooks/useCourse';
 import styles from './styles.module.scss';
+import CourseModal from './components/CourseModal';
 
 const { Option } = Select;
-const { TextArea } = Input;
 
 const teacherMenuItems = [
     { key: 'dashboard', label: 'Tổng quan', icon: <AppstoreOutlined />, path: '/teacher/dashboard' },
@@ -48,62 +48,23 @@ const TeacherClasses = () => {
     const pageSize = 8;
 
     // Manage Course States
-    const { createCourse, updateCourse, deleteCourse, isCreating, isUpdating, isDeleting } = useCourse();
+    const { deleteCourse, isDeleting } = useCourse();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCourse, setEditingCourse] = useState(null);
-    const [form] = Form.useForm();
 
     const openCreateModal = () => {
         setEditingCourse(null);
-        form.resetFields();
         setIsModalOpen(true);
     };
 
     const openEditModal = (record) => {
         setEditingCourse(record);
-        form.setFieldsValue({
-            courseCode: record.courseCode,
-            courseName: record.courseName,
-            semester: record.semester,
-            credits: record.credits,
-            description: record.description,
-            lecturerId: typeof record.lecturerId === 'object' && record.lecturerId ? record.lecturerId._id : record.lecturerId
-        });
         setIsModalOpen(true);
     };
 
     const handleCancel = () => {
         setIsModalOpen(false);
-        form.resetFields();
         setEditingCourse(null);
-    };
-
-    const handleSubmit = async (values) => {
-        try {
-            if (editingCourse) {
-                updateCourse(editingCourse._id, values, {
-                    onSuccess: () => {
-                        message.success('Cập nhật khóa học thành công');
-                        handleCancel();
-                    },
-                    onError: (err) => {
-                        message.error(err?.message || 'Có lỗi xảy ra khi cập nhật!');
-                    }
-                });
-            } else {
-                createCourse(values, {
-                    onSuccess: () => {
-                        message.success('Thêm mới khóa học thành công');
-                        handleCancel();
-                    },
-                    onError: (err) => {
-                        message.error(err?.message || 'Có lỗi xảy ra khi tạo mới!');
-                    }
-                });
-            }
-        } catch (error) {
-            console.error(error);
-        }
     };
 
     const handleDelete = (id) => {
@@ -184,11 +145,19 @@ const TeacherClasses = () => {
                                                             key: 'delete',
                                                             label: (
                                                                 <Popconfirm
-                                                                    title="Bạn có chắc chắn muốn xóa môn này?"
+                                                                    title={<span style={{ fontWeight: 600, color: '#e53e3e' }}>Xóa lớp học này?</span>}
+                                                                    description={
+                                                                        <div style={{ maxWidth: 220, color: '#4a5568', marginTop: 4 }}>
+                                                                            Xóa môn <strong>{item.courseName}</strong>? Mọi dữ liệu lớp học sẽ bị xóa vĩnh viễn.
+                                                                        </div>
+                                                                    }
+                                                                    overlayClassName="customPopconfirm"
                                                                     onConfirm={() => handleDelete(item._id)}
                                                                     okText="Xóa"
                                                                     cancelText="Hủy"
-                                                                    okButtonProps={{ danger: true, loading: isDeleting }}
+                                                                    okButtonProps={{ danger: true, size: 'middle', style: { borderRadius: 6, fontWeight: 500 }, loading: isDeleting }}
+                                                                    cancelButtonProps={{ size: 'middle', style: { borderRadius: 6 } }}
+                                                                    placement="left"
                                                                 >
                                                                     <div style={{ width: '100%', color: '#ff4d4f' }}>Xóa lớp</div>
                                                                 </Popconfirm>
@@ -269,79 +238,11 @@ const TeacherClasses = () => {
                     />
                 </footer>
 
-                <Modal
-                    title={editingCourse ? "Chỉnh sửa môn học" : "Thêm mới môn học"}
-                    open={isModalOpen}
-                    onCancel={handleCancel}
-                    footer={null}
-                    destroyOnClose
-                >
-                    <Form
-                        form={form}
-                        layout="vertical"
-                        onFinish={handleSubmit}
-                    >
-                        <Form.Item
-                            name="courseCode"
-                            label="Mã môn học"
-                            rules={[{ required: true, message: 'Vui lòng nhập mã môn!' }]}
-                        >
-                            <Input placeholder="Nhập mã môn (VD: INT1234)" />
-                        </Form.Item>
-
-                        <Form.Item
-                            name="courseName"
-                            label="Tên môn học"
-                            rules={[{ required: true, message: 'Vui lòng nhập tên môn!' }]}
-                        >
-                            <Input placeholder="Nhập tên môn" />
-                        </Form.Item>
-
-                        <div style={{ display: 'flex', gap: '16px' }}>
-                            <Form.Item
-                                name="semester"
-                                label="Học kỳ"
-                                style={{ flex: 1 }}
-                                rules={[{ required: true, message: 'Vui lòng nhập học kỳ!' }]}
-                            >
-                                <Input placeholder="VD: Học kỳ 1 - 2026" />
-                            </Form.Item>
-
-                            <Form.Item
-                                name="credits"
-                                label="Số tín chỉ"
-                                style={{ flex: 1 }}
-                                rules={[{ required: true, message: 'Vui lòng nhập số tín chỉ!' }]}
-                            >
-                                <InputNumber style={{ width: '100%' }} min={1} max={10} placeholder="VD: 3" />
-                            </Form.Item>
-                        </div>
-
-                        <Form.Item
-                            name="lecturerId"
-                            label="Mã Giảng viên (ID)"
-                            tooltip="Hiện tại dùng ID của giảng viên trong hệ thống"
-                        >
-                            <Input placeholder="Nhập ID giảng viên (nếu có)" />
-                        </Form.Item>
-
-                        <Form.Item
-                            name="description"
-                            label="Mô tả học phần"
-                        >
-                            <TextArea rows={4} placeholder="Nhập mô tả học phần..." />
-                        </Form.Item>
-
-                        <Form.Item className={styles.formActions} style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px', marginBottom: 0 }}>
-                            <Space>
-                                <Button onClick={handleCancel}>Hủy</Button>
-                                <Button type="primary" htmlType="submit" loading={isCreating || isUpdating}>
-                                    {editingCourse ? "Lưu thay đổi" : "Tạo mới"}
-                                </Button>
-                            </Space>
-                        </Form.Item>
-                    </Form>
-                </Modal>
+                <CourseModal
+                    isModalOpen={isModalOpen}
+                    handleCancel={handleCancel}
+                    editingCourse={editingCourse}
+                />
             </div>
         </MainLayout>
     );

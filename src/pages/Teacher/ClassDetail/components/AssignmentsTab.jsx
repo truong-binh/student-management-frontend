@@ -10,10 +10,11 @@ import {
 } from 'chart.js';
 import styles from '../styles.module.scss';
 import AssignmentDetail from './AssignmentDetail';
+import { useCourseAssignments } from '@/hooks/useCourseAssignment';
+import { Spin, Empty } from 'antd';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-/* ── icon colours per assignment type ── */
 const typeIcon = {
     lab: { bg: '#ebf8ff', color: '#3182ce', symbol: '>_' },
     object: { bg: '#f0fff4', color: '#38a169', symbol: '{}' },
@@ -21,45 +22,41 @@ const typeIcon = {
     alert: { bg: '#fff5f5', color: '#e53e3e', symbol: '!' },
 };
 
-const assignments = [
-    { id: 1, title: 'Bài tập 3: Thực hành React Router & Context API', deadline: '23:59 - 30/05/2024', status: 'opening', type: 'lab' },
-    { id: 2, title: 'Bài tập 2: Xử lý mảng và Object nâng cao', deadline: '23:59 - 15/05/2024', status: 'completed', type: 'object' },
-    { id: 3, title: 'Lab 1: Giới thiệu hệ sinh thái Javascript', deadline: '23:59 - 01/05/2024', status: 'graded', type: 'check' },
-    { id: 4, title: 'Đồ án giữa kỳ: Phát triển Web E-Commerce', deadline: '23:59 - 15/06/2024', status: 'opening', type: 'alert' },
-    { id: 5, title: 'Bài tập 1: Nhập môn HTML & CSS', deadline: '23:59 - 10/04/2024', status: 'graded', type: 'lab' },
-    { id: 6, title: 'Quiz chương 2: CSS Flexbox & Grid', deadline: '23:59 - 20/04/2024', status: 'completed', type: 'object' },
-    { id: 7, title: 'Bài thực hành: Responsive Design', deadline: '23:59 - 25/04/2024', status: 'completed', type: 'check' },
-    { id: 8, title: 'Quiz JS cơ bản', deadline: '23:59 - 05/05/2024', status: 'opening', type: 'lab' },
-    { id: 9, title: 'Bài tập 4: Async/Await & Fetch API', deadline: '23:59 - 10/06/2024', status: 'opening', type: 'object' },
-    { id: 10, title: 'Lab 2: DOM Manipulation', deadline: '23:59 - 08/05/2024', status: 'completed', type: 'check' },
-    { id: 11, title: 'Bài tập cuối kỳ: Full-stack App', deadline: '23:59 - 30/06/2024', status: 'opening', type: 'alert' },
-    { id: 12, title: 'Quiz React Hooks', deadline: '23:59 - 12/05/2024', status: 'completed', type: 'lab' },
-    { id: 13, title: 'Bài tập 5: State Management với Redux', deadline: '23:59 - 25/05/2024', status: 'opening', type: 'object' },
-    { id: 14, title: 'Lab 3: TypeScript Basics', deadline: '23:59 - 18/05/2024', status: 'graded', type: 'check' },
-    { id: 15, title: 'Quiz CSS Animation', deadline: '23:59 - 22/04/2024', status: 'completed', type: 'lab' },
-    { id: 16, title: 'Bài tập 6: Next.js Introduction', deadline: '23:59 - 05/06/2024', status: 'opening', type: 'object' },
-    { id: 17, title: 'Lab 4: Testing với Jest', deadline: '23:59 - 01/06/2024', status: 'completed', type: 'check' },
-    { id: 18, title: 'Bài tập 7: Tối ưu hiệu năng React', deadline: '23:59 - 20/06/2024', status: 'opening', type: 'alert' },
-    { id: 19, title: 'Quiz Node.js cơ bản', deadline: '23:59 - 28/05/2024', status: 'completed', type: 'lab' },
-    { id: 20, title: 'Lab 5: RESTful API với Express', deadline: '23:59 - 15/06/2024', status: 'graded', type: 'object' },
-    { id: 21, title: 'Bài tập 8: MongoDB & Mongoose', deadline: '23:59 - 25/06/2024', status: 'opening', type: 'check' },
-    { id: 22, title: 'Quiz React Router v6', deadline: '23:59 - 03/05/2024', status: 'completed', type: 'lab' },
-    { id: 23, title: 'Lab 6: Authentication với JWT', deadline: '23:59 - 28/06/2024', status: 'opening', type: 'alert' },
-    { id: 24, title: 'Quiz tổng kết môn học', deadline: '23:59 - 30/06/2024', status: 'graded', type: 'object' },
-];
-
 const STATUS_CONFIG = {
     opening: { label: 'ĐANG MỞ', cls: styles.badgeOpening },
-    completed: { label: 'HOÀN THÀNH', cls: styles.badgeCompleted },
+    completed: { label: 'QUÁ HẠN', cls: styles.badgeCompleted },
     graded: { label: 'ĐÃ CHẤM', cls: styles.badgeGraded },
 };
 
 const PAGE_SIZE = 4;
 
-const AssignmentsTab = ({ classInfo }) => {
+const AssignmentsTab = ({ classInfo, courseId }) => {
     const [filter, setFilter] = useState('all');
     const [showAll, setShowAll] = useState(false);
     const [selectedAssignment, setSelectedAssignment] = useState(null);
+
+    const { assignments: rawAssignments, isLoading } = useCourseAssignments(courseId);
+
+    const mappedAssignments = (rawAssignments || []).map((a, i) => {
+        const isOverdue = new Date(a.dueDate) < new Date();
+        const types = ['lab', 'object', 'check', 'alert'];
+        return {
+            id: a._id || a.id,
+            title: a.title,
+            deadline: new Date(a.dueDate).toLocaleString('vi-VN'),
+            status: isOverdue ? 'completed' : 'opening',
+            type: types[i % 4], // cycle through icons
+            original: a,
+        };
+    });
+
+    if (isLoading) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
+                <Spin tip="Đang tải danh sách bài tập..." />
+            </div>
+        );
+    }
 
     if (selectedAssignment) {
         return (
@@ -72,15 +69,23 @@ const AssignmentsTab = ({ classInfo }) => {
     }
 
     const counts = {
-        all: assignments.length,
-        opening: assignments.filter(a => a.status === 'opening').length,
-        completed: assignments.filter(a => a.status === 'completed').length,
-        graded: assignments.filter(a => a.status === 'graded').length,
+        all: mappedAssignments.length,
+        opening: mappedAssignments.filter(a => a.status === 'opening').length,
+        completed: mappedAssignments.filter(a => a.status === 'completed').length,
+        graded: mappedAssignments.filter(a => a.status === 'graded').length,
     };
 
-    const filtered = filter === 'all' ? assignments : assignments.filter(a => a.status === filter);
+    const filtered = filter === 'all' ? mappedAssignments : mappedAssignments.filter(a => a.status === filter);
     const displayed = showAll ? filtered : filtered.slice(0, PAGE_SIZE);
     const remaining = filtered.length - displayed.length;
+
+    if (mappedAssignments.length === 0) {
+        return (
+            <div style={{ background: 'white', padding: '60px 0', borderRadius: 16 }}>
+                <Empty description="Chưa có bài tập nào cho khóa học này" />
+            </div>
+        );
+    }
 
     /* donut chart */
     const donutData = {
@@ -99,8 +104,7 @@ const AssignmentsTab = ({ classInfo }) => {
     const FILTERS = [
         ['all', 'TẤT CẢ', counts.all],
         ['opening', 'ĐANG MỞ', counts.opening],
-        ['completed', 'HOÀN THÀNH', counts.completed],
-        ['graded', 'ĐÃ CHẤM', counts.graded],
+        ['completed', 'QUÁ HẠN', counts.completed],
     ];
 
     return (
@@ -183,13 +187,8 @@ const AssignmentsTab = ({ classInfo }) => {
                     </div>
                     <div className={styles.legendItem}>
                         <span className={styles.legendDot} style={{ background: '#3182ce' }} />
-                        <span className={styles.legendText}>Hoàn thành</span>
+                        <span className={styles.legendText}>Quá hạn</span>
                         <span className={styles.legendCount}>{String(counts.completed).padStart(2, '0')} bài</span>
-                    </div>
-                    <div className={styles.legendItem}>
-                        <span className={styles.legendDot} style={{ background: '#e53e3e' }} />
-                        <span className={styles.legendText}>Đã chấm</span>
-                        <span className={styles.legendCount}>{String(counts.graded).padStart(2, '0')} bài</span>
                     </div>
                 </div>
 

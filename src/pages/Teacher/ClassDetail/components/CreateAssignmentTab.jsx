@@ -3,28 +3,56 @@ import { Button, Input, DatePicker, Form } from 'antd';
 import { FileOutlined, ToolOutlined, StarOutlined, CalendarOutlined, EyeOutlined, UnorderedListOutlined, CheckOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import styles from '../styles.module.scss';
+import { useCourseAssignments } from '@/hooks/useCourseAssignment';
 
-const CreateAssignmentTab = ({ classInfo = {} }) => {
+const CreateAssignmentTab = ({ classInfo = {}, courseId, setActiveTab }) => {
     const [form] = Form.useForm();
     const [dragging, setDragging] = useState(false);
+    const [file, setFile] = useState(null);
     const [fileName, setFileName] = useState(null);
-    const [success, setSuccess] = useState(null); // holds submitted title
+    const [success, setSuccess] = useState(null);
     const navigate = useNavigate();
+
+    const { createAssignment, isCreating } = useCourseAssignments(courseId);
 
     const handleDrop = (e) => {
         e.preventDefault();
         setDragging(false);
-        const file = e.dataTransfer.files[0];
-        if (file) setFileName(file.name);
+        const f = e.dataTransfer.files[0];
+        if (f) {
+            setFile(f);
+            setFileName(f.name);
+        }
     };
 
     const handleFileInput = (e) => {
-        const file = e.target.files[0];
-        if (file) setFileName(file.name);
+        const f = e.target.files[0];
+        if (f) {
+            setFile(f);
+            setFileName(f.name);
+        }
     };
 
-    const handleFinish = (values) => {
-        setSuccess(values.title || 'Bài tập mới');
+    const handleFinish = async (values) => {
+        try {
+            const formData = new FormData();
+            formData.append('title', values.title);
+            if (values.description) formData.append('description', values.description);
+            formData.append('maxScore', values.maxScore);
+
+            if (values.deadline) {
+                formData.append('dueDate', values.deadline.toISOString());
+            }
+
+            if (file) {
+                formData.append('file', file);
+            }
+
+            await createAssignment(formData);
+            setSuccess(values.title || 'Bài tập mới');
+        } catch (error) {
+            // error is handled by the API interceptor or can be handled here
+        }
     };
 
     /* ── Success screen ── */
@@ -56,9 +84,15 @@ const CreateAssignmentTab = ({ classInfo = {} }) => {
                             size="large"
                             icon={<UnorderedListOutlined />}
                             className={styles.successBtnFill}
-                            onClick={() => navigate('/teacher/classes')}
+                            onClick={() => {
+                                setSuccess(null);
+                                form.resetFields();
+                                setFile(null);
+                                setFileName(null);
+                                if (setActiveTab) setActiveTab('3');
+                            }}
                         >
-                            Về lớp học
+                            Về danh sách bài tập
                         </Button>
                     </div>
                     <p className={styles.successFooter}>
@@ -114,6 +148,7 @@ const CreateAssignmentTab = ({ classInfo = {} }) => {
                             </span>
                         }
                         name="deadline"
+                        rules={[{ required: true, message: 'Vui lòng chọn hạn nộp bài' }]}
                     >
                         <DatePicker
                             showTime
@@ -183,8 +218,8 @@ const CreateAssignmentTab = ({ classInfo = {} }) => {
                         size="large"
                         icon={<ToolOutlined />}
                         className={styles.submitBtn}
-                        onClick={() => form.submit()}
                         htmlType="submit"
+                        loading={isCreating}
                     >
                         Tạo bài tập
                     </Button>

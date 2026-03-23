@@ -37,4 +37,46 @@ export const courseApi = {
             url: `/api/courses/${id}`,
         });
     },
+
+    getCourseStudents: async (courseId, params) => {
+        return await apiAxios({
+            method: "get",
+            url: `/api/courses/${courseId}/students`,
+            params,
+        });
+    },
+
+    addStudentToCourse: async (courseId, data) => {
+        return await apiAxios({
+            method: "post",
+            url: `/api/courses/${courseId}/students`,
+            data,
+        });
+    },
+
+    removeStudentFromCourse: async (courseId, studentId) => {
+        return await apiAxios({
+            method: "delete",
+            url: `/api/courses/${courseId}/students/${studentId}`,
+        });
+    },
+
+    importStudentsToCourse: async (courseId, data) => {
+        return await apiAxios({
+            method: "post",
+            url: `/api/courses/${courseId}/import-students`,
+            data,
+        });
+    },
+
+    importStudentsExcelToCourse: async (courseId, formData) => {
+        return await apiAxios({
+            method: "post",
+            url: `/api/courses/${courseId}/import-students-excel`,
+            data: formData,
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+    },
 };
