@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './styles.module.scss';
 import StudentSidebar from './Sidebar';
 import { Input, Badge, Avatar } from 'antd';
@@ -10,10 +10,24 @@ function MainLayout(props) {
     const { children, menuItems } = props;
     const { user } = useAuth();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [collapsed, setCollapsed] = useState(() => {
+        return localStorage.getItem('sidebar_collapsed') === 'true';
+    });
+
+    useEffect(() => {
+        localStorage.setItem('sidebar_collapsed', collapsed);
+    }, [collapsed]);
 
     return (
         <div className={styles.container}>
-            <StudentSidebar menuItems={menuItems} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+            <StudentSidebar
+                menuItems={menuItems}
+                isOpen={sidebarOpen}
+                onClose={() => setSidebarOpen(false)}
+                collapsed={collapsed}
+                setCollapsed={setCollapsed}
+                setIsMobileMenuOpen={setSidebarOpen}
+            />
             {sidebarOpen && <div className={styles.overlay} onClick={() => setSidebarOpen(false)} />}
             <div className={styles.mainContent}>
                 <header className={styles.header}>

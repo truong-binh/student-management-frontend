@@ -5,12 +5,12 @@ import {
     AppstoreOutlined,
     ReadOutlined,
     CalendarOutlined,
-    FormOutlined,
-    BarChartOutlined,
     UserOutlined,
     MessageOutlined,
     LogoutOutlined,
-    CloseOutlined
+    CloseOutlined,
+    MenuFoldOutlined,
+    MenuUnfoldOutlined
 } from '@ant-design/icons';
 import logoPtit from '@/assets/images/svg/ptit.svg';
 import { useAuth } from '@/hooks/useAuth';
@@ -23,12 +23,31 @@ const defaultMenuItems = [
     { key: 'feedback', label: 'Phản hồi', icon: <MessageOutlined />, path: '/feedback' },
 ];
 
-const StudentSidebar = ({ menuItems, isOpen, onClose }) => {
+const StudentSidebar = ({
+    menuItems,
+    isOpen,
+    onClose,
+    collapsed = false,
+    setCollapsed = () => { },
+    setIsMobileMenuOpen
+}) => {
     const navigate = useNavigate();
     const { logout } = useAuth();
 
+    const closeMobileMenu = () => {
+        if (onClose) {
+            onClose();
+            return;
+        }
+
+        if (setIsMobileMenuOpen) {
+            setIsMobileMenuOpen(false);
+        }
+    };
+
     const handleLogout = () => {
         logout();
+        closeMobileMenu();
         navigate('/login');
     };
 
@@ -36,14 +55,14 @@ const StudentSidebar = ({ menuItems, isOpen, onClose }) => {
 
     return (
         <div className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ''}`}>
-            <button className={styles.closeBtn} onClick={onClose}>
+            <button className={styles.closeBtn} onClick={closeMobileMenu}>
                 <CloseOutlined />
             </button>
             <div className={styles.logo}>
                 <div className={styles.logoIcon}>
                     <img src={logoPtit} alt="Logo" />
                 </div>
-                <h1 className={styles.logoText}>EDU PTIT</h1>
+                {!collapsed && <h1 className={styles.logoText}>EDU PTIT</h1>}
             </div>
 
             <nav className={styles.nav}>
@@ -53,19 +72,28 @@ const StudentSidebar = ({ menuItems, isOpen, onClose }) => {
                             <NavLink
                                 to={item.path}
                                 className={({ isActive }) => `${styles.navLink} ${isActive ? styles.active : ''}`}
-                                onClick={onClose}
+                                onClick={closeMobileMenu}
                             >
                                 <span className={styles.icon}>{item.icon}</span>
-                                <span className={styles.label}>{item.label}</span>
+                                {!collapsed && <span className={styles.label}>{item.label}</span>}
                             </NavLink>
                         </li>
                     ))}
                 </ul>
 
                 <div className={styles.logoutSection}>
+                    <div className={styles.divider} />
+
+                    <div className={styles.navLink} onClick={() => setCollapsed(!collapsed)} style={{ cursor: 'pointer', marginBottom: '8px' }}>
+                        <span className={styles.icon}>
+                            {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                        </span>
+                        {!collapsed && <span className={styles.label}>Thu gọn</span>}
+                    </div>
+
                     <div className={styles.navLink} onClick={handleLogout} style={{ cursor: 'pointer' }}>
                         <span className={styles.icon}><LogoutOutlined /></span>
-                        <span className={styles.label}>Đăng xuất</span>
+                        {!collapsed && <span className={styles.label}>Đăng xuất</span>}
                     </div>
                 </div>
             </nav>
