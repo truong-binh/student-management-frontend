@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './styles.module.scss';
 import StudentSidebar from './Sidebar';
 import { Input, Badge, Avatar } from 'antd';
@@ -9,7 +9,11 @@ import { useAuth } from '@/hooks/useAuth';
 function MainLayout(props) {
     const { children, menuItems } = props;
     const { user } = useAuth();
+    
+    // State cho menu mobile (từ teacher2)
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    
+    // State cho menu desktop (từ develop)
     const [collapsed, setCollapsed] = useState(() => {
         return localStorage.getItem('sidebar_collapsed') === 'true';
     });
@@ -19,23 +23,34 @@ function MainLayout(props) {
     }, [collapsed]);
 
     return (
-        <div className={styles.container}>
+        <div className={`
+            ${styles.container} 
+            ${collapsed ? styles.sidebarCollapsed : ''} 
+        `}>
             <StudentSidebar
                 menuItems={menuItems}
+                // Các props cho mobile
                 isOpen={sidebarOpen}
                 onClose={() => setSidebarOpen(false)}
+                setIsMobileMenuOpen={setSidebarOpen}
+                // Các props cho desktop
                 collapsed={collapsed}
                 setCollapsed={setCollapsed}
-                setIsMobileMenuOpen={setSidebarOpen}
             />
+            
+            {/* Lớp phủ đen khi mở menu trên điện thoại */}
             {sidebarOpen && <div className={styles.overlay} onClick={() => setSidebarOpen(false)} />}
+            
             <div className={styles.mainContent}>
                 <header className={styles.header}>
-                    <button className={styles.menuBtn} onClick={() => setSidebarOpen(true)}>
-                        <MenuOutlined />
-                    </button>
-                    <div className={styles.welcome}>
-                        <h2>Chào mừng quay trở lại !</h2>
+                    <div className={styles.headerLeft}>
+                        {/* Nút hamburger mở menu trên mobile */}
+                        <button className={styles.menuBtn} onClick={() => setSidebarOpen(true)}>
+                            <MenuOutlined />
+                        </button>
+                        <div className={styles.welcome}>
+                            <h2>Chào mừng quay trở lại !</h2>
+                        </div>
                     </div>
 
                     <div className={styles.searchBar}>
@@ -59,7 +74,7 @@ function MainLayout(props) {
                         <div className={styles.userInfo}>
                             <p className={styles.userName}>{user?.fullName || user?.name || "N. V. A"}</p>
                         </div>
-                        <Avatar size={40} src={userDefault} />
+                        <Avatar size={40} src={userDefault} className={styles.userAvatar} />
                     </div>
                 </header>
 

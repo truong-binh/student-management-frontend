@@ -1,10 +1,20 @@
 .container {
     padding: 20px 24px;
-    height: calc(100vh - 90px);
-    display: grid;
-    grid-template-columns: 1fr 280px;
+    height: auto;
+    min-height: calc(100vh - 90px);
+    display: flex;
+    flex-direction: column;
     gap: 20px;
     background: transparent;
+
+    @media (min-width: 1201px) {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+    }
+
+    @media (max-width: 768px) {
+        padding: 16px;
+    }
 }
 
 .calendarCard {
@@ -50,16 +60,18 @@
             background: transparent;
         }
 
-        .ant-picker-content {
+        @media (max-width: 768px) {
+            :global(.ant-picker-content) {
 
-            thead tr th:first-child,
-            thead tr th:last-child {
-                display: none;
-            }
+                thead tr th:first-child,
+                thead tr th:last-child {
+                    display: table-cell !important;
+                }
 
-            tbody tr td:first-child,
-            tbody tr td:last-child {
-                display: none;
+                tbody tr td:first-child,
+                tbody tr td:last-child {
+                    display: table-cell !important;
+                }
             }
         }
     }
@@ -72,6 +84,15 @@
         transition: all 0.2s ease;
         display: flex;
         flex-direction: column;
+
+        @media (max-width: 1024px) {
+            height: 100px !important;
+        }
+
+        @media (max-width: 768px) {
+            height: 60px !important;
+            padding: 4px !important;
+        }
 
         &:hover {
             background: #f8fafc;
@@ -140,6 +161,10 @@
     flex-direction: column;
     gap: 2px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+
+    @media (max-width: 768px) {
+        display: none; // Don't show event text inside calendar cell on mobile
+    }
 
     &:hover {
         transform: scale(1.02);
@@ -356,6 +381,10 @@
             font-weight: 800;
             color: #1a202c;
             letter-spacing: -0.5px;
+
+            @media (max-width: 768px) {
+                font-size: 20px;
+            }
         }
     }
 

@@ -3,6 +3,14 @@
     max-width: 1440px;
     margin: 0 auto;
 
+    @media (max-width: 1024px) {
+        padding: 24px;
+    }
+
+    @media (max-width: 768px) {
+        padding: 16px;
+    }
+
     :global {
         .ant-input-affix-wrapper {
             border-radius: 8px;
@@ -106,6 +114,10 @@
     display: grid;
     grid-template-columns: 380px 1fr;
     gap: 24px;
+
+    @media (max-width: 1200px) {
+        grid-template-columns: 1fr;
+    }
 }
 
 .leftColumn {
@@ -331,6 +343,10 @@
         gap: 20px;
         padding: 24px;
 
+        @media (max-width: 1400px) {
+            grid-template-columns: 1fr;
+        }
+
         .statItem {
             background: white;
             border: 1px solid #edf2f7;
@@ -339,6 +355,12 @@
             display: flex;
             align-items: center;
             gap: 16px;
+
+            @media (max-width: 1400px) {
+                width: 100%;
+            }
+
+            // ...
 
             .statIcon {
                 width: 48px;

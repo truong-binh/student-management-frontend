@@ -70,12 +70,10 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
 
     return (
         <div className={styles.adWrap}>
-            {/* ── Back btn ── */}
             <button className={styles.adBackBtn} onClick={onBack}>
                 <ArrowLeftOutlined /> Quay lại danh sách
             </button>
 
-            {/* ── Header card ── */}
             <div className={styles.adHeaderCard}>
                 <div className={styles.adHeaderTop}>
                     <div className={styles.adMeta}>
@@ -104,7 +102,6 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
                     <h2 className={styles.adTitle}>{assignment.title}</h2>
                     <span className={styles.adStatusBadge}>• Đang mở</span>
                 </div>
-
                 <div className={styles.adInfoRow}>
                     <span className={styles.adInfoItem}>
                         <CalendarOutlined /> Hạn nộp: {assignment.deadline}
@@ -128,9 +125,7 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
                 </div>
             </div>
 
-            {/* ── Student table card ── */}
             <div className={styles.adTableCard}>
-                {/* Tab + search row */}
                 <div className={styles.adTableHeader}>
                     <div className={styles.adStudentFilters}>
                         {STUDENT_FILTERS.map(f => (
@@ -156,7 +151,6 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
                     />
                 </div>
 
-                {/* Table */}
                 <table className={styles.adTable}>
                     <thead>
                         <tr>
@@ -219,7 +213,6 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
                     </tbody>
                 </table>
 
-                {/* Footer */}
                 <div className={styles.adTableFooter}>
                     <span className={styles.adTableInfo}>
                         Hiện thị {filtered.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1} - {Math.min(currentPage * PAGE_SIZE, filtered.length)} trong {filtered.length} sinh viên

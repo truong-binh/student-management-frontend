@@ -11,8 +11,30 @@
     left: 0;
     top: 0;
     z-index: 1000;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 10px 0 40px rgba(0, 0, 0, 0.03);
     transition: transform 0.3s ease;
+
+    &.collapsed {
+        width: 80px;
+        padding: 24px 8px;
+
+        .logo {
+            .logoIcon {
+                width: 50px;
+                height: 50px;
+            }
+        }
+
+        .navLink {
+            justify-content: center;
+            padding: 12px;
+
+            .icon {
+                margin-right: 0;
+            }
+        }
+    }
 
     .logo {
         display: flex;
@@ -20,6 +42,7 @@
         align-items: center;
         margin-bottom: 32px;
         padding: 0 12px;
+        transition: all 0.3s ease;
 
         .logoIcon {
             width: 100px;
@@ -118,7 +141,7 @@
             opacity: 0.8;
         }
 
-        .logoutSection {
+        .bottomSection {
             margin-top: auto;
             border-top: 1px solid rgba(0, 0, 0, 0.03);
             padding-top: 12px;

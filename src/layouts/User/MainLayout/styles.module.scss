@@ -2,6 +2,7 @@
     display: flex;
     min-height: 100vh;
     position: relative;
+    transition: all 0.3s ease;
 
     &::before {
         content: '';
@@ -25,6 +26,13 @@
     margin-left: 250px;
     display: flex;
     flex-direction: column;
+    transition: margin-left 0.3s ease;
+}
+
+.sidebarCollapsed {
+    .mainContent {
+        margin-left: 80px;
+    }
 }
 
 .header {
@@ -38,9 +46,15 @@
     height: 80px;
     position: sticky;
     top: 0;
-    z-index: 999;
+    z-index: 998;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
     gap: 12px;
+
+    .headerLeft {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
 
     .welcome {
         flex: 1;

@@ -1,0 +1,47 @@
+.adminCoursesPage {
+    padding: 24px;
+    background-color: transparent;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 20px 24px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+    .titleWrap {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .icon {
+            font-size: 24px;
+            color: #1890ff;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+    }
+}
+
+.tableWrap {
+    background: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.formActions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0;
+    margin-top: 24px;
+}
