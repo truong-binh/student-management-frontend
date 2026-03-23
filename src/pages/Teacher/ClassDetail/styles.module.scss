@@ -795,6 +795,35 @@
     margin-top: 8px;
 }
 
+.searchInput {
+    width: 320px;
+    height: 40px !important;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    display: flex !important;
+    align-items: center;
+
+    :global(.ant-input) {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding-left: 10px !important;
+        font-size: 14px !important;
+    }
+
+    :global(.ant-input-prefix) {
+        color: #a0aec0;
+        font-size: 15px;
+    }
+
+    &:hover,
+    &:focus-within {
+        border-color: #b71c1c !important;
+        box-shadow: 0 4px 12px rgba(183, 28, 28, 0.08) !important;
+    }
+}
+
 /* ─────────────────────────────────────────
    Create Assignment – Success Screen
 ───────────────────────────────────────── */
@@ -2112,4 +2141,28 @@
     .assignCardMeta {
         flex-wrap: wrap;
     }
-}
+
+    :global(.customPopconfirm) {
+        .ant-popover-inner {
+            padding: 18px 22px !important;
+            border-radius: 12px !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+            border: 1px solid #f0f0f0 !important;
+        }
+
+        .ant-popconfirm-message {
+            margin-bottom: 16px !important;
+        }
+
+        .ant-popconfirm-buttons {
+            display: flex !important;
+            gap: 8px !important;
+
+            button {
+                border-radius: 6px !important;
+                height: 36px !important;
+                padding: 0 16px !important;
+                font-weight: 500 !important;
+            }
+        }
+    }
