@@ -198,6 +198,23 @@
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
 }
 
+.desktopTableWrapper {
+    display: block;
+}
+
+.feedbackTableScroll {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    overscroll-behavior-x: contain;
+}
+
+.mobileFeedbackList {
+    display: none;
+}
+
 .feedbackTable {
     :global(.ant-table-thead > tr > th) {
         background: #f8fafc;
@@ -338,6 +355,61 @@
     }
 }
 
+.mobileFeedbackCard {
+    border-bottom: 1px solid #edf2f7;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+        background: #fff5f5;
+    }
+}
+
+.mobileCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.mobileMeta {
+    font-size: 12px;
+    color: #718096;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+.mobileContent {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #4a5568;
+    margin-bottom: 10px;
+}
+
+.mobileCardFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.mobileDate {
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+.mobileAction {
+    color: #b71c1c;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .tableFooter {
     padding: 20px 24px;
     border-top: 1px solid #edf2f7;
@@ -354,6 +426,20 @@
 /* ─── Detail View ─── */
 .detailContainer {
     animation: fadeIn 0.4s ease-out;
+}
+
+.backBtn {
+    height: 44px;
+    border-radius: 12px;
+    font-weight: 600;
+    border-color: #cbd5e0;
+    color: #4a5568;
+    width: fit-content;
+
+    &:hover {
+        border-color: #b71c1c !important;
+        color: #b71c1c !important;
+    }
 }
 
 .detailHeader {
@@ -1037,13 +1123,9 @@
         gap: 14px;
     }
 
-    .feedbackTable {
-        :global(.ant-table-content) {
-            overflow-x: auto;
-        }
-
+    .feedbackTableScroll {
         :global(table) {
-            min-width: 920px;
+            min-width: 860px;
         }
     }
 
@@ -1064,6 +1146,11 @@
         gap: 12px;
     }
 
+    .backBtn {
+        width: 100%;
+        justify-content: center;
+    }
+
     .studentInfoCard {
         flex-direction: column;
         align-items: flex-start;
@@ -1082,6 +1169,14 @@
 
     .sectionBlock {
         padding: 18px;
+    }
+
+    .feedbackTable {
+        :global(.ant-table-thead > tr > th),
+        :global(.ant-table-tbody > tr > td) {
+            padding-left: 14px;
+            padding-right: 14px;
+        }
     }
 }
 
@@ -1119,11 +1214,31 @@
 
     .tableFooter {
         padding: 14px 16px;
+        flex-direction: column;
+        align-items: flex-start;
 
         .paginationInfo {
             width: 100%;
             font-size: 12px;
         }
+    }
+
+    .desktopTableWrapper {
+        display: none;
+    }
+
+    .mobileFeedbackList {
+        display: block;
+    }
+
+    .mobileCardHeader {
+        .statusGroup {
+            font-size: 12px;
+        }
+    }
+
+    .studentName {
+        font-size: 13px;
     }
 
     .replyEditor {
@@ -1140,6 +1255,12 @@
         .sendBtn {
             width: 100%;
             justify-content: center;
+        }
+    }
+
+    .feedbackTableScroll {
+        :global(table) {
+            min-width: 760px;
         }
     }
 }

@@ -103,6 +103,11 @@ const TeacherFeedback = () => {
         return matchStatus;
     });
 
+    const truncateText = (text, maxLength) => {
+        if (!text) return '';
+        return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+    };
+
     const columns = [
         {
             title: 'HỌ VÀ TÊN',
@@ -220,12 +225,56 @@ const TeacherFeedback = () => {
             </div>
 
             <div className={styles.tableCard}>
-                <Table
-                    columns={columns}
-                    dataSource={filtered}
-                    pagination={false}
-                    className={styles.feedbackTable}
-                />
+                <div className={styles.desktopTableWrapper}>
+                    <div className={styles.feedbackTableScroll}>
+                        <Table
+                            columns={columns}
+                            dataSource={filtered}
+                            pagination={false}
+                            className={styles.feedbackTable}
+                        />
+                    </div>
+                </div>
+
+                <div className={styles.mobileFeedbackList}>
+                    {filtered.map((record) => (
+                        <div
+                            key={record.key}
+                            className={styles.mobileFeedbackCard}
+                            onClick={() => {
+                                setSelectedFeedback(record);
+                                setReplyText('');
+                                setViewMode('detail');
+                            }}
+                        >
+                            <div className={styles.mobileCardHeader}>
+                                <div className={styles.studentCell}>
+                                    <span className={styles.feedbackIcon} style={{ background: record.student.color }}>
+                                        <FileTextOutlined />
+                                    </span>
+                                    <div>
+                                        <div className={styles.studentName}>{record.student.name}</div>
+                                        <div className={styles.mobileMeta}>{record.student.msv} • {record.classCode}</div>
+                                    </div>
+                                </div>
+                                <div className={clsx(styles.statusGroup, styles[record.status])}>
+                                    <div className={styles.dot} />
+                                    {record.statusText}
+                                </div>
+                            </div>
+
+                            <div className={styles.mobileContent}>{truncateText(record.content, 120)}</div>
+
+                            <div className={styles.mobileCardFooter}>
+                                <span className={styles.mobileDate}>{record.date}</span>
+                                <span className={styles.mobileAction}>
+                                    Xem chi tiết <ArrowRightOutlined />
+                                </span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
                 <div className={styles.tableFooter}>
                     <div className={styles.paginationInfo}>
                         Showing 1 to {filtered.length} of {counts.total} entries

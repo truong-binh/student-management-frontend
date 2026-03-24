@@ -1,7 +1,10 @@
 .classDetailPage {
     padding: 24px;
     max-width: 1400px;
+    width: 100%;
+    min-width: 0;
     margin: 0 auto;
+    overflow-x: hidden;
 }
 
 /* ─── Banner ─── */
@@ -83,19 +86,37 @@
 
 /* ─── Tabs ─── */
 .tabSection {
+    min-width: 0;
+
     :global {
         .ant-tabs-nav {
             margin-bottom: 24px !important;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
 
             &::before {
                 display: none;
             }
         }
 
+        .ant-tabs-nav-wrap {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-x;
+        }
+
+        .ant-tabs-nav-list {
+            flex-wrap: nowrap !important;
+            min-width: max-content;
+        }
+
         .ant-tabs-tab {
             padding: 12px 24px !important;
             font-weight: 600 !important;
             color: #718096 !important;
+            white-space: nowrap;
+            flex: 0 0 auto;
 
             &:hover {
                 color: #b71c1c !important;
@@ -112,6 +133,17 @@
             border-radius: 3px 3px 0 0;
         }
     }
+}
+
+.classTabs {
+    min-width: 0;
+}
+
+.tabLabel {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
 }
 
 /* ─── Overview layout ─── */
@@ -824,6 +856,40 @@
     }
 }
 
+.studentsTabWrap {
+    padding: 0 16px;
+    min-width: 0;
+}
+
+.studentsToolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.studentsSearchInput {
+    flex: 1;
+    min-width: 0;
+}
+
+.studentsToolbarActions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.studentsTableWrap {
+    min-width: 0;
+
+    :global(.ant-table-content) {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x;
+        overscroll-behavior-x: contain;
+    }
+}
+
 /* ─────────────────────────────────────────
    Create Assignment – Success Screen
 ───────────────────────────────────────── */
@@ -947,6 +1013,7 @@
     display: flex;
     gap: 20px;
     align-items: flex-start;
+    min-width: 0;
 }
 
 /* ── Left filter panel ── */
@@ -998,9 +1065,25 @@
 /* ── Right content area ── */
 .attendanceContent {
     flex: 1;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     gap: 20px;
+}
+
+.attendanceTableScroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    overscroll-behavior-x: contain;
+    width: 100%;
+
+    .studentTable {
+        min-width: 980px;
+    }
 }
 
 /* ── 3 stat cards row ── */
@@ -1252,6 +1335,7 @@
     display: flex;
     gap: 24px;
     align-items: flex-start;
+    min-width: 0;
 }
 
 /* ── Left column ── */
@@ -1995,10 +2079,6 @@
 
     .tabSection {
         :global {
-            .ant-tabs-nav-wrap {
-                overflow-x: auto;
-            }
-
             .ant-tabs-tab {
                 padding: 10px 14px !important;
             }
@@ -2017,14 +2097,8 @@
         gap: 10px;
     }
 
-    .studentTable,
     .adTable {
         min-width: 760px;
-    }
-
-    .studentListCard,
-    .adTableCard {
-        overflow-x: auto;
     }
 
     .assignCard {
@@ -2105,6 +2179,24 @@
         width: 100%;
         font-size: 12px;
     }
+
+    .studentsToolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .studentsToolbarActions {
+        width: 100%;
+        justify-content: stretch;
+
+        :global(.ant-space-item) {
+            flex: 1;
+        }
+
+        :global(.ant-btn) {
+            width: 100%;
+        }
+    }
 }
 
 @media (max-width: 576px) {
@@ -2136,6 +2228,16 @@
     .studentTable,
     .adTable {
         min-width: 680px;
+    }
+
+    .attendanceTableScroll {
+        .studentTable {
+            min-width: 860px;
+        }
+    }
+
+    .studentsTabWrap {
+        padding: 0 4px;
     }
 
     .assignCardMeta {

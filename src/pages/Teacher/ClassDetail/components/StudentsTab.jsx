@@ -132,13 +132,13 @@ const StudentsTab = ({ courseId }) => {
     ];
 
     return (
-        <div style={{ padding: '0 16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div className={styles.studentsTabWrap}>
+            <div className={styles.studentsToolbar}>
                 <Input
                     placeholder="Tìm mã SV, tên hoặc email (Nhấn Enter)"
                     prefix={<SearchOutlined />}
                     value={searchValue}
-                    className={styles.searchInput}
+                    className={`${styles.searchInput} ${styles.studentsSearchInput}`}
                     onChange={(e) => {
                         setSearchValue(e.target.value);
                         if (!e.target.value) {
@@ -149,7 +149,7 @@ const StudentsTab = ({ courseId }) => {
                     onPressEnter={handleSearch}
                     allowClear
                 />
-                <Space>
+                <Space className={styles.studentsToolbarActions} size={10}>
                     <Button
                         type="primary"
                         icon={<UserAddOutlined />}
@@ -169,19 +169,22 @@ const StudentsTab = ({ courseId }) => {
                 </Space>
             </div>
 
-            <Table
-                columns={columns}
-                dataSource={students}
-                rowKey={(record) => record.id || record.student?._id || Math.random().toString()}
-                loading={isLoading}
-                pagination={{
-                    current: page,
-                    pageSize: limit,
-                    total: totalItems,
-                    showSizeChanger: true,
-                }}
-                onChange={handleTableChange}
-            />
+            <div className={styles.studentsTableWrap}>
+                <Table
+                    columns={columns}
+                    dataSource={students}
+                    rowKey={(record) => record.id || record.student?._id || Math.random().toString()}
+                    loading={isLoading}
+                    scroll={{ x: 880 }}
+                    pagination={{
+                        current: page,
+                        pageSize: limit,
+                        total: totalItems,
+                        showSizeChanger: true,
+                    }}
+                    onChange={handleTableChange}
+                />
+            </div>
 
             <Modal
                 title="Thêm sinh viên vào lớp"
