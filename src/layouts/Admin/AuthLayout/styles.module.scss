@@ -85,3 +85,67 @@
         }
     }
 }
+
+@media (max-width: 992px) {
+    .authLayoutContainer {
+        .leftSide {
+            padding: 1.5rem;
+
+            .formContainer {
+                max-width: 520px;
+            }
+
+            .logoWrapper {
+                margin-bottom: 1.5rem;
+
+                .logo {
+                    height: 96px;
+                }
+            }
+        }
+
+        .rightSide {
+            flex: 1;
+
+            .decorativeContent {
+                .dashboardImage {
+                    width: 80%;
+                }
+
+                .calendarImage {
+                    width: 32%;
+                    bottom: 10%;
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .authLayoutContainer {
+        display: block;
+        min-height: 100dvh;
+
+        .leftSide {
+            min-height: 100dvh;
+            justify-content: flex-start;
+            padding: 1rem;
+
+            .formContainer {
+                max-width: 100%;
+            }
+
+            .logoWrapper {
+                margin-bottom: 1rem;
+
+                .logo {
+                    height: 84px;
+                }
+            }
+        }
+
+        .rightSide {
+            display: none;
+        }
+    }
+}

@@ -110,3 +110,57 @@
         line-height: 42px !important;
     }
 }
+
+@media (max-width: 768px) {
+    .registerForm {
+        .title {
+            font-size: 1.625rem;
+            margin-bottom: 0.375rem;
+        }
+
+        .description {
+            font-size: 0.8125rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .labelTitle {
+            font-size: 0.8125rem;
+            margin-bottom: 0.375rem;
+        }
+
+        .createButton {
+            height: 46px;
+            font-size: 0.9375rem;
+        }
+
+        .loginLink {
+            margin-top: 1.25rem;
+            font-size: 0.8125rem;
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .registerForm {
+        .title {
+            font-size: 1.375rem;
+        }
+
+        .description {
+            margin-bottom: 1.25rem;
+        }
+
+        .createButton {
+            height: 44px;
+        }
+    }
+
+    :global {
+
+        .ant-input,
+        .ant-select-selector,
+        .ant-input-password {
+            height: 42px !important;
+        }
+    }
+}

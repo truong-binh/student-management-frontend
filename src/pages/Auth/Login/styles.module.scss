@@ -91,3 +91,53 @@
     }
   }
 }
+
+@media (max-width: 768px) {
+  .loginForm {
+    .title {
+      font-size: 22px;
+      margin-bottom: 1.5rem;
+    }
+
+    .labelTitle {
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+
+    .formFooter {
+      margin: 0.75rem 0;
+
+      .forgotPassword {
+        font-size: 13px;
+      }
+    }
+
+    .createAccount {
+      margin-top: 1.25rem;
+      font-size: 14px;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .loginForm {
+    .title {
+      font-size: 20px;
+      margin-bottom: 1.25rem;
+    }
+
+    :global {
+
+      .ant-input,
+      .ant-input-password,
+      .ant-select-selector,
+      .ant-btn-primary {
+        height: 44px !important;
+      }
+
+      .ant-btn-primary {
+        font-size: 15px !important;
+      }
+    }
+  }
+}
