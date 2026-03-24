@@ -224,6 +224,7 @@ const TeacherFeedback = () => {
                     columns={columns}
                     dataSource={filtered}
                     pagination={false}
+                    scroll={{ x: 980 }}
                     className={styles.feedbackTable}
                 />
                 <div className={styles.tableFooter}>

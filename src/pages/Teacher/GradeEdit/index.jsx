@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Button, Input, InputNumber, Tag, message } from 'antd';
 import {
     ArrowLeftOutlined,
@@ -18,6 +18,7 @@ import {
     BookOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
+import { submissionApi } from '@/api/admin/submission';
 import MainLayout from '@/layouts/User/MainLayout';
 import styles from './styles.module.scss';
 
@@ -31,20 +32,52 @@ const teacherMenuItems = [
     { key: 'feedback', label: 'Phản hồi', icon: <MessageOutlined />, path: '/teacher/feedback' },
 ];
 
-/* ── Mock data (replace with API call) ── */
-const classesData = [
-    { id: 1, title: 'Cấu trúc dữ liệu và Giải thuật', code: 'INT1302', groupCode: 'INT1302 - Nhóm 01', semester: 'Học kỳ 2 - 2025-2026' },
-    { id: 2, title: 'Mạng máy tính', code: 'INT1434', groupCode: 'INT1434 - Nhóm 01', semester: 'Học kỳ 2 - 2025-2026' },
-];
+const AVATAR_COLORS = ['#e53e3e', '#d69e2e', '#805ad5', '#3182ce', '#38b2ac', '#ed64a6', '#48bb78', '#f6ad55'];
 
-const studentsData = {
-    1: { id: 1, name: 'Nguyễn Hoàng Anh', initials: 'HA', color: '#e53e3e', msv: 'B21DCCN001', score: 9.5, hasFeedback: true },
-    2: { id: 2, name: 'Lê Trần Minh', initials: 'TM', color: '#d69e2e', msv: 'B21DCCN042', score: null, hasFeedback: false },
-    4: { id: 4, name: 'Trần Thị Lan', initials: 'TL', color: '#3182ce', msv: 'B21DCCN210', score: 8.0, hasFeedback: true },
-    5: { id: 5, name: 'Hoàng Minh Đức', initials: 'HĐ', color: '#38b2ac', msv: 'B21DCCN078', score: 7.5, hasFeedback: false },
-    8: { id: 8, name: 'Bùi Thị Hoa', initials: 'BH', color: '#f6ad55', msv: 'B21DCCN094', score: 8.5, hasFeedback: true },
-    10: { id: 10, name: 'Vũ Hải Anh', initials: 'VA', color: '#5a67d8', msv: 'B21DCCN047', score: 9.0, hasFeedback: false },
-    12: { id: 12, name: 'Cao Văn Tùng', initials: 'CT', color: '#d69e2e', msv: 'B21DCCN125', score: 6.5, hasFeedback: true },
+const getInitials = (name = '') => {
+    const words = name.trim().split(' ').filter(Boolean);
+    if (!words.length) return 'SV';
+    if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+    return `${words[0][0]}${words[words.length - 1][0]}`.toUpperCase();
+};
+
+const colorById = (id = '') => {
+    const value = String(id).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return AVATAR_COLORS[value % AVATAR_COLORS.length];
+};
+
+const getFileNameFromUrl = (url = '') => {
+    try {
+        const cleanUrl = url.split('?')[0];
+        return decodeURIComponent(cleanUrl.substring(cleanUrl.lastIndexOf('/') + 1));
+    } catch (_err) {
+        return 'Tệp bài nộp';
+    }
+};
+
+const formatDateTime = (value) => {
+    if (!value) return '—';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '—';
+    return date.toLocaleString('vi-VN');
+};
+
+const mapFeedbackItems = (feedback = '') => {
+    if (!feedback || typeof feedback !== 'string') {
+        return [{ type: 'info', text: 'Chưa có phản hồi AI cho bài nộp này.' }];
+    }
+
+    const lines = feedback
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line) => line.replace(/^[-*•]\s*/, ''));
+
+    if (!lines.length) {
+        return [{ type: 'info', text: feedback.trim() }];
+    }
+
+    return lines.map((line) => ({ type: 'info', text: line }));
 };
 
 const getGradeLabel = (score) => {
@@ -58,21 +91,89 @@ const getGradeLabel = (score) => {
 
 const TeacherGradeEdit = () => {
     const navigate = useNavigate();
-    const { id, studentId } = useParams();
+    const { id, assignmentId, studentId } = useParams();
 
-    const classInfo = classesData.find(c => c.id === Number(id)) || classesData[0];
-    const student = studentsData[Number(studentId)] || studentsData[1];
-
-    const [newScore, setNewScore] = useState(student.score);
+    const submissionId = studentId;
+    const [submission, setSubmission] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [aiGrading, setAiGrading] = useState(false);
+    const [newScore, setNewScore] = useState(null);
     const [comment, setComment] = useState('');
-    const [saving, setSaving] = useState(false);
-    const [success, setSuccess] = useState(false);
-    const [savedScore, setSavedScore] = useState(null);
+
+    const loadSubmissionDetail = async () => {
+        if (!submissionId) {
+            setLoading(false);
+            return;
+        }
+
+        setLoading(true);
+        const res = await submissionApi.getSubmissionDetail(submissionId);
+        if (!res?.success) {
+            message.error(res?.message || 'Không thể tải chi tiết bài nộp');
+            setLoading(false);
+            return;
+        }
+
+        const detail = res?.data || null;
+        setSubmission(detail);
+        setNewScore(typeof detail?.score === 'number' ? detail.score : null);
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        loadSubmissionDetail();
+    }, [submissionId]);
+
+    const student = submission?.student || {};
+    const assignment = submission?.assignment || {};
+    const studentName = student.fullName || 'Sinh viên';
+    const studentCode = student.userCode || '—';
+
+    const classInfo = {
+        title: assignment.title || 'Bài tập',
+        code: assignmentId ? `BT-${assignmentId.slice(-6)}` : 'BT',
+        groupCode: `Lớp ${id || '—'}`,
+        semester: '',
+    };
+
+    const studentViewModel = useMemo(() => {
+        const idValue = student._id || submissionId || 'student';
+        return {
+            name: studentName,
+            initials: getInitials(studentName),
+            color: colorById(idValue),
+            msv: studentCode,
+            score: typeof submission?.score === 'number' ? submission.score : null,
+            fileName: submission?.fileName || getFileNameFromUrl(submission?.fileUrl || ''),
+            fileUrl: submission?.fileUrl || '',
+            submittedAt: submission?.submittedAt || submission?.createdAt,
+            aiFeedback: submission?.aiFeedback || '',
+        };
+    }, [student, studentName, studentCode, submission, submissionId]);
 
     const gradeInfo = getGradeLabel(newScore);
+    const aiFeedbackItems = mapFeedbackItems(studentViewModel.aiFeedback);
 
     const handleBack = () => {
         navigate(`/teacher/classes/${id}`);
+    };
+
+    const handleGradeByAI = async () => {
+        if (!submissionId) return;
+
+        setAiGrading(true);
+        const res = await submissionApi.gradeSubmissionAI(submissionId);
+        if (!res?.success) {
+            message.warning(res?.message || 'Không thể lấy gợi ý chấm AI');
+            setAiGrading(false);
+            return;
+        }
+
+        const newSubmission = res.data;
+        setSubmission(newSubmission);
+        setNewScore(typeof newSubmission?.score === 'number' ? newSubmission.score : null);
+        message.success('Đã cập nhật phản hồi và điểm gợi ý từ AI');
+        setAiGrading(false);
     };
 
     const handleSave = () => {
@@ -84,49 +185,26 @@ const TeacherGradeEdit = () => {
             message.warning('Điểm phải nằm trong khoảng từ 0 đến 10!');
             return;
         }
-        setSaving(true);
-        setTimeout(() => {
-            setSaving(false);
-            setSavedScore(newScore);
-            setSuccess(true);
-        }, 1000);
+        message.info('Backend hiện chưa có endpoint lưu điểm thủ công. Vui lòng xác nhận API để hoàn tất chức năng lưu điểm.');
     };
 
-    if (success) {
+    if (loading) {
         return (
             <MainLayout menuItems={teacherMenuItems}>
-                <div className={styles.successPage}>
-                    <div className={styles.successCard}>
-                        <div className={styles.successIconWrap}>
-                            <CheckCircleOutlined className={styles.successIcon} />
-                        </div>
-                        <h2 className={styles.successTitle}>Sửa điểm thành công!</h2>
-                        <div className={styles.successInfo}>
-                            <UserOutlined className={styles.successUserIcon} />
-                            <p>
-                                Điểm của sinh viên <strong>{student.name}</strong> đã được cập nhật
-                                chính xác thành{' '}
-                                <span className={styles.successScore}>{savedScore}</span>
-                            </p>
-                            <p className={styles.successMeta}>
-                                Mã SV: {student.msv} • Môn: {classInfo.title}
-                            </p>
-                        </div>
-                        <Button
-                            type="primary"
-                            danger
-                            size="large"
-                            icon={<ArrowLeftOutlined />}
-                            className={styles.successBackBtn}
-                            onClick={handleBack}
-                        >
-                            Quay lại danh sách
-                        </Button>
-                        <div className={styles.successFooter}>
-                            <span className={styles.successDots}>• • •</span>
-                            Hoàn tất quy trình cập nhật
+                <div className={styles.container}>
+                    <div className={styles.header}>
+                        <div className={styles.headerLeft}>
+                            <div className={styles.backBtn} onClick={handleBack}>
+                                <ArrowLeftOutlined />
+                            </div>
+                            <div className={styles.titleInfo}>
+                                <div className={styles.mainTitleRow}>
+                                    <h1>Sửa điểm bài tập</h1>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    <div style={{ padding: '24px', textAlign: 'center' }}>Đang tải dữ liệu bài nộp...</div>
                 </div>
             </MainLayout>
         );
@@ -147,7 +225,7 @@ const TeacherGradeEdit = () => {
                                 <Tag className={styles.classTag}>{classInfo.code}</Tag>
                             </div>
                             <div className={styles.subTitle}>
-                                {classInfo.groupCode} • {classInfo.semester}
+                                {classInfo.groupCode}{classInfo.semester ? ` • ${classInfo.semester}` : ''}
                             </div>
                             <div className={styles.breadcrumbs}>
                                 <span>Lớp học</span>
@@ -176,13 +254,13 @@ const TeacherGradeEdit = () => {
                             <div className={styles.avatarRow}>
                                 <span
                                     className={styles.avatar}
-                                    style={{ background: student.color }}
+                                    style={{ background: studentViewModel.color }}
                                 >
-                                    {student.initials}
+                                    {studentViewModel.initials}
                                 </span>
                                 <div className={styles.studentMeta}>
-                                    <div className={styles.studentName}>{student.name}</div>
-                                    <div className={styles.studentMsv}>MSV: {student.msv}</div>
+                                    <div className={styles.studentName}>{studentViewModel.name}</div>
+                                    <div className={styles.studentMsv}>MSV: {studentViewModel.msv}</div>
                                     <Tag className={styles.gradedTag}>ĐÃ CHẤM</Tag>
                                 </div>
                             </div>
@@ -195,16 +273,16 @@ const TeacherGradeEdit = () => {
                             </div>
                             <div className={styles.scoreCircle}>
                                 <span className={styles.scoreValue}>
-                                    {student.score !== null ? student.score : '—'}
+                                    {studentViewModel.score !== null ? studentViewModel.score : '—'}
                                 </span>
                                 <span className={styles.scoreTotal}>/ 10</span>
                             </div>
-                            {student.score !== null && (
+                            {studentViewModel.score !== null && (
                                 <Tag
                                     className={styles.gradeTag}
-                                    style={{ background: getGradeLabel(student.score)?.color + '20', color: getGradeLabel(student.score)?.color, borderColor: getGradeLabel(student.score)?.color + '40' }}
+                                    style={{ background: getGradeLabel(studentViewModel.score)?.color + '20', color: getGradeLabel(studentViewModel.score)?.color, borderColor: getGradeLabel(studentViewModel.score)?.color + '40' }}
                                 >
-                                    {getGradeLabel(student.score)?.label}
+                                    {getGradeLabel(studentViewModel.score)?.label}
                                 </Tag>
                             )}
                         </div>
@@ -215,10 +293,13 @@ const TeacherGradeEdit = () => {
                             <div className={styles.fileItem}>
                                 <FileZipOutlined className={styles.fileIcon} />
                                 <div className={styles.fileInfo}>
-                                    <div className={styles.fileName}>{student.msv}_BaiTap.zip</div>
-                                    <div className={styles.fileMeta}>2.1 MB • 28/05/2024</div>
+                                    <div className={styles.fileName}>{studentViewModel.fileName}</div>
+                                    <div className={styles.fileMeta}>Không rõ dung lượng • {formatDateTime(studentViewModel.submittedAt)}</div>
                                 </div>
-                                <CloudDownloadOutlined className={styles.downloadIcon} />
+                                <CloudDownloadOutlined
+                                    className={styles.downloadIcon}
+                                    onClick={() => studentViewModel.fileUrl && window.open(studentViewModel.fileUrl, '_blank')}
+                                />
                             </div>
                         </div>
                     </div>
@@ -299,28 +380,29 @@ const TeacherGradeEdit = () => {
                         <div className={styles.aiFeedbackCard}>
                             <div className={styles.editCardTitle}>
                                 <RobotOutlined /> Phản hồi AI (tham khảo)
+                                <Button
+                                    size="small"
+                                    danger
+                                    loading={aiGrading}
+                                    onClick={handleGradeByAI}
+                                    style={{ marginLeft: 'auto' }}
+                                >
+                                    Lấy gợi ý AI
+                                </Button>
                             </div>
                             <div className={styles.aiItems}>
-                                <div className={styles.aiItem}>
-                                    <CheckCircleOutlined className={styles.iconPros} />
-                                    <span>Thuật toán chính xác và đầy đủ các trường hợp biên.</span>
-                                </div>
-                                <div className={styles.aiItem}>
-                                    <CheckCircleOutlined className={styles.iconPros} />
-                                    <span>Cấu trúc code rõ ràng, dễ đọc. Đặt tên biến hợp lý.</span>
-                                </div>
-                                <div className={styles.aiItem}>
-                                    <ExclamationCircleOutlined className={styles.iconCons} />
-                                    <span>Cần bổ sung comment cho các hàm phức tạp.</span>
-                                </div>
-                                <div className={styles.aiItem}>
-                                    <ExclamationCircleOutlined className={styles.iconCons} />
-                                    <span>Chưa xử lý memory leak trong hàm xóa node.</span>
-                                </div>
-                                <div className={styles.aiItem}>
-                                    <InfoCircleOutlined className={styles.iconInfo} />
-                                    <span>File báo cáo đầy đủ, có sơ đồ class và database.</span>
-                                </div>
+                                {aiFeedbackItems.map((item, index) => (
+                                    <div key={`${item.text}-${index}`} className={styles.aiItem}>
+                                        {item.type === 'pros' ? (
+                                            <CheckCircleOutlined className={styles.iconPros} />
+                                        ) : item.type === 'cons' ? (
+                                            <ExclamationCircleOutlined className={styles.iconCons} />
+                                        ) : (
+                                            <InfoCircleOutlined className={styles.iconInfo} />
+                                        )}
+                                        <span>{item.text}</span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
@@ -338,7 +420,6 @@ const TeacherGradeEdit = () => {
                                 size="large"
                                 icon={<SaveOutlined />}
                                 className={styles.saveBtn}
-                                loading={saving}
                                 onClick={handleSave}
                             >
                                 Lưu điểm

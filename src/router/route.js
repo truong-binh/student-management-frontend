@@ -108,6 +108,11 @@ const router = createBrowserRouter([
         loader: ({ request, params }) => rootLoader({ request, params }, true),
       },
       {
+        path: "role-management",
+        element: <HomeAdmin />,
+        loader: ({ request, params }) => rootLoader({ request, params }, true),
+      },
+      {
         path: "login",
         element: <Navigate to="/login" replace />,
       },

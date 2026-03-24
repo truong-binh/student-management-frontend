@@ -114,6 +114,13 @@
     }
 }
 
+.tabLabel {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
 /* ─── Overview layout ─── */
 .overviewWrap {
     display: flex;
@@ -467,6 +474,26 @@
 
 .attendanceTable {
     :global {
+        .ant-table-container {
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .ant-table-content,
+        .ant-table-body {
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .ant-table-thead,
+        .ant-table-tbody {
+            .ant-table-cell {
+                white-space: nowrap;
+            }
+        }
+
         .ant-table-thead>tr>th {
             background: #f8fafc;
             font-size: 13px;
@@ -1053,6 +1080,46 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
+.attendanceDesktopTable {
+    display: block;
+}
+
+.attendanceMobileList {
+    display: none;
+}
+
+.attendanceMobileItem {
+    border-bottom: 1px solid #f1f5f9;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    &:last-child {
+        border-bottom: none;
+    }
+}
+
+.attendanceMobileTop {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.attendanceMobileDob {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.studentTableWrap {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+}
+
 .studentListHeader {
     display: flex;
     justify-content: space-between;
@@ -1076,6 +1143,7 @@
 /* ── Student table ── */
 .studentTable {
     width: 100%;
+    min-width: 760px;
     border-collapse: collapse;
 
     th {
@@ -1213,6 +1281,31 @@
 .tableInfo {
     font-size: 13px;
     color: #718096;
+}
+
+.studentManageAddForm {
+    display: flex;
+    width: 100%;
+    gap: 8px;
+    flex-wrap: wrap;
+
+    :global(.ant-form-item) {
+        margin-right: 0;
+        margin-bottom: 0;
+    }
+}
+
+.studentManageAddInput {
+    flex: 1;
+    min-width: 280px;
+}
+
+.studentManageAddAction {
+    flex-shrink: 0;
+}
+
+.studentManagePrimaryBtn {
+    width: auto;
 }
 
 /* ─────────────────────────────────────────
@@ -1973,6 +2066,10 @@
             .ant-tabs-tab {
                 padding: 10px 14px !important;
             }
+
+            .ant-tabs-nav-list {
+                flex-wrap: nowrap;
+            }
         }
     }
 
@@ -1988,7 +2085,6 @@
         gap: 10px;
     }
 
-    .studentTable,
     .adTable {
         min-width: 760px;
     }
@@ -2057,6 +2153,15 @@
         align-items: stretch;
     }
 
+    .adActions {
+        gap: 8px;
+
+        :global(.ant-btn) {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
     .adSearchInput {
         width: 100%;
     }
@@ -2075,6 +2180,36 @@
     .tableInfo {
         width: 100%;
         font-size: 12px;
+    }
+
+    .attendanceDesktopTable {
+        display: none;
+    }
+
+    .attendanceMobileList {
+        display: block;
+    }
+
+    .attendanceMobileItem {
+        .radioGroup {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 6px;
+
+            :global(.ant-radio-wrapper) {
+                margin-right: 0;
+            }
+        }
+    }
+
+    .studentManageAddInput,
+    .studentManageAddAction {
+        width: 100%;
+        min-width: 100%;
+    }
+
+    .studentManagePrimaryBtn {
+        width: 100%;
     }
 }
 
@@ -2104,12 +2239,28 @@
         padding-right: 12px;
     }
 
-    .studentTable,
+    .studentTable {
+        min-width: 760px;
+    }
+
     .adTable {
         min-width: 680px;
     }
 
     .assignCardMeta {
         flex-wrap: wrap;
+        row-gap: 4px;
+    }
+
+    .adTitle {
+        font-size: 18px;
+    }
+
+    .adInfoRow {
+        gap: 10px;
+    }
+
+    .adInfoItem {
+        font-size: 13px;
     }
 }

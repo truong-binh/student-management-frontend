@@ -405,6 +405,14 @@
     }
 }
 
+.backBtn {
+    height: 44px;
+    border-radius: 12px;
+    font-weight: 600;
+    border-color: #cbd5e0;
+    color: #4a5568;
+}
+
 /* Alert banners */
 .alertSuccess {
     background: #f0fdf4;
@@ -1062,6 +1070,11 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
+    }
+
+    .backBtn {
+        width: 100%;
+        justify-content: center;
     }
 
     .studentInfoCard {

@@ -2,8 +2,6 @@ import axios from "axios";
 import { getAuthToken, getAuthTokenAdmin } from "@/utils/localStorage.js";
 
 const baseUrl = import.meta.env.VITE_API_URL;
-const token = getAuthToken();
-const tokenAdmin = getAuthTokenAdmin();
 
 const formatError = (error) => {
   if (error.response && error.response.data) {
@@ -26,11 +24,12 @@ export const apiAxios = axios.create({
   baseURL: `${baseUrl}`,
   headers: {
     'Content-Type': 'application/json',
-    "Authorization": token ? `Bearer ${token}` : ""
   }
 });
 
 apiAxios.interceptors.request.use((request) => {
+  const token = getAuthToken();
+  request.headers.Authorization = token ? `Bearer ${token}` : "";
   return request
 }, (error) => {
   return Promise.reject(error)
@@ -48,11 +47,12 @@ export const apiAdminAxios = axios.create({
   baseURL: `${baseUrl}`,
   headers: {
     'Content-Type': 'application/json',
-    "Authorization": tokenAdmin ? `Bearer ${tokenAdmin}` : ""
   }
 });
 
 apiAdminAxios.interceptors.request.use((request) => {
+  const tokenAdmin = getAuthTokenAdmin();
+  request.headers.Authorization = tokenAdmin ? `Bearer ${tokenAdmin}` : "";
   return request
 }, (error) => {
   return Promise.reject(error)

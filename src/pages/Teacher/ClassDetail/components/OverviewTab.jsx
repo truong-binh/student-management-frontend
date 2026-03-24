@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { Button, Input, Avatar, Tooltip } from 'antd';
+import React, { useEffect, useRef, useState } from 'react';
+import { Button, Input, Avatar, Tooltip, message } from 'antd';
 import {
     InfoCircleOutlined,
     DatabaseOutlined,
@@ -17,6 +17,7 @@ import {
 } from '@ant-design/icons';
 import styles from '../styles.module.scss';
 import userDefault from '@/assets/images/logos/user_default.png';
+import { useCourse } from '@/hooks/useCourse';
 
 const { TextArea } = Input;
 
@@ -47,13 +48,40 @@ const posts = [
     },
 ];
 
-const OverviewTab = ({ color, description: defaultDesc }) => {
+const OverviewTab = ({ color, description: defaultDesc, courseId }) => {
+    const { updateCourse, isUpdating } = useCourse();
     const [announcement, setAnnouncement] = useState('');
     const [postList, setPostList] = useState(posts);
     const [description, setDescription] = useState(
         defaultDesc || 'Chưa có mô tả cho học phần này.'
     );
     const [editingDesc, setEditingDesc] = useState(false);
+
+    useEffect(() => {
+        setDescription(defaultDesc || 'Chưa có mô tả cho học phần này.');
+    }, [defaultDesc]);
+
+    const handleEditDescription = () => {
+        if (!editingDesc) {
+            setEditingDesc(true);
+            return;
+        }
+
+        if (!courseId) {
+            message.error('Không tìm thấy mã học phần để cập nhật');
+            return;
+        }
+
+        updateCourse(courseId, { description: description?.trim() || '' }, {
+            onSuccess: () => {
+                message.success('Cập nhật mô tả học phần thành công');
+                setEditingDesc(false);
+            },
+            onError: (err) => {
+                message.error(err?.message || 'Cập nhật mô tả học phần thất bại');
+            },
+        });
+    };
 
     const handlePost = () => {
         if (!announcement.trim()) return;
@@ -86,7 +114,8 @@ const OverviewTab = ({ color, description: defaultDesc }) => {
                                 type="link"
                                 icon={<EditOutlined />}
                                 className={styles.editBtn}
-                                onClick={() => setEditingDesc(!editingDesc)}
+                                onClick={handleEditDescription}
+                                loading={isUpdating}
                             >
                                 {editingDesc ? 'Lưu' : 'Chỉnh sửa'}
                             </Button>

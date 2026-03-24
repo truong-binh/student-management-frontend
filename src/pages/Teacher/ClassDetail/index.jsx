@@ -12,14 +12,14 @@ import {
     FormOutlined,
     UnorderedListOutlined,
     EditOutlined,
-    CodeOutlined,
-    BookOutlined,
+    TeamOutlined,
 } from '@ant-design/icons';
 import styles from './styles.module.scss';
 import OverviewTab from './components/OverviewTab';
 import AttendanceTab from './components/AttendanceTab';
 import AssignmentsTab from './components/AssignmentsTab';
 import CreateAssignmentTab from './components/CreateAssignmentTab';
+import StudentManagementTab from './components/StudentManagementTab';
 
 import { useCourse } from '@/hooks/useCourse';
 import { Spin } from 'antd';
@@ -37,6 +37,7 @@ const TeacherClassDetail = () => {
     const { getCourseDetailQuery } = useCourse();
     const { data: course, isLoading } = getCourseDetailQuery(id);
     const [activeTab, setActiveTab] = useState('1');
+    const [selectedAssignmentId, setSelectedAssignmentId] = useState(null);
 
     if (isLoading) {
         return (
@@ -113,22 +114,52 @@ const TeacherClassDetail = () => {
                             {
                                 key: '1',
                                 label: <span><InfoCircleOutlined /> Tổng quan</span>,
-                                children: <OverviewTab color={classInfo.color} description={classInfo.description} />,
+                                children: (
+                                    <OverviewTab
+                                        color={classInfo.color}
+                                        description={classInfo.description}
+                                        courseId={id}
+                                    />
+                                ),
                             },
                             {
                                 key: '2',
+                                label: <span><TeamOutlined /> Quản lý sinh viên</span>,
+                                children: <StudentManagementTab courseId={id} />,
+                            },
+                            {
+                                key: '3',
                                 label: <span><UserOutlined /> Điểm danh</span>,
                                 children: <AttendanceTab />,
                             },
                             {
-                                key: '3',
+                                key: '4',
                                 label: <span><UnorderedListOutlined /> DS bài tập</span>,
-                                children: <AssignmentsTab classInfo={classInfo} />,
+                                children: (
+                                    <AssignmentsTab
+                                        classInfo={classInfo}
+                                        courseId={id}
+                                        selectedAssignmentId={selectedAssignmentId}
+                                        onSelectedAssignmentHandled={() => setSelectedAssignmentId(null)}
+                                    />
+                                ),
                             },
                             {
-                                key: '4',
+                                key: '5',
                                 label: <span><EditOutlined /> Tạo bài tập</span>,
-                                children: <CreateAssignmentTab classInfo={classInfo} />,
+                                children: (
+                                    <CreateAssignmentTab
+                                        classInfo={classInfo}
+                                        courseId={id}
+                                        onViewAssignmentDetail={(assignmentId) => {
+                                            if (assignmentId) {
+                                                setSelectedAssignmentId(assignmentId);
+                                            }
+                                            setActiveTab('4');
+                                        }}
+                                        onBackToOverview={() => setActiveTab('1')}
+                                    />
+                                ),
                             },
                         ]}
                     />

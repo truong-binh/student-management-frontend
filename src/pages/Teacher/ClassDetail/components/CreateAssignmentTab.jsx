@@ -1,30 +1,68 @@
 import React, { useState } from 'react';
-import { Button, Input, DatePicker, Form } from 'antd';
+import { Button, Input, DatePicker, Form, message } from 'antd';
 import { FileOutlined, ToolOutlined, StarOutlined, CalendarOutlined, EyeOutlined, UnorderedListOutlined, CheckOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
 import styles from '../styles.module.scss';
+import { useAssignment } from '@/hooks/useAssignment';
 
-const CreateAssignmentTab = ({ classInfo = {} }) => {
+const CreateAssignmentTab = ({
+    classInfo = {},
+    courseId,
+    onViewAssignmentDetail = () => { },
+    onBackToOverview = () => { },
+}) => {
     const [form] = Form.useForm();
     const [dragging, setDragging] = useState(false);
-    const [fileName, setFileName] = useState(null);
-    const [success, setSuccess] = useState(null); // holds submitted title
-    const navigate = useNavigate();
+    const [fileObj, setFileObj] = useState(null);
+    const [success, setSuccess] = useState(null);
+    const { createAssignment, isCreatingAssignment } = useAssignment(courseId);
 
     const handleDrop = (e) => {
         e.preventDefault();
         setDragging(false);
         const file = e.dataTransfer.files[0];
-        if (file) setFileName(file.name);
+        if (file) setFileObj(file);
     };
 
     const handleFileInput = (e) => {
         const file = e.target.files[0];
-        if (file) setFileName(file.name);
+        if (file) setFileObj(file);
     };
 
     const handleFinish = (values) => {
-        setSuccess(values.title || 'Bài tập mới');
+        if (isCreatingAssignment) {
+            return;
+        }
+
+        if (!values.deadline) {
+            message.error('Vui lòng chọn hạn nộp bài');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('title', values.title || '');
+        formData.append('description', values.description || '');
+        formData.append('dueDate', values.deadline.toISOString());
+        formData.append('maxScore', values.maxScore || 10);
+
+        if (fileObj) {
+            formData.append('file', fileObj);
+        }
+
+        createAssignment(formData, {
+            onSuccess: (res) => {
+                const assignment = res?.data;
+                setSuccess({
+                    title: assignment?.title || values.title || 'Bài tập mới',
+                    id: assignment?._id,
+                });
+                form.resetFields();
+                setFileObj(null);
+                message.success('Tạo bài tập thành công');
+            },
+            onError: (err) => {
+                message.error(err?.message || 'Tạo bài tập thất bại');
+            },
+        });
     };
 
     /* ── Success screen ── */
@@ -38,7 +76,7 @@ const CreateAssignmentTab = ({ classInfo = {} }) => {
                     </div>
                     <h2 className={styles.successTitle}>Tạo bài tập thành công!</h2>
                     <p className={styles.successDesc}>
-                        Bài tập <span className={styles.successHighlight}>{success}</span> đã được đăng tải
+                        Bài tập <span className={styles.successHighlight}>{success.title}</span> đã được đăng tải
                         và thông báo đến toàn bộ sinh viên trong lớp{' '}
                         <span className={styles.successHighlight}>{groupCode}</span>.
                     </p>
@@ -47,6 +85,11 @@ const CreateAssignmentTab = ({ classInfo = {} }) => {
                             size="large"
                             icon={<EyeOutlined />}
                             className={styles.successBtnOutline}
+                            onClick={() => {
+                                const assignmentId = success?.id;
+                                setSuccess(null);
+                                onViewAssignmentDetail(assignmentId);
+                            }}
                         >
                             Xem chi tiết
                         </Button>
@@ -56,7 +99,10 @@ const CreateAssignmentTab = ({ classInfo = {} }) => {
                             size="large"
                             icon={<UnorderedListOutlined />}
                             className={styles.successBtnFill}
-                            onClick={() => navigate('/teacher/classes')}
+                            onClick={() => {
+                                setSuccess(null);
+                                onBackToOverview();
+                            }}
                         >
                             Về lớp học
                         </Button>
@@ -114,6 +160,7 @@ const CreateAssignmentTab = ({ classInfo = {} }) => {
                             </span>
                         }
                         name="deadline"
+                        rules={[{ required: true, message: 'Vui lòng chọn hạn nộp bài' }]}
                     >
                         <DatePicker
                             showTime
@@ -164,8 +211,8 @@ const CreateAssignmentTab = ({ classInfo = {} }) => {
                         <div className={styles.uploadIconCircle}>
                             <FileOutlined className={styles.uploadFileIcon} />
                         </div>
-                        {fileName ? (
-                            <p className={styles.uploadFileName}>{fileName}</p>
+                        {fileObj ? (
+                            <p className={styles.uploadFileName}>{fileObj?.name}</p>
                         ) : (
                             <>
                                 <p className={styles.uploadMainText}>Nhấp để tải lên hoặc kéo thả file vào đây</p>
@@ -183,8 +230,8 @@ const CreateAssignmentTab = ({ classInfo = {} }) => {
                         size="large"
                         icon={<ToolOutlined />}
                         className={styles.submitBtn}
-                        onClick={() => form.submit()}
                         htmlType="submit"
+                        loading={isCreatingAssignment}
                     >
                         Tạo bài tập
                     </Button>

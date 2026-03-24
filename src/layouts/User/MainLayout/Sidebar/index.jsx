@@ -76,4 +76,36 @@ const StudentSidebar = ({
                         <li key={item.key} className={styles.menuItem}>
                             <NavLink
                                 to={item.path}
-                                className={({ isActive }) => `${styles.navLink
+                                className={({ isActive }) => `${styles.navLink} ${isActive ? styles.active : ''}`}
+                                onClick={closeMobileMenu} // Đóng menu khi click vào link trên mobile
+                            >
+                                <span className={styles.icon}>{item.icon}</span>
+                                {!collapsed && <span className={styles.label}>{item.label}</span>}
+                            </NavLink>
+                        </li>
+                    ))}
+                </ul>
+
+                {/* Phần dưới cùng: chứa nút thu gọn và đăng xuất */}
+                <div className={styles.bottomSection}>
+                    <div className={styles.divider} />
+
+                    {/* Nút thu gọn sidebar từ nhánh develop */}
+                    <div className={styles.navLink} onClick={() => setCollapsed(!collapsed)} style={{ cursor: 'pointer', marginBottom: '8px' }}>
+                        <span className={styles.icon}>
+                            {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                        </span>
+                        {!collapsed && <span className={styles.label}>Thu gọn</span>}
+                    </div>
+
+                    <div className={styles.navLink} onClick={handleLogout} style={{ cursor: 'pointer' }}>
+                        <span className={styles.icon}><LogoutOutlined /></span>
+                        {!collapsed && <span className={styles.label}>Đăng xuất</span>}
+                    </div>
+                </div>
+            </nav>
+        </div>
+    );
+};
+
+export default StudentSidebar;

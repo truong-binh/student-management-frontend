@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import MainLayout from '@/layouts/User/MainLayout';
 import { Card, Calendar, Button, Timeline } from 'antd';
+import { useQuery } from '@tanstack/react-query';
 import {
     ClockCircleOutlined,
     CheckCircleOutlined,
@@ -29,6 +30,8 @@ import {
     Legend,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
+import { courseApi } from '@/api/admin/course';
+import { assignmentApi } from '@/api/admin/assignment';
 import styles from './styles.module.scss';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
@@ -41,45 +44,215 @@ const teacherMenuItems = [
     { key: 'feedback', label: 'Phản hồi', icon: <MessageOutlined />, path: '/teacher/feedback' },
 ];
 
+const normalizeResponseList = (res, fallbackKey) => {
+    if (!res?.success) {
+        throw res;
+    }
+    if (Array.isArray(res.data)) {
+        return res.data;
+    }
+    return res.data?.[fallbackKey] || [];
+};
+
+const formatDueLabel = (assignment, now) => {
+    const dueDate = dayjs(assignment.dueDate);
+    if (!dueDate.isValid()) {
+        return assignment.dueDateFormatted || '---';
+    }
+
+    const diffDays = dueDate.diff(now, 'day');
+    if (diffDays >= 0 && diffDays <= 2) {
+        return `Còn ${Math.max(1, diffDays)} ngày`;
+    }
+
+    return assignment.dueDateFormatted || dueDate.format('HH:mm - DD/MM/YYYY');
+};
+
 const TeacherDashboard = () => {
     const [calendarValue, setCalendarValue] = useState(dayjs());
 
-    const stats = [
-        { title: 'Tổng số sinh viên', value: '184', icon: <TeamOutlined />, color: '#3182ce' },
-        { title: 'Lớp học của bạn', value: '3', icon: <BookOutlined />, color: '#38a169' },
-        { title: 'Bài chưa chấm', value: '24', icon: <ClockCircleOutlined />, color: '#d69e2e' },
-        { title: 'Bài đã chấm', value: '160', icon: <CheckCircleOutlined />, color: '#3182ce' },
-    ];
+    const dashboardQuery = useQuery({
+        queryKey: ['teacher-dashboard'],
+        queryFn: async () => {
+            const coursesRes = await courseApi.getAllCourses({ page: 1, limit: 200 });
+            const courses = normalizeResponseList(coursesRes, 'items');
 
-    const chartData = {
-        labels: ['INT1306', 'INT1310', 'INT1402', 'INT1332', 'INT1416'],
-        datasets: [
-            {
-                label: 'Đã chấm',
-                data: [38, 22, 45, 30, 36],
-                backgroundColor: '#e53e3e',
-                borderRadius: 6,
-                barPercentage: 0.55,
-                categoryPercentage: 0.7,
-            },
-            {
-                label: 'Chưa chấm',
-                data: [10, 18, 5, 14, 8],
-                backgroundColor: '#4299e1',
-                borderRadius: 6,
-                barPercentage: 0.55,
-                categoryPercentage: 0.7,
-            },
-            {
-                label: 'Có phản hồi',
-                data: [20, 12, 30, 22, 28],
-                backgroundColor: '#38b2ac',
-                borderRadius: 6,
-                barPercentage: 0.55,
-                categoryPercentage: 0.7,
-            },
-        ],
-    };
+            const studentCountEntries = await Promise.all(
+                courses.map(async (course) => {
+                    const studentsRes = await courseApi.getCourseStudents(course._id);
+                    const students = normalizeResponseList(studentsRes, 'students');
+                    return [course._id, students.length];
+                })
+            );
+            const studentCountByCourse = Object.fromEntries(studentCountEntries);
+
+            const assignmentGroups = await Promise.all(
+                courses.map(async (course) => {
+                    const assignmentsRes = await assignmentApi.getAssignmentsByCourse(course._id);
+                    const items = normalizeResponseList(assignmentsRes, 'assignments');
+                    return items.map((assignment) => ({
+                        ...assignment,
+                        courseId: course._id,
+                        courseCode: course.courseCode,
+                        courseName: course.courseName,
+                    }));
+                })
+            );
+            const assignments = assignmentGroups.flat();
+
+            const submissionEntries = await Promise.all(
+                assignments.map(async (assignment) => {
+                    const submissionsRes = await assignmentApi.getSubmissionsByAssignment(assignment._id);
+                    const submissions = normalizeResponseList(submissionsRes, 'submissions');
+                    return [assignment._id, submissions];
+                })
+            );
+            const submissionsByAssignment = Object.fromEntries(submissionEntries);
+
+            return {
+                courses,
+                assignments,
+                studentCountByCourse,
+                submissionsByAssignment,
+            };
+        },
+        refetchOnWindowFocus: false,
+    });
+
+    const {
+        stats,
+        chartData,
+        assignments,
+        upcomingClasses,
+        recentActivities,
+    } = useMemo(() => {
+        const courses = dashboardQuery.data?.courses || [];
+        const assignmentsRaw = dashboardQuery.data?.assignments || [];
+        const studentCountByCourse = dashboardQuery.data?.studentCountByCourse || {};
+        const submissionsByAssignment = dashboardQuery.data?.submissionsByAssignment || {};
+
+        const allSubmissions = Object.values(submissionsByAssignment).flat();
+        const gradedSubmissions = allSubmissions.filter(
+            (submission) => submission.status === 'GRADED' || typeof submission.score === 'number'
+        );
+
+        const totalStudents = Object.values(studentCountByCourse).reduce((sum, count) => sum + Number(count || 0), 0);
+        const statsView = [
+            { title: 'Tổng số sinh viên', value: String(totalStudents), icon: <TeamOutlined />, color: '#3182ce' },
+            { title: 'Lớp học của bạn', value: String(courses.length), icon: <BookOutlined />, color: '#38a169' },
+            { title: 'Bài chưa chấm', value: String(Math.max(allSubmissions.length - gradedSubmissions.length, 0)), icon: <ClockCircleOutlined />, color: '#d69e2e' },
+            { title: 'Bài đã chấm', value: String(gradedSubmissions.length), icon: <CheckCircleOutlined />, color: '#3182ce' },
+        ];
+
+        const chartRows = courses.map((course) => {
+            const assignmentsByCourse = assignmentsRaw.filter((assignment) => assignment.courseId === course._id);
+            const courseSubmissions = assignmentsByCourse.flatMap(
+                (assignment) => submissionsByAssignment[assignment._id] || []
+            );
+
+            const graded = courseSubmissions.filter(
+                (submission) => submission.status === 'GRADED' || typeof submission.score === 'number'
+            ).length;
+            const feedback = courseSubmissions.filter((submission) => !!submission.aiFeedback).length;
+
+            return {
+                label: course.courseCode || course.courseName || '---',
+                graded,
+                pending: Math.max(courseSubmissions.length - graded, 0),
+                feedback,
+            };
+        });
+
+        const chartView = {
+            labels: chartRows.map((row) => row.label),
+            datasets: [
+                {
+                    label: 'Đã chấm',
+                    data: chartRows.map((row) => row.graded),
+                    backgroundColor: '#e53e3e',
+                    borderRadius: 6,
+                    barPercentage: 0.55,
+                    categoryPercentage: 0.7,
+                },
+                {
+                    label: 'Chưa chấm',
+                    data: chartRows.map((row) => row.pending),
+                    backgroundColor: '#4299e1',
+                    borderRadius: 6,
+                    barPercentage: 0.55,
+                    categoryPercentage: 0.7,
+                },
+                {
+                    label: 'Có phản hồi',
+                    data: chartRows.map((row) => row.feedback),
+                    backgroundColor: '#38b2ac',
+                    borderRadius: 6,
+                    barPercentage: 0.55,
+                    categoryPercentage: 0.7,
+                },
+            ],
+        };
+
+        const now = dayjs();
+        const upcomingAssignmentsSource = assignmentsRaw
+            .filter((assignment) => dayjs(assignment.dueDate).isValid())
+            .sort((a, b) => dayjs(a.dueDate).valueOf() - dayjs(b.dueDate).valueOf());
+
+        const pickedAssignments = upcomingAssignmentsSource.filter((assignment) => dayjs(assignment.dueDate).isAfter(now));
+        const assignmentView = (pickedAssignments.length ? pickedAssignments : upcomingAssignmentsSource)
+            .slice(0, 5)
+            .map((assignment, index) => {
+                const submitted = (submissionsByAssignment[assignment._id] || []).length;
+                const total = Number(studentCountByCourse[assignment.courseId] || 0);
+                const progressPercent = total > 0 ? Math.min((submitted / total) * 100, 100) : 0;
+
+                return {
+                    title: assignment.title,
+                    class: assignment.courseName || assignment.courseCode || '---',
+                    time: formatDueLabel(assignment, now),
+                    timeStatus: dayjs(assignment.dueDate).diff(now, 'day') <= 2 ? 'warning' : 'info',
+                    submitted,
+                    total,
+                    progressPercent,
+                    icon: index % 2 === 0 ? <FileTextOutlined /> : <FormOutlined />,
+                    iconBg: index % 2 === 0 ? '#fff5f5' : '#ebf8ff',
+                    iconColor: index % 2 === 0 ? '#e53e3e' : '#3182ce',
+                };
+            });
+
+        const upcomingClassesView = courses.slice(0, 3).map((course, index) => ({
+            no: String(index + 1).padStart(2, '0'),
+            status: index === 0 ? 'ĐANG GIẢNG DẠY' : 'SẮP DIỄN RA',
+            statusType: index === 0 ? 'active' : 'upcoming',
+            students: Number(studentCountByCourse[course._id] || 0),
+            code: course.courseCode || '---',
+            time: course.semester || '---',
+            subject: course.courseName || '---',
+            room: '--',
+        }));
+
+        const activityView = assignmentsRaw
+            .slice()
+            .sort((a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf())
+            .slice(0, 2)
+            .map((assignment) => ({
+                dot: <div className={styles.activityDot} />,
+                children: (
+                    <div className={styles.activityItem}>
+                        <p>Bài tập mới: {assignment.title}</p>
+                        <span>{dayjs(assignment.createdAt).format('DD/MM/YYYY HH:mm')}</span>
+                    </div>
+                ),
+            }));
+
+        return {
+            stats: statsView,
+            chartData: chartView,
+            assignments: assignmentView,
+            upcomingClasses: upcomingClassesView,
+            recentActivities: activityView,
+        };
+    }, [dashboardQuery.data]);
 
     const chartOptions = {
         responsive: true,
@@ -101,64 +274,6 @@ const TeacherDashboard = () => {
             },
         },
     };
-
-    const assignments = [
-        {
-            title: 'Báo cáo bài tập lớn',
-            class: 'Nhập môn Công nghệ phần mềm',
-            time: 'Còn 2 ngày',
-            timeStatus: 'warning',
-            submitted: 42,
-            total: 45,
-            icon: <FileTextOutlined />,
-            iconBg: '#fff5f5',
-            iconColor: '#e53e3e',
-        },
-        {
-            title: 'Kiểm tra trắc nghiệm chương 3',
-            class: 'INT1306',
-            time: '09:00 - 15/03/2026',
-            timeStatus: 'info',
-            submitted: 30,
-            total: 45,
-            icon: <FormOutlined />,
-            iconBg: '#ebf8ff',
-            iconColor: '#3182ce',
-        },
-    ];
-
-    const upcomingClasses = [
-        {
-            no: '01',
-            status: 'SẮP DIỄN RA',
-            statusType: 'upcoming',
-            students: 45,
-            code: 'INT1340 - 20252 - 01',
-            time: '09:00 - 12:00',
-            subject: 'Nhập môn Công nghệ phần mềm',
-            room: 'HT2',
-        },
-        {
-            no: '02',
-            status: 'SẮP DIỄN RA',
-            statusType: 'upcoming',
-            students: 45,
-            code: 'INT1340 - 20252 - 01',
-            time: '09:00 - 12:00',
-            subject: 'Nhập môn Công nghệ phần mềm',
-            room: 'HT2',
-        },
-        {
-            no: '03',
-            status: 'ĐANG DIỄN RA',
-            statusType: 'active',
-            students: 45,
-            code: 'INT1340 - 20252 - 01',
-            time: '09:00 - 12:00',
-            subject: 'Nhập môn Công nghệ phần mềm',
-            room: 'HT2',
-        },
-    ];
 
     return (
         <MainLayout menuItems={teacherMenuItems}>
@@ -210,8 +325,10 @@ const TeacherDashboard = () => {
                                 <Button type="link" className={styles.viewAll}>Xem tất cả</Button>
                             </div>
                             <div className={styles.assignmentList}>
+                                {dashboardQuery.isLoading && <p>Đang tải dữ liệu bài tập...</p>}
+                                {!dashboardQuery.isLoading && assignments.length === 0 && <p>Chưa có bài tập.</p>}
                                 {assignments.map((item, i) => (
-                                    <div key={i} className={styles.assignmentItem}>
+                                    <div key={`${item.title}-${i}`} className={styles.assignmentItem}>
                                         <div
                                             className={styles.assignmentIcon}
                                             style={{ background: item.iconBg, color: item.iconColor }}
@@ -234,7 +351,7 @@ const TeacherDashboard = () => {
                                             <div className={styles.progressBar}>
                                                 <div
                                                     className={styles.progressFill}
-                                                    style={{ width: `${(item.submitted / item.total) * 100}%` }}
+                                                    style={{ width: `${item.progressPercent}%` }}
                                                 />
                                             </div>
                                         </div>
@@ -303,8 +420,10 @@ const TeacherDashboard = () => {
                         {/* Upcoming Classes */}
                         <div className={styles.upcomingSection}>
                             <p className={styles.sectionHeader}>Lớp học phần sắp tới:</p>
+                            {dashboardQuery.isLoading && <p>Đang tải lớp học...</p>}
+                            {!dashboardQuery.isLoading && upcomingClasses.length === 0 && <p>Chưa có lớp học.</p>}
                             {upcomingClasses.map((cls, i) => (
-                                <div key={i} className={styles.classItem}>
+                                <div key={`${cls.code}-${i}`} className={styles.classItem}>
                                     <div className={styles.classNo}>{cls.no}</div>
                                     <div className={styles.classContent}>
                                         <div className={styles.classTopRow}>
@@ -329,23 +448,16 @@ const TeacherDashboard = () => {
                         {/* Recent Activity */}
                         <div className={styles.activitySection}>
                             <p className={styles.sectionHeader}>Hoạt động gần đây:</p>
+                            {dashboardQuery.isLoading && <p>Đang tải hoạt động...</p>}
+                            {dashboardQuery.isError && <p>Không thể tải dữ liệu dashboard.</p>}
                             <Timeline
-                                items={[
+                                items={recentActivities.length ? recentActivities : [
                                     {
                                         dot: <div className={styles.activityDot} />,
                                         children: (
                                             <div className={styles.activityItem}>
-                                                <p>Bạn đã đăng một thông báo trên diễn đàn</p>
-                                                <span>T3, 1/3/2026 9:15</span>
-                                            </div>
-                                        ),
-                                    },
-                                    {
-                                        dot: <div className={styles.activityDot} />,
-                                        children: (
-                                            <div className={styles.activityItem}>
-                                                <p>Bạn đã đăng một thông báo trên diễn đàn</p>
-                                                <span>T3, 1/3/2026 9:15</span>
+                                                <p>Chưa có hoạt động gần đây</p>
+                                                <span>-</span>
                                             </div>
                                         ),
                                     },

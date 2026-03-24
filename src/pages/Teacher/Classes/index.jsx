@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/layouts/User/MainLayout';
-import { Input, Select, Progress, Button, Pagination, Modal, Form, InputNumber, Popconfirm, message, Tag, Space, Dropdown } from 'antd';
+import { Input, Select, Progress, Button, Pagination, Modal, Form, InputNumber, Popconfirm, message, Space, Dropdown } from 'antd';
 import {
     SearchOutlined,
     CodeOutlined,
@@ -17,7 +17,6 @@ import {
     DeleteOutlined,
     AppstoreOutlined,
     ReadOutlined,
-    BookOutlined,
     CalendarOutlined,
     UserOutlined,
     MessageOutlined,
@@ -37,7 +36,7 @@ const teacherMenuItems = [
 ];
 
 const COLORS = ['#e53e3e', '#3182ce', '#805ad5', '#d69e2e', '#38b2ac', '#5a67d8', '#ed64a6', '#c53030'];
-const ICONS = [<CodeOutlined />, <GlobalOutlined />, <DesktopOutlined />, <ApartmentOutlined />, <RadiusUprightOutlined />, <TranslationOutlined />, <SafetyCertificateOutlined />];
+const ICONS = [CodeOutlined, GlobalOutlined, DesktopOutlined, ApartmentOutlined, RadiusUprightOutlined, TranslationOutlined, SafetyCertificateOutlined];
 
 const TeacherClasses = () => {
     const navigate = useNavigate();
@@ -67,7 +66,6 @@ const TeacherClasses = () => {
             semester: record.semester,
             credits: record.credits,
             description: record.description,
-            lecturerId: typeof record.lecturerId === 'object' && record.lecturerId ? record.lecturerId._id : record.lecturerId
         });
         setIsModalOpen(true);
     };
@@ -80,8 +78,16 @@ const TeacherClasses = () => {
 
     const handleSubmit = async (values) => {
         try {
+            const payload = {
+                courseCode: values.courseCode?.trim(),
+                courseName: values.courseName?.trim(),
+                semester: values.semester?.trim(),
+                credits: Number(values.credits),
+                description: values.description?.trim() || undefined,
+            };
+
             if (editingCourse) {
-                updateCourse(editingCourse._id, values, {
+                updateCourse(editingCourse._id, payload, {
                     onSuccess: () => {
                         message.success('Cập nhật khóa học thành công');
                         handleCancel();
@@ -91,7 +97,7 @@ const TeacherClasses = () => {
                     }
                 });
             } else {
-                createCourse(values, {
+                createCourse(payload, {
                     onSuccess: () => {
                         message.success('Thêm mới khóa học thành công');
                         handleCancel();
@@ -163,13 +169,13 @@ const TeacherClasses = () => {
                     ) : (
                         paginated.map((item, index) => {
                             const color = COLORS[index % COLORS.length];
-                            const icon = ICONS[index % ICONS.length];
+                            const Icon = ICONS[index % ICONS.length];
                             const percent = 60;
 
                             return (
                                 <div key={item._id} className={styles.classCard}>
                                     <div className={styles.cardHeader} style={{ backgroundColor: color }}>
-                                        <div className={styles.subjectIcon}>{icon}</div>
+                                        <div className={styles.subjectIcon}><Icon /></div>
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
                                             <Dropdown
                                                 menu={{
@@ -316,14 +322,6 @@ const TeacherClasses = () => {
                                 <InputNumber style={{ width: '100%' }} min={1} max={10} placeholder="VD: 3" />
                             </Form.Item>
                         </div>
-
-                        <Form.Item
-                            name="lecturerId"
-                            label="Mã Giảng viên (ID)"
-                            tooltip="Hiện tại dùng ID của giảng viên trong hệ thống"
-                        >
-                            <Input placeholder="Nhập ID giảng viên (nếu có)" />
-                        </Form.Item>
 
                         <Form.Item
                             name="description"
