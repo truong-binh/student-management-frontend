@@ -105,72 +105,75 @@ const AttendanceTab = () => {
                 </div>
 
                 {/* Right content - Student list */}
-                <div className={styles.studentListCard}>
-                    <div className={styles.studentListHeader}>
-                        <span className={styles.studentListTitle}>Danh sách sinh viên ({total})</span>
-                        <Button
-                            icon={<FileExcelOutlined />}
-                            className={styles.exportBtn}
-                            type="link"
-                            danger
-                        >
-                            Xuất file Excel
-                        </Button>
-                    </div>
-                    {/* ... (rest of the table remains same) ... */}
-                    <table className={styles.studentTable}>
-                        <thead>
-                            <tr>
-                                <th>HỌ VÀ TÊN</th>
-                                <th>MÃ SINH VIÊN</th>
-                                <th>NGÀY SINH</th>
-                                <th>TRẠNG THÁI ĐIỂM DANH</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {paginated.map(s => (
-                                <tr key={s.key}>
-                                    <td>
-                                        <div className={styles.studentName}>
-                                            <span
-                                                className={styles.studentAvatar}
-                                                style={{ background: s.color }}
-                                            >
-                                                {s.initials}
-                                            </span>
-                                            {s.name}
-                                        </div>
-                                    </td>
-                                    <td className={styles.msvCell}>{s.msv}</td>
-                                    <td className={styles.dobCell}>{s.dob}</td>
-                                    <td>
-                                        <Radio.Group
-                                            value={s.status}
-                                            onChange={e => handleStatusChange(s.key, e.target.value)}
-                                            className={styles.radioGroup}
-                                        >
-                                            <Radio value="present" className={styles.radioPresent}>Có mặt</Radio>
-                                            <Radio value="excused" className={styles.radioExcused}>Có phép</Radio>
-                                            <Radio value="absent" className={styles.radioAbsent}>Vắng</Radio>
-                                        </Radio.Group>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                <div className={styles.attendanceContent}>
+                    <div className={styles.studentListCard}>
+                        <div className={styles.studentListHeader}>
+                            <span className={styles.studentListTitle}>Danh sách sinh viên ({total})</span>
+                            <Button
+                                icon={<FileExcelOutlined />}
+                                className={styles.exportBtn}
+                                type="link"
+                                danger
+                            >
+                                Xuất file Excel
+                            </Button>
+                        </div>
+                        <div className={styles.attendanceTableScroll}>
+                            <table className={styles.studentTable}>
+                                <thead>
+                                    <tr>
+                                        <th>HỌ VÀ TÊN</th>
+                                        <th>MÃ SINH VIÊN</th>
+                                        <th>NGÀY SINH</th>
+                                        <th>TRẠNG THÁI ĐIỂM DANH</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {paginated.map(s => (
+                                        <tr key={s.key}>
+                                            <td>
+                                                <div className={styles.studentName}>
+                                                    <span
+                                                        className={styles.studentAvatar}
+                                                        style={{ background: s.color }}
+                                                    >
+                                                        {s.initials}
+                                                    </span>
+                                                    {s.name}
+                                                </div>
+                                            </td>
+                                            <td className={styles.msvCell}>{s.msv}</td>
+                                            <td className={styles.dobCell}>{s.dob}</td>
+                                            <td>
+                                                <Radio.Group
+                                                    value={s.status}
+                                                    onChange={e => handleStatusChange(s.key, e.target.value)}
+                                                    className={styles.radioGroup}
+                                                >
+                                                    <Radio value="present" className={styles.radioPresent}>Có mặt</Radio>
+                                                    <Radio value="excused" className={styles.radioExcused}>Có phép</Radio>
+                                                    <Radio value="absent" className={styles.radioAbsent}>Vắng</Radio>
+                                                </Radio.Group>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
 
-                    <div className={styles.tableFooter}>
-                        <span className={styles.tableInfo}>
-                            Đang hiển thị {Math.min((currentPage - 1) * PAGE_SIZE + 1, total)}–{Math.min(currentPage * PAGE_SIZE, total)} trên {total} sinh viên
-                        </span>
-                        <Pagination
-                            current={currentPage}
-                            total={total}
-                            pageSize={PAGE_SIZE}
-                            showSizeChanger={false}
-                            onChange={setCurrentPage}
-                            size="small"
-                        />
+                        <div className={styles.tableFooter}>
+                            <span className={styles.tableInfo}>
+                                Đang hiển thị {Math.min((currentPage - 1) * PAGE_SIZE + 1, total)}–{Math.min(currentPage * PAGE_SIZE, total)} trên {total} sinh viên
+                            </span>
+                            <Pagination
+                                current={currentPage}
+                                total={total}
+                                pageSize={PAGE_SIZE}
+                                showSizeChanger={false}
+                                onChange={setCurrentPage}
+                                size="small"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>

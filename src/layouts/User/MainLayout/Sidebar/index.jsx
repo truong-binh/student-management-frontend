@@ -81,8 +81,13 @@ const StudentSidebar = ({
                 </ul>
             </nav>
 
-            <button className={styles.collapseBtn} onClick={() => setCollapsed(!collapsed)}>
+            <button
+                className={styles.collapseBtn}
+                onClick={() => setCollapsed(!collapsed)}
+                title={collapsed ? 'Mở rộng' : 'Thu gọn'}
+            >
                 {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                {!collapsed && <span>{collapsed ? 'Mở rộng' : 'Thu gọn'}</span>}
             </button>
 
             <div className={styles.logoutSection}>

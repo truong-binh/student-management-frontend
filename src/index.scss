@@ -8,8 +8,17 @@
   font-family: 'Inter', Helvetica, sans-serif;
 }
 
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+}
+
 body {
+  overflow-x: hidden;
   overflow-y: scroll;
+  -webkit-text-size-adjust: 100%;
 }
 
 

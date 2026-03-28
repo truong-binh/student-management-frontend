@@ -19,6 +19,7 @@ const AssignmentsTab = () => {
     const navigate = useNavigate();
     const { id: classId } = useParams();
     const [filter, setFilter] = useState('all');
+    const [sortBy, setSortBy] = useState('newest');
 
     const { assignments: rawAssignments, isLoading: isAssignmentsLoading } = useCourseAssignments(classId);
     const { mySubmissions, isLoading: isSubmissionsLoading } = useMySubmissions();
@@ -59,9 +60,22 @@ const AssignmentsTab = () => {
     }, [rawAssignments, mySubmissions]);
 
     const filteredAssignments = useMemo(() => {
-        if (filter === 'all') return assignments;
-        return assignments.filter(item => item.status === filter);
-    }, [filter, assignments]);
+        const base = filter === 'all' ? assignments : assignments.filter(item => item.status === filter);
+
+        const parseDeadline = (deadlineText) => {
+            if (!deadlineText || deadlineText === 'Không có hạn') return Number.MAX_SAFE_INTEGER;
+            const dateText = deadlineText.replace('Hạn nộp: ', '').trim();
+            const value = dayjs(dateText, 'DD/MM/YYYY - HH:mm');
+            return value.isValid() ? value.valueOf() : Number.MAX_SAFE_INTEGER;
+        };
+
+        return [...base].sort((a, b) => {
+            if (sortBy === 'deadline') {
+                return parseDeadline(a.deadline) - parseDeadline(b.deadline);
+            }
+            return b.id?.toString().localeCompare(a.id?.toString());
+        });
+    }, [filter, assignments, sortBy]);
 
     const handleAction = (item) => {
         if (item.status === 'opening' || item.status === 'overdue') {
@@ -91,6 +105,7 @@ const AssignmentsTab = () => {
                     <Button
                         type={filter === 'all' ? 'primary' : 'default'}
                         danger={filter === 'all'}
+                        className={styles.filterButton}
                         onClick={() => setFilter('all')}
                     >
                         Tất cả ({counts.all})
@@ -98,6 +113,7 @@ const AssignmentsTab = () => {
                     <Button
                         type={filter === 'opening' ? 'primary' : 'default'}
                         danger={filter === 'opening'}
+                        className={styles.filterButton}
                         onClick={() => setFilter('opening')}
                     >
                         Đang mở ({counts.opening})
@@ -105,6 +121,7 @@ const AssignmentsTab = () => {
                     <Button
                         type={filter === 'submitted' ? 'primary' : 'default'}
                         danger={filter === 'submitted'}
+                        className={styles.filterButton}
                         onClick={() => setFilter('submitted')}
                     >
                         Đã nộp ({counts.submitted})
@@ -112,12 +129,18 @@ const AssignmentsTab = () => {
                     <Button
                         type={filter === 'graded' ? 'primary' : 'default'}
                         danger={filter === 'graded'}
+                        className={styles.filterButton}
                         onClick={() => setFilter('graded')}
                     >
                         Đã chấm ({counts.graded})
                     </Button>
                 </div>
-                <Select defaultValue="newest" style={{ width: 160 }} size="large">
+                <Select
+                    value={sortBy}
+                    onChange={setSortBy}
+                    className={styles.sortSelect}
+                    size="large"
+                >
                     <Option value="newest">Mới nhất trước</Option>
                     <Option value="deadline">Gần hạn nhất</Option>
                 </Select>
@@ -140,34 +163,36 @@ const AssignmentsTab = () => {
                                 {item.comment && <span>Nhận xét: "{item.comment}"</span>}
                             </div>
                         </div>
-                        <div className={styles.assignScore}>
-                            {item.score !== null ? (
-                                <>
-                                    <div className={styles.scoreLabel}>Điểm số</div>
-                                    <div className={styles.scoreValue}>{item.score}<span>/10</span></div>
-                                </>
-                            ) : (
-                                <Tag color={item.status === 'submitted' ? 'gold' : item.status === 'overdue' ? 'error' : 'blue'}>
-                                    {item.status === 'submitted' ? 'Đã nộp' : item.status === 'overdue' ? 'Quá hạn' : 'Đang mở'}
-                                </Tag>
-                            )}
-                        </div>
-                        <div className={styles.assignAction}>
-                            {(item.status === 'opening' || item.status === 'overdue') && (
-                                <Button type="primary" danger={item.status === 'opening'} onClick={() => handleAction(item)}>
-                                    Làm bài ngay
-                                </Button>
-                            )}
-                            {item.status === 'submitted' && (
-                                <Button onClick={() => handleAction(item)}>
-                                    Xem bài nộp
-                                </Button>
-                            )}
-                            {item.status === 'graded' && (
-                                <Button onClick={() => handleAction(item)}>
-                                    Xem kết quả
-                                </Button>
-                            )}
+                        <div className={styles.assignFooter}>
+                            <div className={styles.assignScore}>
+                                {item.score !== null ? (
+                                    <>
+                                        <div className={styles.scoreLabel}>Điểm số</div>
+                                        <div className={styles.scoreValue}>{item.score}<span>/10</span></div>
+                                    </>
+                                ) : (
+                                    <Tag color={item.status === 'submitted' ? 'gold' : item.status === 'overdue' ? 'error' : 'blue'}>
+                                        {item.status === 'submitted' ? 'Đã nộp' : item.status === 'overdue' ? 'Quá hạn' : 'Đang mở'}
+                                    </Tag>
+                                )}
+                            </div>
+                            <div className={styles.assignAction}>
+                                {(item.status === 'opening' || item.status === 'overdue') && (
+                                    <Button type="primary" danger={item.status === 'opening'} onClick={() => handleAction(item)}>
+                                        Làm bài ngay
+                                    </Button>
+                                )}
+                                {item.status === 'submitted' && (
+                                    <Button onClick={() => handleAction(item)}>
+                                        Xem bài nộp
+                                    </Button>
+                                )}
+                                {item.status === 'graded' && (
+                                    <Button onClick={() => handleAction(item)}>
+                                        Xem kết quả
+                                    </Button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 ))}

@@ -106,33 +106,34 @@ const TeacherClassDetail = () => {
 
                 <div className={styles.tabSection}>
                     <Tabs
+                        className={styles.classTabs}
                         activeKey={activeTab}
                         onChange={setActiveTab}
                         animated={false}
                         items={[
                             {
                                 key: '1',
-                                label: <span><InfoCircleOutlined /> Tổng quan</span>,
+                                label: <span className={styles.tabLabel}><InfoCircleOutlined /> <span>Tổng quan</span></span>,
                                 children: <OverviewTab color={classInfo.color} description={classInfo.description} />,
                             },
                             {
                                 key: 'students',
-                                label: <span><UserOutlined /> DS sinh viên</span>,
+                                label: <span className={styles.tabLabel}><UserOutlined /> <span>DS sinh viên</span></span>,
                                 children: <StudentsTab courseId={course._id} />,
                             },
                             {
                                 key: '2',
-                                label: <span><UserOutlined /> Điểm danh</span>,
+                                label: <span className={styles.tabLabel}><UserOutlined /> <span>Điểm danh</span></span>,
                                 children: <AttendanceTab />,
                             },
                             {
                                 key: '3',
-                                label: <span><UnorderedListOutlined /> DS bài tập</span>,
+                                label: <span className={styles.tabLabel}><UnorderedListOutlined /> <span>DS bài tập</span></span>,
                                 children: <AssignmentsTab classInfo={classInfo} courseId={course._id} />,
                             },
                             {
                                 key: '4',
-                                label: <span><EditOutlined /> Tạo bài tập</span>,
+                                label: <span className={styles.tabLabel}><EditOutlined /> <span>Tạo bài tập</span></span>,
                                 children: <CreateAssignmentTab classInfo={classInfo} courseId={course._id} setActiveTab={setActiveTab} />,
                             },
                         ]}
