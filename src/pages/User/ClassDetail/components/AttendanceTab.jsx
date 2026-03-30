@@ -1,33 +1,46 @@
 import React from 'react';
-import { Table, Tag, Button, Pagination } from 'antd';
+import { Table, Tag, Pagination, Spin } from 'antd';
 import {
     CalendarOutlined,
     ClockCircleOutlined,
     CheckCircleOutlined,
     ScheduleOutlined,
-    FilterOutlined,
-    ExportOutlined
 } from '@ant-design/icons';
+import { useParams } from 'react-router-dom';
 import clsx from 'clsx';
 import styles from '../styles.module.scss';
+import { useMyAttendance } from '@/hooks/useAttendance';
+import dayjs from 'dayjs';
 
 const AttendanceTab = () => {
+    const { id: courseId } = useParams();
+    const { summary, records, isLoading } = useMyAttendance(courseId);
+
     const attendanceColumns = [
-        { title: 'BUỔI HỌC', dataIndex: 'session', key: 'session' },
-        { title: 'NGÀY', dataIndex: 'date', key: 'date' },
-        { title: 'GIẢNG VIÊN', dataIndex: 'teacher', key: 'teacher' },
+        {
+            title: 'BUỔI HỌC',
+            dataIndex: 'weekNumber',
+            key: 'weekNumber',
+            render: (week) => `Tuần ${week}`
+        },
+        {
+            title: 'NGÀY GHI NHẬN',
+            dataIndex: 'recordedAt',
+            key: 'recordedAt',
+            render: (date) => dayjs(date).format('DD/MM/YYYY HH:mm')
+        },
         {
             title: 'TRẠNG THÁI',
             dataIndex: 'status',
             key: 'status',
             render: (status) => {
                 const statusMap = {
-                    present: { text: 'Có mặt', class: styles.present },
-                    absent: { text: 'Vắng', class: styles.absent },
-                    late: { text: 'Muộn', class: styles.late },
-                    pending: { text: 'Chưa diễn ra', class: styles.pending }
+                    'PRESENT': { text: 'Có mặt', class: styles.present },
+                    'ABSENT': { text: 'Vắng', class: styles.absent },
+                    'EXCUSED': { text: 'Nghỉ có phép', class: styles.late },
+                    'LATE': { text: 'Đi muộn', class: styles.late },
                 };
-                const config = statusMap[status] || statusMap.present;
+                const config = statusMap[status] || { text: status, class: '' };
                 return (
                     <Tag className={clsx(styles.statusTag, config.class)}>
                         {config.text}
@@ -35,42 +48,42 @@ const AttendanceTab = () => {
                 );
             }
         },
-        { title: 'GHI CHÚ', dataIndex: 'note', key: 'note' },
     ];
 
-    const attendanceData = [
-        { key: 1, session: 'Buổi 1', date: '12/01/2026', teacher: 'Lê Thị Hoa', status: 'present', note: '-' },
-        { key: 2, session: 'Buổi 2', date: '19/01/2026', teacher: 'Lê Thị Hoa', status: 'late', note: 'Vào muộn 15p' },
-        { key: 3, session: 'Buổi 3', date: '26/01/2026', teacher: 'Lê Thị Hoa', status: 'present', note: '-' },
-        { key: 4, session: 'Buổi 4', date: '02/02/2026', teacher: 'Lê Thị Hoa', status: 'absent', note: 'Không phép' },
-        { key: 5, session: 'Buổi 5', date: '09/02/2026', teacher: 'Lê Thị Hoa', status: 'present', note: '-' },
-        { key: 6, session: 'Buổi 6', date: '16/02/2026', teacher: 'Lê Thị Hoa', status: 'present', note: '-' },
-        { key: 7, session: 'Buổi 7', date: '23/02/2026', teacher: 'Lê Thị Hoa', status: 'present', note: '-' },
-        { key: 8, session: 'Buổi 8', date: '02/03/2026', teacher: 'Lê Thị Hoa', status: 'pending', note: '-' },
-    ];
+    if (isLoading) {
+        return (
+            <div style={{ padding: '40px', textAlign: 'center' }}>
+                <Spin tip="Đang tải dữ liệu điểm danh..." />
+            </div>
+        );
+    }
+
+    const attendanceRate = summary.total > 0
+        ? Math.round((summary.present / summary.total) * 100)
+        : 100;
 
     return (
         <div>
             <div className={styles.attendanceStats}>
                 <div className={styles.statItem}>
-                    <div className={styles.statIcon} style={{ background: '#fef2f2', color: '#b71c1c' }}><CalendarOutlined /></div>
+                    <div className={styles.statIcon} style={{ background: '#f0fdf4', color: '#16a34a' }}><CalendarOutlined /></div>
                     <div className={styles.statMeta}>
                         <div className={styles.statLabel}>Tổng số buổi</div>
-                        <div className={styles.statValue}>15</div>
+                        <div className={styles.statValue}>{summary.total}</div>
                     </div>
                 </div>
                 <div className={styles.statItem}>
-                    <div className={styles.statIcon} style={{ background: '#fef2f2', color: '#b71c1c' }}><ClockCircleOutlined /></div>
+                    <div className={styles.statIcon} style={{ background: '#fef2f2', color: '#dc2626' }}><ClockCircleOutlined /></div>
                     <div className={styles.statMeta}>
                         <div className={styles.statLabel}>Số buổi vắng</div>
-                        <div className={styles.statValue}>1</div>
+                        <div className={styles.statValue}>{summary.absent}</div>
                     </div>
                 </div>
                 <div className={styles.statItem}>
-                    <div className={styles.statIcon} style={{ background: '#fef2f2', color: '#b71c1c' }}><CheckCircleOutlined /></div>
+                    <div className={styles.statIcon} style={{ background: '#eff6ff', color: '#2563eb' }}><CheckCircleOutlined /></div>
                     <div className={styles.statMeta}>
                         <div className={styles.statLabel}>Tỷ lệ chuyên cần</div>
-                        <div className={styles.statValue}>93%</div>
+                        <div className={styles.statValue}>{attendanceRate}%</div>
                     </div>
                 </div>
             </div>
@@ -81,23 +94,17 @@ const AttendanceTab = () => {
                         <ScheduleOutlined className={styles.icon} />
                         Chi tiết điểm danh
                     </div>
-                    <div style={{ display: 'flex', gap: 12 }}>
-                        <Button icon={<FilterOutlined />}>Lọc</Button>
-                        <Button type="primary" danger icon={<ExportOutlined />}>Xuất báo cáo</Button>
-                    </div>
                 </div>
                 <Table
                     columns={attendanceColumns}
-                    dataSource={attendanceData}
-                    pagination={false}
+                    dataSource={records.map(r => ({ ...r, key: r._id }))}
+                    pagination={{
+                        pageSize: 10,
+                        showSizeChanger: false,
+                        size: 'middle',
+                    }}
                     className={styles.attendanceTable}
                 />
-                <footer className={styles.footer}>
-                    <div className={styles.paginationInfo}>
-                        Hiển thị 1 đến 8 của 15 buổi học
-                    </div>
-                    <Pagination defaultCurrent={1} total={15} pageSize={8} size="middle" />
-                </footer>
             </div>
         </div>
     );

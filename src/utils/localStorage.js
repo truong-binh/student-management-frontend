@@ -4,6 +4,7 @@ const AUTH_TOKEN_ADMIN_STORE_KEY = 'token_admin';
 export const removeAuthToken = () => {
     return localStorage.removeItem(AUTH_TOKEN_STORE_KEY);
 }
+export const removeAuthTokenStudent = removeAuthToken;
 
 export const setAuthToken = (token) => {
     return localStorage.setItem(AUTH_TOKEN_STORE_KEY, token);
@@ -12,6 +13,7 @@ export const setAuthToken = (token) => {
 export const getAuthToken = () => {
     return localStorage.getItem(AUTH_TOKEN_STORE_KEY)
 }
+export const getAuthTokenStudent = getAuthToken;
 
 export const hasAuthToken = () => {
     return !!getAuthToken();

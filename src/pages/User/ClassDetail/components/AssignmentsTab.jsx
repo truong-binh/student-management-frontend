@@ -60,7 +60,14 @@ const AssignmentsTab = () => {
     }, [rawAssignments, mySubmissions]);
 
     const filteredAssignments = useMemo(() => {
-        const base = filter === 'all' ? assignments : assignments.filter(item => item.status === filter);
+        let base;
+        if (filter === 'all') {
+            base = assignments;
+        } else if (filter === 'opening') {
+            base = assignments.filter(item => item.status === 'opening' || item.status === 'overdue');
+        } else {
+            base = assignments.filter(item => item.status === filter);
+        }
 
         const parseDeadline = (deadlineText) => {
             if (!deadlineText || deadlineText === 'Không có hạn') return Number.MAX_SAFE_INTEGER;

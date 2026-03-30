@@ -69,11 +69,33 @@ export const useSubmissionDetail = (submissionId) => {
 export const useStudentSubmissions = (assignmentId) => {
     const queryClient = useQueryClient();
 
-    const submitMutation = useMutation({
+    const submitAndGradeMutation = useMutation({
         mutationFn: async (formData) => {
-            const res = await submissionApi.submitAssignment(assignmentId, formData);
-            if (!res.success) throw res;
-            return res.data;
+            const submitRes = await submissionApi.submitAssignment(assignmentId, formData);
+            if (!submitRes.success) throw submitRes;
+
+            let submissionId = submitRes.data?.id || submitRes.data?._id;
+
+            if (!submissionId) {
+                const mySubsRes = await submissionApi.getMySubmissions();
+                if (mySubsRes.success && Array.isArray(mySubsRes.data)) {
+                    const found = mySubsRes.data.find(sub => {
+                        const subAssignmentId = sub.assignment?.id || sub.assignment?._id || sub.assignment;
+                        return String(subAssignmentId) === String(assignmentId);
+                    });
+                    submissionId = found?.id || found?._id;
+                }
+            }
+
+            if (submissionId) {
+                try {
+                    await submissionApi.gradeSubmissionByAI(submissionId);
+                } catch {
+                    // AI grading may fail due to permissions or file type — not critical
+                }
+            }
+
+            return submitRes.data;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['my-submissions'] });
@@ -82,8 +104,9 @@ export const useStudentSubmissions = (assignmentId) => {
     });
 
     return {
-        submitAssignment: submitMutation.mutateAsync,
-        isSubmitting: submitMutation.isPending,
+        submitAssignment: submitAndGradeMutation.mutateAsync,
+        isSubmitting: submitAndGradeMutation.isPending,
+        isGrading: false,
     };
 };
 

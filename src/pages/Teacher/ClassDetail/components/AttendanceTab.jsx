@@ -1,52 +1,81 @@
 import React, { useState } from 'react';
-import { Select, DatePicker, Button, Radio, Pagination } from 'antd';
+import { Select, Button, Pagination, Spin, message, Upload, Modal } from 'antd';
 import {
     CheckCircleOutlined,
     FileExcelOutlined,
     FilterOutlined,
+    UploadOutlined,
 } from '@ant-design/icons';
-import dayjs from 'dayjs';
+import { useParams } from 'react-router-dom';
 import styles from '../styles.module.scss';
+import { useClassAttendance, useAttendanceImport } from '@/hooks/useAttendance';
 
 const { Option } = Select;
-
-const initialStudents = [
-    { key: 1, name: 'Nguyễn Thành Long', initials: 'NL', color: '#e53e3e', msv: 'B20DCCN001', dob: '12/05/2002', status: 'present' },
-    { key: 2, name: 'Trần Thu Anh', initials: 'TA', color: '#3182ce', msv: 'B20DCCN002', dob: '20/08/2002', status: 'excused' },
-    { key: 3, name: 'Lê Văn Minh', initials: 'LM', color: '#38a169', msv: 'B20DCCN003', dob: '05/01/2002', status: 'absent' },
-    { key: 4, name: 'Hoàng Lan Phương', initials: 'HP', color: '#d69e2e', msv: 'B20DCCN004', dob: '18/11/2002', status: 'present' },
-    { key: 5, name: 'Phạm Quốc Hùng', initials: 'PH', color: '#805ad5', msv: 'B20DCCN005', dob: '03/03/2002', status: 'present' },
-    { key: 6, name: 'Nguyễn Thị Lan', initials: 'NL', color: '#3182ce', msv: 'B20DCCN006', dob: '22/07/2002', status: 'present' },
-    { key: 7, name: 'Trần Đức Anh', initials: 'TĐ', color: '#38a169', msv: 'B20DCCN007', dob: '14/09/2002', status: 'present' },
-    { key: 8, name: 'Vũ Thị Hoa', initials: 'VH', color: '#d69e2e', msv: 'B20DCCN008', dob: '28/02/2002', status: 'present' },
-    { key: 9, name: 'Đinh Văn Tùng', initials: 'ĐT', color: '#805ad5', msv: 'B20DCCN009', dob: '11/06/2002', status: 'present' },
-    { key: 10, name: 'Bùi Thanh Hải', initials: 'BH', color: '#38b2ac', msv: 'B20DCCN010', dob: '30/04/2002', status: 'present' },
-    { key: 11, name: 'Cao Minh Tuấn', initials: 'CT', color: '#5a67d8', msv: 'B20DCCN011', dob: '17/12/2002', status: 'present' },
-    { key: 12, name: 'Đỗ Thị Ngọc', initials: 'ĐN', color: '#ed64a6', msv: 'B20DCCN012', dob: '09/10/2002', status: 'present' },
-];
 
 const PAGE_SIZE = 15;
 
 const AttendanceTab = () => {
-    const [selectedSession, setSelectedSession] = useState('12');
-    const [selectedDate, setSelectedDate] = useState(dayjs('2024-05-15'));
-    const [students, setStudents] = useState(initialStudents);
+    const { id: courseId } = useParams();
+    const [selectedWeek, setSelectedWeek] = useState(1);
     const [currentPage, setCurrentPage] = useState(1);
 
-    const total = students.length;
-    const presentCount = students.filter(s => s.status === 'present').length;
-    const excusedCount = students.filter(s => s.status === 'excused').length;
-    const absentCount = students.filter(s => s.status === 'absent').length;
+    const { attendance, isLoading, refetch } = useClassAttendance(courseId, selectedWeek);
+    const { importAttendance, isLoading: isImporting } = useAttendanceImport(courseId);
 
-    const paginated = students.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+    const total = attendance.length;
+    const presentCount = attendance.filter(s => s.status === 'PRESENT').length;
+    const excusedCount = attendance.filter(s => s.status === 'EXCUSED').length;
+    const absentCount = attendance.filter(s => s.status === 'ABSENT').length;
+    const lateCount = attendance.filter(s => s.status === 'LATE').length;
 
-    const handleStatusChange = (key, value) => {
-        setStudents(prev => prev.map(s => s.key === key ? { ...s, status: value } : s));
+    const paginated = attendance.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+    const handleImport = async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const res = await importAttendance(formData);
+            if (res.success) {
+                Modal.success({
+                    title: 'Import điểm danh hoàn tất',
+                    content: (
+                        <div>
+                            <p>{res.message}</p>
+                            {res.data.errors?.length > 0 && (
+                                <div style={{ maxHeight: 200, overflowY: 'auto', marginTop: 10 }}>
+                                    <p style={{ color: '#e53e3e', fontWeight: 600 }}>Chi tiết lỗi:</p>
+                                    <ul style={{ paddingLeft: 20 }}>
+                                        {res.data.errors.map((err, i) => <li key={i} style={{ fontSize: 13, color: '#4a5568' }}>{err}</li>)}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                    ),
+                    width: 500,
+                });
+                refetch();
+            }
+        } catch (error) {
+            message.error(error.response?.data?.message || 'Lỗi khi import file Excel');
+        }
+        return false;
     };
+
+    const getStatusText = (status) => {
+        const map = {
+            'PRESENT': { text: 'Có mặt', color: '#2f855a' },
+            'ABSENT': { text: 'Vắng', color: '#e53e3e' },
+            'EXCUSED': { text: 'Có phép', color: '#c05621' },
+            'LATE': { text: 'Đi muộn', color: '#3182ce' },
+        };
+        return map[status] || { text: status, color: '#4a5568' };
+    };
+
+    if (isLoading) return <div style={{ padding: '100px', textAlign: 'center' }}><Spin tip="Đang tải dữ liệu..." /></div>;
 
     return (
         <div className={styles.attendanceWrap}>
-            {/* Stat cards at top */}
             <div className={styles.attendanceStats}>
                 <div className={styles.statItem}>
                     <div className={styles.statIcon} style={{ background: '#f0fff4', color: '#2f855a' }}><CheckCircleOutlined /></div>
@@ -58,8 +87,8 @@ const AttendanceTab = () => {
                 <div className={styles.statItem}>
                     <div className={styles.statIcon} style={{ background: '#fffbeb', color: '#c05621' }}><FileExcelOutlined /></div>
                     <div className={styles.statMeta}>
-                        <div className={styles.statLabel}>CÓ PHÉP</div>
-                        <div className={styles.statValue}>{String(excusedCount).padStart(2, '0')}</div>
+                        <div className={styles.statLabel}>CÓ PHÉP / MUỘN</div>
+                        <div className={styles.statValue}>{String(excusedCount + lateCount).padStart(2, '0')}</div>
                     </div>
                 </div>
                 <div className={styles.statItem}>
@@ -72,51 +101,50 @@ const AttendanceTab = () => {
             </div>
 
             <div className={styles.attendanceMain}>
-                {/* Left filter panel */}
                 <div className={styles.filterPanel}>
                     <div className={styles.filterTitle}>
                         <FilterOutlined /> Bộ lọc điểm danh
                     </div>
 
                     <div className={styles.filterGroup}>
-                        <label className={styles.filterLabel}>BUỔI HỌC</label>
+                        <label className={styles.filterLabel}>TUẦN HỌC</label>
                         <Select
-                            value={selectedSession}
-                            onChange={setSelectedSession}
+                            value={selectedWeek}
+                            onChange={setSelectedWeek}
                             className={styles.filterSelect}
                         >
-                            {Array.from({ length: 15 }, (_, i) => (
-                                <Option key={i + 1} value={String(i + 1)}>
-                                    Buổi {i + 1} - {i % 2 === 0 ? 'Lý thuyết' : 'Thực hành'}
+                            {Array.from({ length: 20 }, (_, i) => (
+                                <Option key={i + 1} value={i + 1}>
+                                    Tuần {i + 1}
                                 </Option>
                             ))}
                         </Select>
                     </div>
 
-                    <div className={styles.filterGroup}>
-                        <label className={styles.filterLabel}>NGÀY HỌC</label>
-                        <DatePicker
-                            value={selectedDate}
-                            onChange={setSelectedDate}
-                            format="DD/MM/YYYY"
-                            className={styles.filterDate}
-                        />
-                    </div>
+                    <div className={styles.filterDivider} />
+
+                    <Upload
+                        beforeUpload={handleImport}
+                        showUploadList={false}
+                        accept=".xlsx,.xls"
+                    >
+                        <Button
+                            type="primary"
+                            danger
+                            icon={<UploadOutlined />}
+                            block
+                            loading={isImporting}
+                            style={{ height: 40, borderRadius: 10, fontWeight: 600 }}
+                        >
+                            Import từ Excel
+                        </Button>
+                    </Upload>
                 </div>
 
-                {/* Right content - Student list */}
                 <div className={styles.attendanceContent}>
                     <div className={styles.studentListCard}>
                         <div className={styles.studentListHeader}>
-                            <span className={styles.studentListTitle}>Danh sách sinh viên ({total})</span>
-                            <Button
-                                icon={<FileExcelOutlined />}
-                                className={styles.exportBtn}
-                                type="link"
-                                danger
-                            >
-                                Xuất file Excel
-                            </Button>
+                            <span className={styles.studentListTitle}>Danh sách điểm danh ({total})</span>
                         </div>
                         <div className={styles.attendanceTableScroll}>
                             <table className={styles.studentTable}>
@@ -124,56 +152,60 @@ const AttendanceTab = () => {
                                     <tr>
                                         <th>HỌ VÀ TÊN</th>
                                         <th>MÃ SINH VIÊN</th>
-                                        <th>NGÀY SINH</th>
-                                        <th>TRẠNG THÁI ĐIỂM DANH</th>
+                                        <th>LỚP</th>
+                                        <th>TRẠNG THÁI</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {paginated.map(s => (
-                                        <tr key={s.key}>
+                                    {paginated.map(record => (
+                                        <tr key={record._id}>
                                             <td>
                                                 <div className={styles.studentName}>
-                                                    <span
-                                                        className={styles.studentAvatar}
-                                                        style={{ background: s.color }}
-                                                    >
-                                                        {s.initials}
+                                                    <span className={styles.studentAvatar} style={{ background: '#3182ce' }}>
+                                                        {record.student?.fullName?.charAt(0)}
                                                     </span>
-                                                    {s.name}
+                                                    {record.student?.fullName}
                                                 </div>
                                             </td>
-                                            <td className={styles.msvCell}>{s.msv}</td>
-                                            <td className={styles.dobCell}>{s.dob}</td>
+                                            <td className={styles.msvCell}>{record.student?.userCode}</td>
+                                            <td className={styles.dobCell}>{record.student?.className || 'N/A'}</td>
                                             <td>
-                                                <Radio.Group
-                                                    value={s.status}
-                                                    onChange={e => handleStatusChange(s.key, e.target.value)}
-                                                    className={styles.radioGroup}
-                                                >
-                                                    <Radio value="present" className={styles.radioPresent}>Có mặt</Radio>
-                                                    <Radio value="excused" className={styles.radioExcused}>Có phép</Radio>
-                                                    <Radio value="absent" className={styles.radioAbsent}>Vắng</Radio>
-                                                </Radio.Group>
+                                                <span style={{
+                                                    fontWeight: 700,
+                                                    color: getStatusText(record.status).color,
+                                                    fontSize: 13
+                                                }}>
+                                                    {getStatusText(record.status).text}
+                                                </span>
                                             </td>
                                         </tr>
                                     ))}
+                                    {attendance.length === 0 && (
+                                        <tr>
+                                            <td colSpan={4} style={{ textAlign: 'center', padding: '40px', color: '#a0aec0' }}>
+                                                Chưa có dữ liệu điểm danh tuần này
+                                            </td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
 
-                        <div className={styles.tableFooter}>
-                            <span className={styles.tableInfo}>
-                                Đang hiển thị {Math.min((currentPage - 1) * PAGE_SIZE + 1, total)}–{Math.min(currentPage * PAGE_SIZE, total)} trên {total} sinh viên
-                            </span>
-                            <Pagination
-                                current={currentPage}
-                                total={total}
-                                pageSize={PAGE_SIZE}
-                                showSizeChanger={false}
-                                onChange={setCurrentPage}
-                                size="small"
-                            />
-                        </div>
+                        {total > 0 && (
+                            <div className={styles.tableFooter}>
+                                <span className={styles.tableInfo}>
+                                    Hiển thị {Math.min((currentPage - 1) * PAGE_SIZE + 1, total)}–{Math.min(currentPage * PAGE_SIZE, total)} / {total}
+                                </span>
+                                <Pagination
+                                    current={currentPage}
+                                    total={total}
+                                    pageSize={PAGE_SIZE}
+                                    showSizeChanger={false}
+                                    onChange={setCurrentPage}
+                                    size="small"
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

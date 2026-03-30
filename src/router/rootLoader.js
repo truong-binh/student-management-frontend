@@ -1,6 +1,6 @@
 import { redirect } from "react-router-dom";
 import { getMe } from "@/api/user/auth/index.js";
-import { getAuthTokenAdmin, removeAuthTokenAdmin } from "../utils/localStorage.js";
+import { getAuthTokenAdmin, removeAuthTokenAdmin, getAuthTokenStudent, removeAuthTokenStudent } from "../utils/localStorage.js";
 import { hasPermissions } from "../utils/helper.js";
 import { useAuthStore } from "../stores/authStore";
 import { useAppStore } from "../stores/appStore";
@@ -50,11 +50,28 @@ export const rootLoader = async ({ request, params }, requiredAuth, permissions 
       params,
     });
   } else {
-    const { isAuthSuccess, authUser } = useAuthStore.getState();
+    const { isAuthSuccess, authUser, setAuthUser } = useAuthStore.getState();
+    const token = getAuthTokenStudent();
+
+    if (!isAuthSuccess && token) {
+      try {
+        const { data: res } = await getMe();
+        setAuthUser({
+          isAuthSuccess: true,
+          data: res.data
+        });
+      } catch (error) {
+        if (error.response?.data?.status === 401) {
+          removeAuthTokenStudent();
+        }
+      }
+    }
+
+    const currentAuthState = useAuthStore.getState();
     const isAuthRoute = ["/login", "/register", "/verify-email", "/forgot-password"].includes(url.pathname);
 
-    if (isAuthSuccess && authUser) {
-      const isLecturer = authUser.role === "LECTURER";
+    if (currentAuthState.isAuthSuccess && currentAuthState.authUser) {
+      const isLecturer = currentAuthState.authUser.role === "LECTURER";
       const isTeacherRoute = url.pathname.startsWith("/teacher");
       const isStudentRoute = ["/dashboard", "/classes", "/schedule", "/feedback", "/profile"].some(p => url.pathname.startsWith(p));
 
@@ -71,7 +88,7 @@ export const rootLoader = async ({ request, params }, requiredAuth, permissions 
       if (!isLecturer && isTeacherRoute) {
         return redirect("/dashboard");
       }
-    } else if (requiredAuth && !isAuthSuccess) {
+    } else if (requiredAuth && !currentAuthState.isAuthSuccess) {
       return redirect("/login");
     }
   }

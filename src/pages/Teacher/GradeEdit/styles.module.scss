@@ -1,7 +1,11 @@
 .container {
-    padding: 24px;
+    padding: 40px;
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 20px auto;
+    background: #fff;
+    border-radius: 40px;
+    border: 1px solid #edf2f7;
+    min-height: calc(100vh - 120px);
 }
 
 /* ── Header ── */
@@ -125,8 +129,7 @@
     background: #fff;
     border-radius: 16px;
     padding: 20px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #edf2f7;
 }
 
 .studentCard {
@@ -520,9 +523,19 @@
 }
 
 @keyframes popIn {
-    0% { transform: scale(0.6); opacity: 0; }
-    70% { transform: scale(1.1); }
-    100% { transform: scale(1); opacity: 1; }
+    0% {
+        transform: scale(0.6);
+        opacity: 0;
+    }
+
+    70% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 .successTitle {
