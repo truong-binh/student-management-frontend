@@ -7,6 +7,8 @@ import Register from "@/pages/Auth/Register";
 import VerifyEmail from "@/pages/Auth/VerifyEmail";
 import ForgotPassword from "@/pages/Auth/ForgotPassword";
 import StudentDashboard from "@/pages/User/Dashboard";
+import UpcomingDeadlines from "@/pages/User/UpcomingDeadlines";
+import GradeOverview from "@/pages/User/GradeOverview";
 import MyClasses from "@/pages/User/Classes";
 import ClassDetail from "@/pages/User/ClassDetail";
 import AssignmentSubmit from "@/pages/User/AssignmentSubmit";
@@ -55,6 +57,16 @@ const router = createBrowserRouter([
   {
     path: "/dashboard",
     element: <StudentDashboard />,
+    loader: ({ request, params }) => rootLoader({ request, params }, true),
+  },
+  {
+    path: "/dashboard/upcoming-deadlines",
+    element: <UpcomingDeadlines />,
+    loader: ({ request, params }) => rootLoader({ request, params }, true),
+  },
+  {
+    path: "/dashboard/grade-overview",
+    element: <GradeOverview />,
     loader: ({ request, params }) => rootLoader({ request, params }, true),
   },
   {

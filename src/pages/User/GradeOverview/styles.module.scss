@@ -1,0 +1,149 @@
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-top: 16px;
+}
+
+.heroCard {
+    border-radius: 18px;
+    border: none;
+    background: linear-gradient(140deg, rgba(24, 92, 187, 0.12) 0%, rgba(255, 255, 255, 0.95) 62%);
+
+    :global(.ant-card-body) {
+        padding: 24px;
+    }
+
+    .heroTop {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 14px;
+
+        h1 {
+            margin: 0;
+            font-size: 30px;
+            color: #163966;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        p {
+            margin: 8px 0 0;
+            color: #52657c;
+            font-size: 14px;
+            max-width: 560px;
+        }
+    }
+}
+
+.statsRow {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+
+    .statItem {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        border-radius: 12px;
+        padding: 14px;
+        background: rgba(255, 255, 255, 0.88);
+        border: 1px solid rgba(24, 92, 187, 0.15);
+
+        :global(.anticon) {
+            color: #225ea8;
+            font-size: 18px;
+        }
+
+        span {
+            display: block;
+            color: #607286;
+            font-size: 13px;
+        }
+
+        strong {
+            display: block;
+            margin-top: 4px;
+            color: #143a68;
+            font-size: 23px;
+            line-height: 1;
+        }
+    }
+}
+
+.filterCard {
+    border-radius: 16px;
+    border: none;
+
+    :global(.ant-card-body) {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 12px;
+        padding: 16px;
+    }
+
+    .searchInput,
+    .courseFilter {
+        width: 100%;
+    }
+}
+
+.tableCard {
+    border-radius: 16px;
+    border: none;
+
+    :global(.ant-card-body) {
+        padding: 14px;
+    }
+
+    .courseName {
+        font-weight: 600;
+        color: #1e2b39;
+    }
+
+    .assignmentTitle {
+        color: #4d5f72;
+    }
+
+    .scoreCell {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+
+        strong {
+            color: #0f766e;
+            font-size: 16px;
+        }
+    }
+
+    :global(.ant-btn-dangerous.ant-btn-primary) {
+        background-color: #b71c1c;
+        border-color: #b71c1c;
+        border-radius: 8px;
+    }
+}
+
+@media (max-width: 992px) {
+    .heroCard {
+        .heroTop {
+            flex-direction: column;
+            align-items: flex-start;
+
+            h1 {
+                font-size: 24px;
+            }
+        }
+    }
+
+    .statsRow {
+        grid-template-columns: 1fr;
+    }
+
+    .filterCard {
+        :global(.ant-card-body) {
+            grid-template-columns: 1fr;
+        }
+    }
+}

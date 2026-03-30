@@ -185,6 +185,24 @@
         border-left: 4px solid #f6adff;
     }
 
+    &.class {
+        background: #e6fffa;
+        color: #234e52;
+        border-left: 4px solid #81e6d9;
+    }
+
+    &.done {
+        background: #f0fdf4;
+        color: #166534;
+        border-left: 4px solid #22c55e;
+    }
+
+    &.overdue {
+        background: #fff1f2;
+        color: #9f1239;
+        border-left: 4px solid #f43f5e;
+    }
+
     &.event {
         background: #e6fffa;
         color: #234e52;
@@ -251,6 +269,30 @@
         }
     }
 
+    &.class {
+        background: #e6fffa;
+
+        &::before {
+            background: #81e6d9;
+        }
+    }
+
+    &.done {
+        background: #f0fdf4;
+
+        &::before {
+            background: #22c55e;
+        }
+    }
+
+    &.overdue {
+        background: #fff1f2;
+
+        &::before {
+            background: #f43f5e;
+        }
+    }
+
     &.event {
         background: #e6fffa;
 
@@ -300,6 +342,18 @@
 
         &.academicTag {
             color: #b83280;
+        }
+
+        &.classTag {
+            color: #2c7a7b;
+        }
+
+        &.doneTag {
+            color: #166534;
+        }
+
+        &.overdueTag {
+            color: #9f1239;
         }
 
         &.eventTag {
