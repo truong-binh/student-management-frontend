@@ -29,9 +29,10 @@ const AssignmentResult = () => {
     const { mySubmissions } = useMySubmissions();
     const [previewOpen, setPreviewOpen] = React.useState(false);
 
-    const submission = mySubmissions.find(sub =>
-        (sub.assignment?.id || sub.assignment?._id || sub.assignment) === assignmentId
-    );
+    const submission = mySubmissions.find(sub => {
+        const subAssignmentId = sub.assignment?.id || sub.assignment?._id || sub.assignment;
+        return String(subAssignmentId) === String(assignmentId);
+    });
 
     const displayData = assignment || {};
 
@@ -51,7 +52,6 @@ const AssignmentResult = () => {
     return (
         <MainLayout>
             <div className={styles.container}>
-                {/* Header */}
                 <div className={styles.header}>
                     <div className={styles.backBtn} onClick={handleBack}>
                         <ArrowLeftOutlined />
@@ -73,8 +73,6 @@ const AssignmentResult = () => {
 
                 <div className={styles.mainContent}>
                     <div className={styles.leftCol}>
-
-                        {/* Thông tin bài tập */}
                         <div className={styles.card} style={{ marginBottom: 16 }}>
                             <h3 style={{ marginBottom: 12 }}>Thông tin bài tập</h3>
                             <div style={{ whiteSpace: 'pre-wrap', color: '#4b5563', marginBottom: 16 }}>
@@ -117,7 +115,6 @@ const AssignmentResult = () => {
                             </div>
                         </div>
 
-                        {/* Điểm số */}
                         <div className={styles.scoreCard}>
                             <div className={styles.scoreLabel}>Tổng điểm</div>
                             <div className={styles.scoreCircle}>
@@ -130,7 +127,6 @@ const AssignmentResult = () => {
                             )}
                         </div>
 
-                        {/* Nhận xét giảng viên */}
                         {submission?.feedback && (
                             <div className={styles.feedbackCard}>
                                 <div className={styles.cardTitle}>
@@ -148,7 +144,6 @@ const AssignmentResult = () => {
                             </div>
                         )}
 
-                        {/* File bài nộp */}
                         {submission?.fileUrl && (
                             <div className={styles.fileCard}>
                                 <div className={styles.cardTitle}>BÀI LÀM ĐÃ NỘP</div>
@@ -164,7 +159,6 @@ const AssignmentResult = () => {
                         )}
                     </div>
 
-                    {/* Cột phải: AI feedback + actions */}
                     <div className={styles.rightCol}>
                         <div className={styles.aiFeedbackSection}>
                             <div className={styles.aiHeader}>
@@ -206,7 +200,6 @@ const AssignmentResult = () => {
                 </div>
             </div>
 
-            {/* Modal xem trước file đề bài */}
             <Modal
                 title="Xem trước tài liệu đề bài"
                 open={previewOpen}

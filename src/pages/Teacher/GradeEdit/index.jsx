@@ -2,19 +2,16 @@ import React from 'react';
 import { Button, Input, InputNumber, Tag, message, Spin } from 'antd';
 import {
     ArrowLeftOutlined,
-    CheckCircleOutlined,
-    ExclamationCircleOutlined,
     InfoCircleOutlined,
-    SaveOutlined,
     RobotOutlined,
     CommentOutlined,
     FileZipOutlined,
     CloudDownloadOutlined,
-    CalendarOutlined,
     EditOutlined,
     UserOutlined,
-    MessageOutlined,
     ReadOutlined,
+    CalendarOutlined,
+    MessageOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -49,7 +46,6 @@ const TeacherGradeEdit = () => {
     const { submission, isLoading: isSubLoading, gradeSubmissionByAI, isGrading } = useSubmissionDetail(studentId);
     const { assignment, isLoading: isAssignLoading } = useAssignmentDetail(assignmentId);
 
-    const [success, setSuccess] = React.useState(false);
 
     const gradeInfo = getGradeLabel(submission?.score);
 
@@ -87,50 +83,10 @@ const TeacherGradeEdit = () => {
         );
     }
 
-    if (success) {
-        return (
-            <MainLayout menuItems={teacherMenuItems}>
-                <div className={styles.successPage}>
-                    <div className={styles.successCard}>
-                        <div className={styles.successIconWrap}>
-                            <CheckCircleOutlined className={styles.successIcon} />
-                        </div>
-                        <h2 className={styles.successTitle}>Sửa điểm thành công!</h2>
-                        <div className={styles.successInfo}>
-                            <UserOutlined className={styles.successUserIcon} />
-                            <p>
-                                Điểm của sinh viên <strong>{submission?.student?.name || submission?.student?.username}</strong> đã được cập nhật
-                                chính xác thành{' '}
-                                <span className={styles.successScore}>{newScore}</span>
-                            </p>
-                            <p className={styles.successMeta}>
-                                Mã SV: {submission?.student?.code || '-'} • Môn: {assignment?.title}
-                            </p>
-                        </div>
-                        <Button
-                            type="primary"
-                            danger
-                            size="large"
-                            icon={<ArrowLeftOutlined />}
-                            className={styles.successBackBtn}
-                            onClick={handleBack}
-                        >
-                            Quay lại danh sách
-                        </Button>
-                        <div className={styles.successFooter}>
-                            <span className={styles.successDots}>• • •</span>
-                            Hoàn tất quy trình cập nhật
-                        </div>
-                    </div>
-                </div>
-            </MainLayout>
-        );
-    }
 
     return (
         <MainLayout menuItems={teacherMenuItems}>
             <div className={styles.container}>
-                {/* ── Header ── */}
                 <div className={styles.header}>
                     <div className={styles.headerLeft}>
                         <div className={styles.backBtn} onClick={handleBack}>
@@ -159,11 +115,8 @@ const TeacherGradeEdit = () => {
                     </div>
                 </div>
 
-                {/* ── Main layout ── */}
                 <div className={styles.mainLayout}>
-                    {/* ── Left column: student info ── */}
                     <div className={styles.leftCol}>
-                        {/* Student card */}
                         <div className={styles.studentCard}>
                             <div className={styles.cardTitle}>
                                 <UserOutlined /> Thông tin sinh viên
@@ -173,11 +126,11 @@ const TeacherGradeEdit = () => {
                                     className={styles.avatar}
                                     style={{ background: '#3182ce' }}
                                 >
-                                    {(submission?.student?.name || submission?.student?.username || 'S').charAt(0).toUpperCase()}
+                                    {(submission?.student?.fullName || submission?.student?.username || 'S').charAt(0).toUpperCase()}
                                 </span>
                                 <div className={styles.studentMeta}>
-                                    <div className={styles.studentName}>{submission?.student?.name || submission?.student?.username}</div>
-                                    <div className={styles.studentMsv}>MSV: {submission?.student?.code || '-'}</div>
+                                    <div className={styles.studentName}>{submission?.student?.fullName || submission?.student?.username}</div>
+                                    <div className={styles.studentMsv}>MSV: {submission?.student?.userCode || '-'}</div>
                                     <Tag className={styles.gradedTag}>{submission?.score != null ? 'ĐÃ CHẤM' : 'CHƯA CHẤM'}</Tag>
                                 </div>
                             </div>
@@ -203,7 +156,6 @@ const TeacherGradeEdit = () => {
                             )}
                         </div>
 
-                        {/* Submitted file card */}
                         <div className={styles.fileCard}>
                             <div className={styles.cardTitle}>FILE BÀI NỘP</div>
                             {submission?.fileUrl ? (
@@ -221,9 +173,7 @@ const TeacherGradeEdit = () => {
                         </div>
                     </div>
 
-                    {/* ── Right column: grade edit form ── */}
                     <div className={styles.rightCol}>
-                        {/* Grade input card */}
                         <div className={styles.editCard}>
                             <div className={styles.editCardTitle}>
                                 <EditOutlined /> Chỉnh sửa điểm số
@@ -260,7 +210,6 @@ const TeacherGradeEdit = () => {
                                 )}
                             </div>
 
-                            {/* Score scale legend */}
                             <div className={styles.scaleLegend}>
                                 {[
                                     { range: '9 – 10', label: 'Xuất sắc', color: '#48bb78' },
@@ -277,7 +226,6 @@ const TeacherGradeEdit = () => {
                             </div>
                         </div>
 
-                        {/* Teacher comment card */}
                         <div className={styles.commentCard}>
                             <div className={styles.editCardTitle}>
                                 <CommentOutlined /> Nhận xét của giáo viên
@@ -292,11 +240,9 @@ const TeacherGradeEdit = () => {
                             />
                         </div>
 
-                        {/* AI Feedback review card */}
                         <div className={styles.aiFeedbackCard}>
                             <div className={styles.editCardTitle} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <span><RobotOutlined /> Phản hồi AI (tham khảo)</span>
-                                <Button type="primary" size="small" icon={<RobotOutlined />} onClick={handleAIGrade} loading={isGrading}>CHẤM AI</Button>
                             </div>
                             <div className={styles.aiItems}>
                                 {submission?.aiFeedback ? (
@@ -321,16 +267,6 @@ const TeacherGradeEdit = () => {
                                 onClick={handleBack}
                             >
                                 Quay lại
-                            </Button>
-                            <Button
-                                type="primary"
-                                size="large"
-                                icon={<RobotOutlined />}
-                                className={styles.saveBtn}
-                                loading={isGrading}
-                                onClick={handleAIGrade}
-                            >
-                                Chấm bằng AI
                             </Button>
                         </div>
                     </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import MainLayout from '@/layouts/User/MainLayout';
 import { Tabs } from 'antd';
 import {
@@ -35,8 +35,14 @@ const teacherMenuItems = [
 
 const TeacherClassDetail = () => {
     const { id } = useParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const { data: course, isLoading } = useCourseDetail(id);
-    const [activeTab, setActiveTab] = useState('1');
+
+    const activeTab = searchParams.get('tab') || 'overview';
+
+    const handleTabChange = (key) => {
+        setSearchParams({ tab: key });
+    };
 
     if (isLoading) {
         return (
@@ -108,11 +114,11 @@ const TeacherClassDetail = () => {
                     <Tabs
                         className={styles.classTabs}
                         activeKey={activeTab}
-                        onChange={setActiveTab}
+                        onChange={handleTabChange}
                         animated={false}
                         items={[
                             {
-                                key: '1',
+                                key: 'overview',
                                 label: <span className={styles.tabLabel}><InfoCircleOutlined /> <span>Tổng quan</span></span>,
                                 children: <OverviewTab color={classInfo.color} description={classInfo.description} />,
                             },
@@ -122,19 +128,19 @@ const TeacherClassDetail = () => {
                                 children: <StudentsTab courseId={course._id} />,
                             },
                             {
-                                key: '2',
+                                key: 'attendance',
                                 label: <span className={styles.tabLabel}><UserOutlined /> <span>Điểm danh</span></span>,
                                 children: <AttendanceTab />,
                             },
                             {
-                                key: '3',
+                                key: 'assignments',
                                 label: <span className={styles.tabLabel}><UnorderedListOutlined /> <span>DS bài tập</span></span>,
                                 children: <AssignmentsTab classInfo={classInfo} courseId={course._id} />,
                             },
                             {
-                                key: '4',
+                                key: 'create-assignment',
                                 label: <span className={styles.tabLabel}><EditOutlined /> <span>Tạo bài tập</span></span>,
-                                children: <CreateAssignmentTab classInfo={classInfo} courseId={course._id} setActiveTab={setActiveTab} />,
+                                children: <CreateAssignmentTab classInfo={classInfo} courseId={course._id} setActiveTab={handleTabChange} />,
                             },
                         ]}
                     />

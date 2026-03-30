@@ -38,7 +38,10 @@ const AssignmentSubmit = () => {
 
     const submission = React.useMemo(() => {
         if (!mySubmissions) return null;
-        return mySubmissions.find(sub => (sub.assignment?.id || sub.assignment?._id || sub.assignment) === assignmentId);
+        return mySubmissions.find(sub => {
+            const subAssignmentId = sub.assignment?.id || sub.assignment?._id || sub.assignment;
+            return String(subAssignmentId) === String(assignmentId);
+        });
     }, [mySubmissions, assignmentId]);
 
     const displayData = detailData || {};
@@ -162,10 +165,10 @@ const AssignmentSubmit = () => {
             const formData = new FormData();
             formData.append('file', fileToUpload);
             await submitAssignment(formData);
-            message.success('Nộp bài thành công!');
             setFileToUpload(null);
+            message.success('Nộp bài thành công! AI đang chấm điểm...');
         } catch (error) {
-            message.error(error.response?.data?.message || 'Lỗi khi nộp bài');
+            message.error(error.response?.data?.message || error?.message || 'Lỗi khi nộp bài');
         }
     };
 
@@ -257,7 +260,13 @@ const AssignmentSubmit = () => {
                                             </Dragger>
                                         </div>
                                         <div className={styles.actionRow}>
-                                            <Button type="primary" danger icon={<CloudUploadOutlined />} onClick={handleSubmit} loading={isSubmitting}>
+                                            <Button
+                                                type="primary"
+                                                danger
+                                                icon={<CloudUploadOutlined />}
+                                                onClick={handleSubmit}
+                                                loading={isSubmitting}
+                                            >
                                                 Nộp bài
                                             </Button>
                                             <Button onClick={handleBack} disabled={isSubmitting}>
