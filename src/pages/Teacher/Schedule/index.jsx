@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Calendar, Button, ConfigProvider, Tag } from 'antd';
+import React, { useMemo, useState } from 'react';
+import { Calendar, Button, ConfigProvider, Spin, Tag } from 'antd';
 import {
     CalendarOutlined,
     ClockCircleOutlined,
@@ -20,6 +20,11 @@ import 'dayjs/locale/vi';
 import viVN from 'antd/lib/locale/vi_VN';
 import MainLayout from '@/layouts/User/MainLayout';
 import styles from './styles.module.scss';
+import { useQuery } from '@tanstack/react-query';
+import { useCourse } from '@/hooks/useCourse';
+import { assignmentApi } from '@/api/admin/assignment';
+import { courseApi } from '@/api/admin/course';
+import { submissionApi } from '@/api/admin/submission';
 
 dayjs.locale('vi');
 
@@ -31,88 +36,133 @@ const teacherMenuItems = [
     { key: 'feedback', label: 'Phản hồi', icon: <MessageOutlined />, path: '/teacher/feedback' },
 ];
 
-const deadlines = [
-    {
-        id: 1,
-        date: '2026-03-10',
-        title: 'Bài tập tuần 1 – Lập trình C++',
-        classCode: 'INT1306',
-        className: 'Lập trình C++',
-        students: 42,
-        submitted: 38,
-        type: 'homework',
-        typeLabel: 'Bài tập',
-    },
-    {
-        id: 2,
-        date: '2026-03-12',
-        title: 'Bài tập lớn số 1 – CTDL & GT',
-        classCode: 'INT1310',
-        className: 'Cấu trúc dữ liệu',
-        students: 35,
-        submitted: 20,
-        type: 'project',
-        typeLabel: 'Đồ án',
-    },
-    {
-        id: 3,
-        date: '2026-03-14',
-        title: 'Bài tập thực hành tuần 3 – CSDL',
-        classCode: 'INT1302',
-        className: 'Cơ sở dữ liệu',
-        students: 38,
-        submitted: 38,
-        type: 'done',
-        typeLabel: 'Hoàn tất',
-    },
-    {
-        id: 4,
-        date: '2026-03-18',
-        title: 'Kiểm tra giữa kỳ – Lập trình C++',
-        classCode: 'INT1306',
-        className: 'Lập trình C++',
-        students: 42,
-        submitted: 0,
-        type: 'exam',
-        typeLabel: 'Kiểm tra',
-    },
-    {
-        id: 5,
-        date: '2026-03-20',
-        title: 'Bài tập tuần 2 – CTDL & GT',
-        classCode: 'INT1310',
-        className: 'Cấu trúc dữ liệu',
-        students: 35,
-        submitted: 10,
-        type: 'homework',
-        typeLabel: 'Bài tập',
-    },
-    {
-        id: 6,
-        date: '2026-03-25',
-        title: 'Bài tập lớn số 2 – CSDL',
-        classCode: 'INT1302',
-        className: 'Cơ sở dữ liệu',
-        students: 38,
-        submitted: 0,
-        type: 'project',
-        typeLabel: 'Đồ án',
-    },
-    {
-        id: 7,
-        date: '2026-03-28',
-        title: 'Bài tập tuần 4 – Lập trình C++',
-        classCode: 'INT1306',
-        className: 'Lập trình C++',
-        students: 42,
-        submitted: 5,
-        type: 'homework',
-        typeLabel: 'Bài tập',
-    },
-];
+const getCourseId = (course) => course?._id || course?.id;
+
+const normalizeVietnamese = (value) => {
+    return String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D')
+        .toLowerCase();
+};
+
+const getAssignmentType = ({ title, dueDate, students, submitted }) => {
+    const submittedCount = Number(submitted || 0);
+    const totalStudents = Number(students || 0);
+
+    if (totalStudents > 0 && submittedCount >= totalStudents) {
+        return { type: 'done', typeLabel: 'Hoàn tất' };
+    }
+
+    if (dueDate && dayjs().isAfter(dayjs(dueDate))) {
+        return { type: 'exam', typeLabel: 'Quá hạn' };
+    }
+
+    const normalizedTitle = normalizeVietnamese(title);
+    if (normalizedTitle.includes('do an') || normalizedTitle.includes('project') || normalizedTitle.includes('bai tap lon')) {
+        return { type: 'project', typeLabel: 'Đồ án' };
+    }
+
+    return { type: 'homework', typeLabel: 'Bài tập' };
+};
 
 const TeacherSchedule = () => {
-    const [selectedDate, setSelectedDate] = useState(dayjs('2026-03-10'));
+    const [selectedDate, setSelectedDate] = useState(dayjs());
+    const { courses, isLoading: loadingCourses } = useCourse();
+
+    const courseIds = useMemo(
+        () => (Array.isArray(courses) ? courses.map(getCourseId).filter(Boolean) : []),
+        [courses]
+    );
+
+    const { data: deadlines = [], isLoading: loadingDeadlines } = useQuery({
+        queryKey: ['teacher-schedule-deadlines', courseIds],
+        enabled: courseIds.length > 0,
+        queryFn: async () => {
+            const coursesById = (Array.isArray(courses) ? courses : []).reduce((acc, course) => {
+                const id = getCourseId(course);
+                if (id) acc[String(id)] = course;
+                return acc;
+            }, {});
+
+            const coursePayloads = await Promise.all(
+                courseIds.map(async (courseId) => {
+                    const [assignmentsRes, studentsRes] = await Promise.all([
+                        assignmentApi.getAssignmentsByCourseId(courseId),
+                        courseApi.getCourseStudents(courseId, { page: 1, limit: 1 }),
+                    ]);
+
+                    const assignments = assignmentsRes?.success
+                        ? (Array.isArray(assignmentsRes.data) ? assignmentsRes.data : (assignmentsRes.data?.items || []))
+                        : [];
+
+                    const totalStudents = studentsRes?.success
+                        ? Number(studentsRes.data?.pagination?.totalItems || 0)
+                        : 0;
+
+                    return {
+                        courseId,
+                        assignments,
+                        totalStudents,
+                        course: coursesById[String(courseId)] || null,
+                    };
+                })
+            );
+
+            const allAssignments = coursePayloads.flatMap((payload) => {
+                return payload.assignments.map((assignment) => ({
+                    ...assignment,
+                    courseId: assignment.courseId?._id || assignment.courseId || payload.courseId,
+                    students: payload.totalStudents,
+                    course: payload.course,
+                }));
+            });
+
+            const enrichedAssignments = await Promise.all(
+                allAssignments.map(async (assignment) => {
+                    const assignmentId = assignment._id || assignment.id;
+                    let submitted = 0;
+
+                    if (assignmentId) {
+                        const submissionsRes = await submissionApi.getSubmissionsByAssignmentId(assignmentId);
+                        if (submissionsRes?.success) {
+                            submitted = Array.isArray(submissionsRes.data)
+                                ? submissionsRes.data.length
+                                : (submissionsRes.data?.items || []).length;
+                        }
+                    }
+
+                    const { type, typeLabel } = getAssignmentType({
+                        title: assignment.title,
+                        dueDate: assignment.dueDate,
+                        students: assignment.students,
+                        submitted,
+                    });
+
+                    const dueDate = dayjs(assignment.dueDate);
+
+                    return {
+                        id: assignmentId || `${assignment.courseId}-${assignment.title}`,
+                        date: dueDate.isValid() ? dueDate.format('YYYY-MM-DD') : null,
+                        title: assignment.title || 'Bài tập',
+                        classCode: assignment.course?.courseCode || 'MON',
+                        className: assignment.course?.courseName || 'Môn học',
+                        students: Number(assignment.students || 0),
+                        submitted,
+                        type,
+                        typeLabel,
+                    };
+                })
+            );
+
+            return enrichedAssignments
+                .filter((item) => !!item.date)
+                .sort((a, b) => dayjs(a.date).valueOf() - dayjs(b.date).valueOf());
+        },
+    });
+
+    const isLoading = loadingCourses || loadingDeadlines;
 
     const getDeadlinesForDate = (value) =>
         deadlines.filter(d => d.date === value.format('YYYY-MM-DD'));
@@ -138,11 +188,32 @@ const TeacherSchedule = () => {
                 <span className={styles.monthSub}>Lịch hạn nộp bài tập</span>
             </div>
             <div className={styles.controls}>
-                <Button icon={<LeftOutlined />} onClick={() => onChange(value.clone().subtract(1, 'month'))} />
-                <Button onClick={() => onChange(dayjs())} className={styles.todayBtn}>
+                <Button
+                    icon={<LeftOutlined />}
+                    onClick={() => {
+                        const nextValue = value.clone().subtract(1, 'month');
+                        setSelectedDate(nextValue);
+                        onChange(nextValue);
+                    }}
+                />
+                <Button
+                    onClick={() => {
+                        const today = dayjs();
+                        setSelectedDate(today);
+                        onChange(today);
+                    }}
+                    className={styles.todayBtn}
+                >
                     Hôm nay
                 </Button>
-                <Button icon={<RightOutlined />} onClick={() => onChange(value.clone().add(1, 'month'))} />
+                <Button
+                    icon={<RightOutlined />}
+                    onClick={() => {
+                        const nextValue = value.clone().add(1, 'month');
+                        setSelectedDate(nextValue);
+                        onChange(nextValue);
+                    }}
+                />
             </div>
         </div>
     );
@@ -161,13 +232,15 @@ const TeacherSchedule = () => {
             <MainLayout menuItems={teacherMenuItems}>
                 <div className={styles.container}>
                     <div className={styles.calendarCard}>
-                        <Calendar
-                            headerRender={headerRender}
-                            dateCellRender={dateCellRender}
-                            onSelect={(date) => setSelectedDate(date)}
-                            value={selectedDate}
-                            fullscreen={true}
-                        />
+                        <Spin spinning={isLoading}>
+                            <Calendar
+                                headerRender={headerRender}
+                                dateCellRender={dateCellRender}
+                                onSelect={(date) => setSelectedDate(date)}
+                                value={selectedDate}
+                                fullscreen={true}
+                            />
+                        </Spin>
                     </div>
 
                     <div className={styles.sidebar}>
@@ -212,11 +285,11 @@ const TeacherSchedule = () => {
                                     <div className={styles.progressBar}>
                                         <div
                                             className={`${styles.progressFill} ${item.type === 'done' ? styles.fillDone : ''}`}
-                                            style={{ width: `${Math.round((item.submitted / item.students) * 100)}%` }}
+                                            style={{ width: `${item.students > 0 ? Math.round((item.submitted / item.students) * 100) : 0}%` }}
                                         />
                                     </div>
                                     <div className={styles.progressLabel}>
-                                        {Math.round((item.submitted / item.students) * 100)}% đã nộp
+                                        {item.students > 0 ? Math.round((item.submitted / item.students) * 100) : 0}% đã nộp
                                     </div>
                                 </div>
                             ))

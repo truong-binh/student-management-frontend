@@ -30,125 +30,11 @@ const getSubmissionAssignmentId = (submission) => (
     submission?.assignment?._id || submission?.assignment?.id || submission?.assignment
 );
 
-const normalizeVietnamese = (value) => {
-    return String(value || '')
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D')
-        .toLowerCase()
-        .trim();
-};
-
-const mapWeekdayFromToken = (token) => {
-    if (!token) return null;
-
-    const normalized = normalizeVietnamese(token);
-    const map = {
-        t2: 1,
-        t3: 2,
-        t4: 3,
-        t5: 4,
-        t6: 5,
-        t7: 6,
-        cn: 0,
-    };
-
-    if (Object.prototype.hasOwnProperty.call(map, normalized)) {
-        return map[normalized];
-    }
-
-    if (normalized.includes('chu nhat')) {
-        return 0;
-    }
-
-    const thuMatch = normalized.match(/thu\s*([2-7])/i);
-    if (thuMatch) {
-        return Number(thuMatch[1]) - 1;
-    }
-
-    const shortMatch = normalized.match(/\bt\s*([2-7])\b/i);
-    if (shortMatch) {
-        return Number(shortMatch[1]) - 1;
-    }
-
-    return null;
-};
-
-const parseTimeRange = (text) => {
-    if (!text) return null;
-
-    const match = String(text).match(/(\d{1,2}[:h]\d{2})\s*[-~–]\s*(\d{1,2}[:h]\d{2})/i);
-    if (!match) return null;
-
-    const normalize = (value) => {
-        const [hour, minute] = value.replace('h', ':').split(':');
-        return `${String(hour).padStart(2, '0')}:${minute}`;
-    };
-
-    return `${normalize(match[1])} - ${normalize(match[2])}`;
-};
-
-const extractRoom = (text) => {
-    if (!text) return null;
-    const match = String(text).match(/(phong|phòng|room)\s*:?\s*([\w\-\s]+)/i);
-    if (!match) return null;
-    return match[2]?.trim() || null;
-};
-
-const splitScheduleSegments = (schedule) => {
-    if (!schedule) return [];
-    if (Array.isArray(schedule)) return schedule.flatMap(splitScheduleSegments);
-    if (typeof schedule === 'object') return [schedule];
-
-    return String(schedule)
-        .split(/[\n;|]+/)
-        .map((segment) => segment.trim())
-        .filter(Boolean);
-};
-
-const extractClassSlots = (course) => {
-    const segments = splitScheduleSegments(course?.schedule);
-    if (!segments.length) return [];
-
-    return segments
-        .map((segment, index) => {
-            if (typeof segment === 'object' && segment !== null) {
-                const weekday = mapWeekdayFromToken(
-                    segment.dayOfWeek || segment.weekday || segment.day || segment.thu
-                );
-
-                if (weekday === null) return null;
-
-                return {
-                    id: `${getCourseId(course)}-slot-${index}`,
-                    weekday,
-                    time: segment.time || segment.timeRange || segment.slot || null,
-                    room: segment.room || segment.location || course?.room || null,
-                    rawSchedule: `${segment.dayOfWeek || segment.weekday || segment.day || ''} ${segment.time || segment.timeRange || ''}`.trim(),
-                };
-            }
-
-            const weekday = mapWeekdayFromToken(segment);
-            if (weekday === null) return null;
-
-            return {
-                id: `${getCourseId(course)}-slot-${index}`,
-                weekday,
-                time: parseTimeRange(segment),
-                room: extractRoom(segment) || course?.room || null,
-                rawSchedule: segment,
-            };
-        })
-        .filter(Boolean);
-};
-
 const getEventSortValue = (event) => {
     const priority = {
         overdue: 0,
         deadline: 1,
-        class: 2,
-        done: 3,
+        done: 2,
     };
 
     const firstTimeToken = event?.time?.match(/\d{1,2}:\d{2}/)?.[0];
@@ -207,19 +93,6 @@ const Schedule = () => {
         }, {});
     }, [mySubmissions]);
 
-    const classSlots = useMemo(() => {
-        return (Array.isArray(courses) ? courses : []).flatMap((course) => {
-            const slots = extractClassSlots(course);
-            return slots.map((slot) => ({
-                ...slot,
-                courseId: getCourseId(course),
-                courseCode: course.courseCode,
-                courseName: course.courseName,
-                fallbackRoom: course.room || null,
-            }));
-        });
-    }, [courses]);
-
     const assignmentEventsByDate = useMemo(() => {
         return (Array.isArray(assignments) ? assignments : []).reduce((acc, assignment) => {
             const assignmentId = assignment._id || assignment.id;
@@ -249,7 +122,6 @@ const Schedule = () => {
                 notes: assignment.description || null,
                 courseCode: course?.courseCode || 'MON',
                 courseName: course?.courseName || 'Môn học',
-                schedule: course?.schedule || null,
             };
 
             const key = event.date;
@@ -259,35 +131,12 @@ const Schedule = () => {
         }, {});
     }, [assignments, coursesById, submissionByAssignmentId]);
 
-    const getClassEventsForDate = useCallback((value) => {
-        const dateKey = value.format('YYYY-MM-DD');
-
-        return classSlots
-            .filter((slot) => slot.weekday === value.day())
-            .map((slot) => ({
-                id: `${slot.id}-${dateKey}`,
-                kind: 'class',
-                type: 'class',
-                typeLabel: 'Lịch học',
-                title: `${slot.courseCode || ''} - ${slot.courseName || 'Môn học'}`,
-                date: dateKey,
-                time: slot.time || 'Theo lịch môn học',
-                room: slot.room || slot.fallbackRoom || null,
-                notes: slot.rawSchedule || null,
-                courseCode: slot.courseCode || 'MON',
-                courseName: slot.courseName || 'Môn học',
-                schedule: slot.rawSchedule || null,
-            }));
-    }, [classSlots]);
-
     const getEventsForDate = useCallback((value) => {
         const key = value.format('YYYY-MM-DD');
-        const classEvents = getClassEventsForDate(value);
         const deadlineEvents = assignmentEventsByDate[key] || [];
 
-        return [...classEvents, ...deadlineEvents]
-            .sort((a, b) => getEventSortValue(a) - getEventSortValue(b));
-    }, [assignmentEventsByDate, getClassEventsForDate]);
+        return [...deadlineEvents].sort((a, b) => getEventSortValue(a) - getEventSortValue(b));
+    }, [assignmentEventsByDate]);
 
     const isLoading = loadingCourses || loadingSubmissions || loadingAssignments;
 
@@ -300,7 +149,7 @@ const Schedule = () => {
                         {item.title}
                         <span className={styles.eventTime}>
                             <ClockCircleOutlined style={{ fontSize: '8px', marginRight: '4px' }} />
-                            {item.kind === 'class' ? item.time : `${item.time} - ${item.courseCode}`}
+                            {`${item.time} - ${item.courseCode}`}
                         </span>
                     </li>
                 ))}
@@ -316,7 +165,6 @@ const Schedule = () => {
     const typeIcon = (type) => {
         if (type === 'done') return <CheckCircleOutlined />;
         if (type === 'overdue') return <ExclamationCircleOutlined />;
-        if (type === 'class') return <BookOutlined />;
         return <FileTextOutlined />;
     };
 
@@ -325,7 +173,7 @@ const Schedule = () => {
             <div className={styles.customHeader}>
                 <div className={styles.monthYear}>
                     <h2>{value.format('MMMM, YYYY')}</h2>
-                    <span className={styles.monthSub}>Lịch học và hạn nộp bài tập</span>
+                    <span className={styles.monthSub}>Lịch hạn nộp bài tập</span>
                 </div>
                 <div className={styles.controls}>
                     <Button
@@ -426,7 +274,7 @@ const Schedule = () => {
                         ) : (
                             <div style={{ textAlign: 'center', padding: '60px 40px', color: '#a0aec0', background: 'white', borderRadius: '20px', border: '1px solid #edf2f7' }}>
                                 <CalendarOutlined style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.3 }} />
-                                <p style={{ fontWeight: 600 }}>Ngày này không có lịch học hoặc hạn nộp</p>
+                                <p style={{ fontWeight: 600 }}>Ngày này không có hạn nộp bài tập</p>
                             </div>
                         )}
                     </div>
