@@ -120,7 +120,7 @@ const TeacherClassDetail = () => {
                             {
                                 key: 'overview',
                                 label: <span className={styles.tabLabel}><InfoCircleOutlined /> <span>Tổng quan</span></span>,
-                                children: <OverviewTab color={classInfo.color} description={classInfo.description} />,
+                                children: <OverviewTab description={classInfo.description} courseId={course._id || id} />,
                             },
                             {
                                 key: 'students',

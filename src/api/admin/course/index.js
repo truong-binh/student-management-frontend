@@ -79,4 +79,59 @@ export const courseApi = {
             },
         });
     },
+
+    getAnnouncements: async (courseId) => {
+        return await apiAxios({
+            method: "get",
+            url: `/api/courses/${courseId}/announcements`,
+        });
+    },
+
+    createAnnouncement: async (courseId, data) => {
+        return await apiAxios({
+            method: "post",
+            url: `/api/courses/${courseId}/announcements`,
+            data,
+        });
+    },
+
+    deleteAnnouncement: async (courseId, annoId) => {
+        return await apiAxios({
+            method: "delete",
+            url: `/api/courses/${courseId}/announcements/${annoId}`,
+        });
+    },
+
+    getMaterials: async (courseId) => {
+        return await apiAxios({
+            method: "get",
+            url: `/api/courses/${courseId}/materials`,
+        });
+    },
+
+    uploadMaterials: async (courseId, formData) => {
+        return await apiAxios({
+            method: "post",
+            url: `/api/courses/${courseId}/materials`,
+            data: formData,
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+    },
+
+    updateMaterial: async (courseId, materialId, data) => {
+        return await apiAxios({
+            method: "patch",
+            url: `/api/courses/${courseId}/materials/${materialId}`,
+            data,
+        });
+    },
+
+    deleteMaterial: async (courseId, materialId) => {
+        return await apiAxios({
+            method: "delete",
+            url: `/api/courses/${courseId}/materials/${materialId}`,
+        });
+    },
 };
