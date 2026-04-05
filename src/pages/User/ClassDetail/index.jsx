@@ -92,7 +92,7 @@ const ClassDetail = () => {
                         animated={{ inkBar: true, tabPane: true }}
                     >
                         <Tabs.TabPane tab={<span><InfoCircleOutlined /> Tổng quan</span>} key="overview">
-                            <OverviewTab courseData={courseData} />
+                            <OverviewTab courseData={courseData} courseId={courseData?._id || id} />
                         </Tabs.TabPane>
                         <Tabs.TabPane tab={<span><UserOutlined /> Điểm danh</span>} key="attendance">
                             <AttendanceTab />
