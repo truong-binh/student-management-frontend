@@ -87,7 +87,7 @@ export const useAuth = () => {
     user: getAuthUser(),
     login: (data, options = {}) => loginMutation.mutate(data, options),
     register: (data, options = {}) => registerMutation.mutate(data, options),
-    logout: logoutMutation.mutate,
+    logout: () => logoutMutation.mutateAsync(),
     forgotPassword: (data, options = {}) => forgotPasswordMutation.mutate(data, options),
     resetPassword: (data, options = {}) => resetPasswordMutation.mutate(data, options),
     changePassword: (data, options = {}) => changePasswordMutation.mutate(data, options),

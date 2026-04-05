@@ -45,9 +45,12 @@ const StudentSidebar = ({
     };
 
     const handleLogout = () => {
-        logout();
-        closeMobileMenu();
-        navigate('/login');
+        logout()
+            .catch(() => null)
+            .finally(() => {
+                closeMobileMenu();
+                navigate('/login', { replace: true });
+            });
     };
 
     const items = menuItems || defaultMenuItems;
