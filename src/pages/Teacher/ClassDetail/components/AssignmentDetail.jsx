@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import clsx from 'clsx';
 import { Button, Input, Pagination } from 'antd';
 import {
     ArrowLeftOutlined,
@@ -74,19 +75,31 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
     const classTitle = classInfo.title || 'Lập trình hướng đối tượng';
     const semester = classInfo.semester || 'Học kỳ 1 - 2023-2024';
 
-    const mappedSubmissions = submissions.map((sub, i) => ({
-        id: sub.id || sub._id,
-        studentId: sub.student?.id || sub.student?._id,
-        name: sub.student?.fullName || 'Không rõ',
-        initials: getInitials(sub.student?.fullName),
-        color: COLORS[i % COLORS.length],
-        msv: sub.student?.userCode || 'N/A',
-        status: sub.status === 'GRADED' ? 'graded' : 'submitted',
-        hasFeedback: !!sub.aiFeedback,
-        score: sub.score,
-        fileUrl: sub.fileUrl,
-        createdAt: sub.createdAt
-    }));
+    const mappedSubmissions = submissions.map((sub, i) => {
+        const hasFeedback = sub.feedbackStatus && sub.feedbackStatus !== 'NONE';
+        const isPending = sub.feedbackStatus === 'PENDING';
+
+        return {
+            id: sub.id || sub._id,
+            studentId: sub.student?.id || sub.student?._id,
+            name: sub.student?.fullName || 'Không rõ',
+            initials: getInitials(sub.student?.fullName),
+            color: COLORS[i % COLORS.length],
+            msv: sub.student?.userCode || 'N/A',
+            status: hasFeedback ? 'feedback' : (sub.status === 'GRADED' ? 'graded' : 'submitted'),
+            hasFeedback,
+            isPending,
+            feedbackContent: sub.studentFeedback?.content,
+            score: sub.score,
+            fileUrl: sub.fileUrl,
+            createdAt: sub.createdAt
+        };
+    });
+
+    const truncateText = (text, maxLength) => {
+        if (!text) return '';
+        return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+    };
 
     const mappedNotSubmitted = notSubmittedStudents.map((stu, i) => ({
         id: `not-sub-${stu._id || stu.id}`,
@@ -117,6 +130,10 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
     const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
     const statusBadge = (s) => {
+        if (s.isPending) return <span className={`${styles.stBadge} ${styles.stFeedback}`}>ĐANG KHIẾU NẠI</span>;
+        if (s.status === 'RESOLVED' || s.status === 'feedback') {
+            return <span className={`${styles.stBadge} ${styles.stGraded}`}>ĐÃ GIẢI QUYẾT</span>;
+        }
         if (s.status === 'graded') return <span className={`${styles.stBadge} ${styles.stGraded}`}>ĐÃ CHẤM</span>;
         if (s.status === 'submitted') return <span className={`${styles.stBadge} ${styles.stSubmitted}`}>ĐÃ NỘP</span>;
         return <span className={`${styles.stBadge} ${styles.stMissing}`}>CHƯA NỘP</span>;
@@ -312,13 +329,24 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
                     </thead>
                     <tbody>
                         {paginated.map(s => (
-                            <tr key={s.id}>
+                            <tr
+                                key={s.id}
+                                className={clsx(s.isPending && styles.adFeedbackRow)}
+                                style={s.isPending ? { background: '#fffbeb' } : {}}
+                            >
                                 <td>
                                     <div className={styles.adStudentName}>
                                         <span className={styles.adAvatar} style={{ background: s.color }}>
                                             {s.initials}
                                         </span>
-                                        {s.name}
+                                        <div className={styles.adNameCol}>
+                                            <div className={styles.adRealName}>{s.name}</div>
+                                            {s.hasFeedback && s.feedbackContent && (
+                                                <div className={styles.adFeedbackSnippet}>
+                                                    <MessageOutlined style={{ fontSize: 11, color: '#d97706' }} /> {truncateText(s.feedbackContent, 40)}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </td>
                                 <td className={styles.adMsvCell}>{s.msv}</td>

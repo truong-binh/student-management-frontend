@@ -91,7 +91,6 @@ export const useStudentSubmissions = (assignmentId) => {
                 try {
                     await submissionApi.gradeSubmissionByAI(submissionId);
                 } catch {
-                    // AI grading may fail due to permissions or file type — not critical
                 }
             }
 
@@ -123,5 +122,134 @@ export const useMySubmissions = () => {
     return {
         mySubmissions: query.data || [],
         isLoading: query.isLoading,
+    };
+};
+
+export const useSubmissionFeedback = (submissionId) => {
+    const queryClient = useQueryClient();
+
+    const sendFeedback = useMutation({
+        mutationFn: async ({ content }) => {
+            const res = await submissionApi.sendFeedback(submissionId, content);
+            if (!res.success) throw res;
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['submissions', submissionId] });
+            queryClient.invalidateQueries({ queryKey: ['my-submissions'] });
+        },
+    });
+
+    const deleteFeedback = useMutation({
+        mutationFn: async () => {
+            const res = await submissionApi.deleteFeedback(submissionId);
+            if (!res.success) throw res;
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['submissions', submissionId] });
+            queryClient.invalidateQueries({ queryKey: ['my-submissions'] });
+        },
+    });
+
+    const replyFeedback = useMutation({
+        mutationFn: async ({ content }) => {
+            const res = await submissionApi.replyFeedback(submissionId, content);
+            if (!res.success) throw res;
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['submissions', submissionId] });
+            queryClient.invalidateQueries({ queryKey: ['assignments'] });
+        },
+    });
+
+    const updateScore = useMutation({
+        mutationFn: async ({ score }) => {
+            const res = await submissionApi.updateScore(submissionId, score);
+            if (!res.success) throw res;
+            return res.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['submissions', submissionId] });
+            queryClient.invalidateQueries({ queryKey: ['assignments'] });
+        },
+    });
+
+    return {
+        sendFeedback: sendFeedback.mutateAsync,
+        isSending: sendFeedback.isPending,
+        deleteFeedback: deleteFeedback.mutateAsync,
+        isDeleting: deleteFeedback.isPending,
+        replyFeedback: replyFeedback.mutateAsync,
+        isReplying: replyFeedback.isPending,
+        updateScore: updateScore.mutateAsync,
+        isUpdatingScore: updateScore.isPending,
+    };
+};
+
+export const useAssignmentFeedbacks = (assignmentId) => {
+    const query = useQuery({
+        queryKey: ['assignments', assignmentId, 'feedbacks'],
+        queryFn: async () => {
+            const res = await submissionApi.getAssignmentFeedbacks(assignmentId);
+            if (!res.success) throw res;
+            return Array.isArray(res.data) ? res.data : [];
+        },
+        enabled: !!assignmentId,
+    });
+
+    return {
+        feedbacks: query.data || [],
+        isLoading: query.isLoading,
+    };
+};
+
+export const useAllTeacherFeedbacks = (courses = []) => {
+    const query = useQuery({
+        queryKey: ['all-teacher-feedbacks', courses.map(c => c._id).join(',')],
+        queryFn: async () => {
+            if (!courses.length) return [];
+
+            const { assignmentApi } = await import('@/api/admin/assignment');
+            const assignmentResults = await Promise.all(
+                courses.map(course =>
+                    assignmentApi.getAssignmentsByCourseId(course._id)
+                        .then(res => (res.success && Array.isArray(res.data) ? res.data : (res.data?.items || [])))
+                        .catch(() => [])
+                )
+            );
+
+            const allAssignments = assignmentResults.flatMap((assignments, idx) =>
+                assignments.map(a => ({ ...a, courseInfo: courses[idx] }))
+            );
+
+            if (!allAssignments.length) return [];
+
+            const feedbackResults = await Promise.all(
+                allAssignments.map(assignment =>
+                    submissionApi.getAssignmentFeedbacks(assignment._id || assignment.id)
+                        .then(res => {
+                            const feedbacks = Array.isArray(res.data) ? res.data : [];
+                            return feedbacks.map(f => ({
+                                ...f,
+                                assignmentTitle: assignment.title,
+                                courseInfo: assignment.courseInfo,
+                            }));
+                        })
+                        .catch(() => [])
+                )
+            );
+
+            return feedbackResults.flat();
+        },
+        enabled: courses.length > 0,
+        staleTime: 30_000,
+    });
+
+    return {
+        allFeedbacks: query.data || [],
+        isLoading: query.isLoading,
+        refetch: query.refetch,
     };
 };

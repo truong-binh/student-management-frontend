@@ -47,4 +47,42 @@ export const submissionApi = {
             url: `/api/my/submissions`,
         });
     },
+
+    sendFeedback: async (id, content) => {
+        return await apiAxios({
+            method: "post",
+            url: `/api/submissions/${id}/feedback`,
+            data: { content },
+        });
+    },
+
+    deleteFeedback: async (id) => {
+        return await apiAxios({
+            method: "delete",
+            url: `/api/submissions/${id}/feedback`,
+        });
+    },
+
+    replyFeedback: async (id, content) => {
+        return await apiAxios({
+            method: "post",
+            url: `/api/submissions/${id}/reply`,
+            data: { content },
+        });
+    },
+
+    getAssignmentFeedbacks: async (id) => {
+        return await apiAxios({
+            method: "get",
+            url: `/api/assignments/${id}/feedbacks`,
+        });
+    },
+
+    updateScore: async (id, score) => {
+        return await apiAxios({
+            method: "patch",
+            url: `/api/submissions/${id}/score`,
+            data: { score },
+        });
+    },
 };
