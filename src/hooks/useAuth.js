@@ -51,12 +51,6 @@ export const useAuth = () => {
     }
   })
 
-  const authQuery = useQuery({
-    queryKey: ['auth'],
-    queryFn: authApi.getMe,
-    enabled: isAuthenticated(),
-    staleTime: 5 * 60 * 1000,
-  });
 
   const forgotPasswordMutation = useMutation({
     mutationFn: async (data) => {
@@ -97,6 +91,5 @@ export const useAuth = () => {
     isForgotPasswordLoading: forgotPasswordMutation.isPending,
     isResetPasswordLoading: resetPasswordMutation.isPending,
     isChangePasswordLoading: changePasswordMutation.isPending,
-    authQuery,
   };
 }

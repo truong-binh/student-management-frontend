@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Input, InputNumber, Tag, message, Spin } from 'antd';
+import { Button, Input, InputNumber, Tag, message, Spin, Popconfirm, Modal } from 'antd';
 import {
     ArrowLeftOutlined,
     InfoCircleOutlined,
@@ -18,7 +18,7 @@ import dayjs from 'dayjs';
 import MainLayout from '@/layouts/User/MainLayout';
 import styles from './styles.module.scss';
 import { useAssignmentDetail } from '@/hooks/useCourseAssignment';
-import { useSubmissionDetail } from '@/hooks/useSubmission';
+import { useSubmissionDetail, useSubmissionFeedback } from '@/hooks/useSubmission';
 
 const { TextArea } = Input;
 
@@ -49,6 +49,24 @@ const TeacherGradeEdit = () => {
 
     const gradeInfo = getGradeLabel(submission?.score);
 
+    const [newScore, setNewScore] = React.useState(null);
+    const [replyText, setReplyText] = React.useState('');
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = React.useState(false);
+    const { replyFeedback, isReplying, updateScore, isUpdatingScore } = useSubmissionFeedback(studentId);
+
+    React.useEffect(() => {
+        if (submission?.lecturerReply?.content) {
+            setReplyText(submission.lecturerReply.content);
+        } else if (submission?.instructorReply) {
+            // Fallback for old data if any
+            setReplyText(submission.instructorReply);
+        }
+
+        if (submission?.score !== undefined && submission?.score !== null) {
+            setNewScore(submission.score);
+        }
+    }, [submission]);
+
     const handleBack = () => {
         navigate(`/teacher/classes/${id}?tab=assignments&assignmentId=${assignmentId}`);
     };
@@ -59,6 +77,32 @@ const TeacherGradeEdit = () => {
             message.success('Chấm điểm bằng AI thành công!');
         } catch (error) {
             message.error('Lỗi khi chấm điểm bằng AI');
+        }
+    };
+
+    const handleUpdateScore = async () => {
+        try {
+            await updateScore({ score: newScore });
+            message.success('Cập nhật điểm số thành công!');
+            setIsConfirmModalOpen(false);
+        } catch (error) {
+            message.error(error?.message || 'Lỗi khi cập nhật điểm số');
+        }
+    };
+
+    const handleReply = async () => {
+        if (!replyText.trim()) {
+            message.warning('Vui lòng nhập nội dung phản hồi!');
+            return;
+        }
+        try {
+            if (newScore !== null && newScore !== submission?.score) {
+                await updateScore({ score: newScore });
+            }
+            await replyFeedback({ content: replyText });
+            message.success('Cập nhật điểm và gửi phản hồi thành công!');
+        } catch (error) {
+            message.error(error?.message || 'Có lỗi khi gửi phản hồi');
         }
     };
 
@@ -83,6 +127,8 @@ const TeacherGradeEdit = () => {
         );
     }
 
+    const isPending = submission.feedbackStatus === 'PENDING';
+    const isResolved = submission.feedbackStatus === 'RESOLVED';
 
     return (
         <MainLayout menuItems={teacherMenuItems}>
@@ -94,7 +140,7 @@ const TeacherGradeEdit = () => {
                         </div>
                         <div className={styles.titleInfo}>
                             <div className={styles.mainTitleRow}>
-                                <h1>Sửa điểm bài tập</h1>
+                                <h1>{isPending || isResolved ? 'Phản hồi khiếu nại' : 'Sửa điểm bài tập'}</h1>
                                 <Tag className={styles.classTag}>{id}</Tag>
                             </div>
                             <div className={styles.subTitle}>
@@ -109,7 +155,7 @@ const TeacherGradeEdit = () => {
                                 <span className={styles.separator}>&gt;</span>
                                 <span>Chi tiết</span>
                                 <span className={styles.separator}>&gt;</span>
-                                <span className={styles.current}>Sửa điểm</span>
+                                <span className={styles.current}>{isPending || isResolved ? 'Phản hồi' : 'Sửa điểm'}</span>
                             </div>
                         </div>
                     </div>
@@ -131,7 +177,9 @@ const TeacherGradeEdit = () => {
                                 <div className={styles.studentMeta}>
                                     <div className={styles.studentName}>{submission?.student?.fullName || submission?.student?.username}</div>
                                     <div className={styles.studentMsv}>MSV: {submission?.student?.userCode || '-'}</div>
-                                    <Tag className={styles.gradedTag}>{submission?.score != null ? 'ĐÃ CHẤM' : 'CHƯA CHẤM'}</Tag>
+                                    <Tag className={styles.gradedTag}>
+                                        {isPending ? 'ĐANG KHIẾU NẠI' : isResolved ? 'ĐÃ GIẢI QUYẾT' : 'ĐÃ CHẤM'}
+                                    </Tag>
                                 </div>
                             </div>
                         </div>
@@ -174,6 +222,62 @@ const TeacherGradeEdit = () => {
                     </div>
 
                     <div className={styles.rightCol}>
+                        {(isPending || isResolved) && (
+                            <div className={styles.commentCard} style={{ border: '1px solid #fecaca', background: '#fff5f5', marginBottom: 24 }}>
+                                <div className={styles.editCardTitle} style={{ color: '#dc2626' }}>
+                                    <MessageOutlined style={{ marginRight: 8 }} /> Sinh viên gửi thắc mắc
+                                </div>
+                                <div style={{
+                                    padding: '16px',
+                                    background: '#fff',
+                                    borderRadius: '8px',
+                                    border: '1px solid #fee2e2',
+                                    color: '#4b5563',
+                                    fontSize: '14px',
+                                    lineHeight: '1.6'
+                                }}>
+                                    {submission.studentFeedback?.content || 'Không có nội dung chi tiết.'}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className={styles.commentCard}>
+                            <div className={styles.editCardTitle}>
+                                <CommentOutlined /> {isPending || isResolved ? 'Câu trả lời của Giảng viên' : 'Nhận xét của giáo viên'}
+                            </div>
+                            <TextArea
+                                className={styles.commentInput}
+                                placeholder={isPending ? "Nhập câu trả lời cho sinh viên..." : "Chưa có nhận xét từ giảng viên"}
+                                rows={5}
+                                value={isPending || isResolved ? replyText : (submission?.feedback || '')}
+                                onChange={e => setReplyText(e.target.value)}
+                                readOnly={isResolved || (!isPending && !isResolved)}
+                                maxLength={500}
+                            />
+                            {isPending && (
+                                <div style={{ marginTop: 16, textAlign: 'right' }}>
+                                    <Popconfirm
+                                        title="Xác nhận gửi phản hồi"
+                                        description={newScore !== null && newScore !== submission?.score
+                                            ? `Bạn sẽ gửi phản hồi và cập nhật điểm thành ${newScore}. Tiếp tục?`
+                                            : "Xác nhận gửi nội dung phản hồi này?"}
+                                        onConfirm={handleReply}
+                                        okText="Xác nhận"
+                                        cancelText="Hủy"
+                                    >
+                                        <Button
+                                            type="primary"
+                                            danger
+                                            icon={<MessageOutlined />}
+                                            loading={isReplying || isUpdatingScore}
+                                        >
+                                            Gửi phản hồi cho sinh viên
+                                        </Button>
+                                    </Popconfirm>
+                                </div>
+                            )}
+                        </div>
+
                         <div className={styles.editCard}>
                             <div className={styles.editCardTitle}>
                                 <EditOutlined /> Chỉnh sửa điểm số
@@ -181,14 +285,14 @@ const TeacherGradeEdit = () => {
 
                             <div className={styles.scoreInputRow}>
                                 <div className={styles.scoreInputGroup}>
-                                    <label className={styles.inputLabel}>Tiểu điểm AI (0 – 10)</label>
+                                    <label className={styles.inputLabel}>Điểm bài nộp (0 – 10)</label>
                                     <InputNumber
                                         className={styles.scoreInput}
                                         min={0}
                                         max={10}
                                         step={0.5}
-                                        value={submission?.score ?? null}
-                                        disabled
+                                        value={newScore}
+                                        onChange={val => setNewScore(val)}
                                         size="large"
                                         precision={1}
                                     />
@@ -258,7 +362,6 @@ const TeacherGradeEdit = () => {
                                 )}
                             </div>
                         </div>
-
                         <div className={styles.actionRow}>
                             <Button
                                 className={styles.cancelBtn}
@@ -268,10 +371,51 @@ const TeacherGradeEdit = () => {
                             >
                                 Quay lại
                             </Button>
+                            <Button
+                                type="primary"
+                                danger
+                                size="large"
+                                icon={<EditOutlined />}
+                                loading={isUpdatingScore}
+                                disabled={newScore === submission?.score}
+                                style={{ borderRadius: '10px', height: '48px', padding: '0 32px' }}
+                                onClick={() => setIsConfirmModalOpen(true)}
+                            >
+                                Cập nhật điểm mới
+                            </Button>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <Modal
+                title="Xác nhận chỉnh sửa điểm"
+                open={isConfirmModalOpen}
+                onOk={handleUpdateScore}
+                onCancel={() => setIsConfirmModalOpen(false)}
+                okText="Xác nhận cập nhật"
+                cancelText="Hủy"
+                confirmLoading={isUpdatingScore}
+                centered
+            >
+                <div style={{ padding: '20px 0' }}>
+                    <p style={{ fontSize: 16 }}>Bạn có chắc chắn muốn cập nhật điểm số cho sinh viên này không?</p>
+                    <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, marginTop: 16, display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{ color: '#64748b', fontSize: 13, marginBottom: 4 }}>Điểm cũ</div>
+                            <div style={{ fontSize: 24, fontWeight: 700, color: '#94a3b8' }}>{submission?.score || 0}</div>
+                        </div>
+                        <div style={{ fontSize: 20, color: '#3182ce' }}>→</div>
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{ color: '#64748b', fontSize: 13, marginBottom: 4 }}>Điểm mới</div>
+                            <div style={{ fontSize: 24, fontWeight: 700, color: '#e53e3e' }}>{newScore}</div>
+                        </div>
+                    </div>
+                    <p style={{ color: '#64748b', fontSize: 13, marginTop: 12, textAlign: 'center' }}>
+                        Lưu ý: Sau khi cập nhật, kết quả sẽ được hiển thị ngay lập tức phía sinh viên qua hệ thống.
+                    </p>
+                </div>
+            </Modal>
         </MainLayout>
     );
 };
