@@ -38,6 +38,30 @@ const teacherMenuItems = [
 
 const getCourseId = (course) => course?._id || course?.id;
 
+const getTotalStudents = (res) => {
+    if (!res?.success) return 0;
+
+    const total =
+        res.pagination?.total ??
+        res.pagination?.totalItems ??
+        res.data?.pagination?.total ??
+        res.data?.pagination?.totalItems;
+
+    if (Number.isFinite(Number(total))) {
+        return Number(total);
+    }
+
+    if (Array.isArray(res.data)) {
+        return res.data.length;
+    }
+
+    if (Array.isArray(res.data?.items)) {
+        return res.data.items.length;
+    }
+
+    return 0;
+};
+
 const normalizeVietnamese = (value) => {
     return String(value || '')
         .normalize('NFD')
@@ -97,9 +121,7 @@ const TeacherSchedule = () => {
                         ? (Array.isArray(assignmentsRes.data) ? assignmentsRes.data : (assignmentsRes.data?.items || []))
                         : [];
 
-                    const totalStudents = studentsRes?.success
-                        ? Number(studentsRes.data?.pagination?.totalItems || 0)
-                        : 0;
+                    const totalStudents = getTotalStudents(studentsRes);
 
                     return {
                         courseId,

@@ -140,7 +140,7 @@ const TeacherClassDetail = () => {
                             {
                                 key: 'create-assignment',
                                 label: <span className={styles.tabLabel}><EditOutlined /> <span>Tạo bài tập</span></span>,
-                                children: <CreateAssignmentTab classInfo={classInfo} courseId={course._id} setActiveTab={handleTabChange} />,
+                                children: <CreateAssignmentTab classInfo={classInfo} courseId={course._id} />,
                             },
                         ]}
                     />

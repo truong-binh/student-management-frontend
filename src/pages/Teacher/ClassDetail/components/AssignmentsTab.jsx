@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Button } from 'antd';
 import { CalendarOutlined, BarChartOutlined, DownOutlined } from '@ant-design/icons';
 import { Doughnut } from 'react-chartjs-2';
@@ -12,6 +12,7 @@ import styles from '../styles.module.scss';
 import AssignmentDetail from './AssignmentDetail';
 import { useCourseAssignments } from '@/hooks/useCourseAssignment';
 import { Spin, Empty } from 'antd';
+import { useSearchParams } from 'react-router-dom';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -31,24 +32,64 @@ const STATUS_CONFIG = {
 const PAGE_SIZE = 4;
 
 const AssignmentsTab = ({ classInfo, courseId }) => {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [filter, setFilter] = useState('all');
     const [showAll, setShowAll] = useState(false);
     const [selectedAssignment, setSelectedAssignment] = useState(null);
+    const selectedAssignmentId = searchParams.get('assignmentId');
 
     const { assignments: rawAssignments, isLoading } = useCourseAssignments(courseId);
 
-    const mappedAssignments = (rawAssignments || []).map((a, i) => {
-        const isOverdue = new Date(a.dueDate) < new Date();
-        const types = ['lab', 'object', 'check', 'alert'];
-        return {
-            id: a._id || a.id,
-            title: a.title,
-            deadline: new Date(a.dueDate).toLocaleString('vi-VN'),
-            status: isOverdue ? 'completed' : 'opening',
-            type: types[i % 4], // cycle through icons
-            original: a,
-        };
-    });
+    const mappedAssignments = useMemo(() => {
+        return (rawAssignments || []).map((a, i) => {
+            const isOverdue = new Date(a.dueDate) < new Date();
+            const types = ['lab', 'object', 'check', 'alert'];
+            return {
+                id: a._id || a.id,
+                title: a.title,
+                deadline: new Date(a.dueDate).toLocaleString('vi-VN'),
+                status: isOverdue ? 'completed' : 'opening',
+                type: types[i % 4], // cycle through icons
+                original: a,
+            };
+        });
+    }, [rawAssignments]);
+
+    useEffect(() => {
+        if (!selectedAssignmentId) {
+            setSelectedAssignment(null);
+            return;
+        }
+
+        const matchedAssignment = mappedAssignments.find(
+            (item) => String(item.id) === String(selectedAssignmentId)
+        );
+
+        if (!matchedAssignment) return;
+
+        setSelectedAssignment((prev) => {
+            if (prev && String(prev.id) === String(matchedAssignment.id)) {
+                return prev;
+            }
+            return matchedAssignment;
+        });
+    }, [selectedAssignmentId, mappedAssignments]);
+
+    const openAssignmentDetail = (item) => {
+        setSelectedAssignment(item);
+        const nextParams = new URLSearchParams(searchParams);
+        nextParams.set('tab', 'assignments');
+        nextParams.set('assignmentId', String(item.id));
+        setSearchParams(nextParams);
+    };
+
+    const closeAssignmentDetail = () => {
+        setSelectedAssignment(null);
+        const nextParams = new URLSearchParams(searchParams);
+        nextParams.set('tab', 'assignments');
+        nextParams.delete('assignmentId');
+        setSearchParams(nextParams);
+    };
 
     if (isLoading) {
         return (
@@ -63,7 +104,7 @@ const AssignmentsTab = ({ classInfo, courseId }) => {
             <AssignmentDetail
                 assignment={selectedAssignment}
                 classInfo={classInfo}
-                onBack={() => setSelectedAssignment(null)}
+                onBack={closeAssignmentDetail}
             />
         );
     }
@@ -147,7 +188,7 @@ const AssignmentsTab = ({ classInfo, courseId }) => {
                                 </div>
                                 <Button
                                     className={styles.viewDetailBtn}
-                                    onClick={() => setSelectedAssignment(item)}
+                                    onClick={() => openAssignmentDetail(item)}
                                 >
                                     Xem chi tiết
                                 </Button>
