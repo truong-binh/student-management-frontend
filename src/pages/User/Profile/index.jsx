@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { Button, Input, Tag, message } from 'antd';
+import React, { useMemo, useState } from 'react';
+import { Button, Input, Spin, Tag, message } from 'antd';
 import {
-    ArrowLeftOutlined,
     LockOutlined,
     CheckCircleFilled,
     BarChartOutlined,
@@ -15,7 +14,6 @@ import {
     KeyOutlined,
     SyncOutlined
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
 import { Bar } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -30,6 +28,8 @@ import MainLayout from '@/layouts/User/MainLayout';
 import styles from './styles.module.scss';
 import avatarImg from '@/assets/images/user/default-avatar-point.png';
 import { useAuth } from '@/hooks/useAuth';
+import { useCourse } from '@/hooks/useCourse';
+import { useMySubmissions } from '@/hooks/useSubmission';
 
 ChartJS.register(
     CategoryScale,
@@ -40,38 +40,216 @@ ChartJS.register(
     Legend
 );
 
+const getCourseId = (course) => course?._id || course?.id;
+
+const getSubmissionAssignmentId = (submission) => {
+    return submission?.assignment?._id || submission?.assignment?.id || submission?.assignment;
+};
+
+const normalizeScoreTo4 = (score, maxScore) => {
+    const scoreNumber = Number(score);
+    const maxScoreNumber = Number(maxScore || 10);
+
+    if (!Number.isFinite(scoreNumber) || !Number.isFinite(maxScoreNumber) || maxScoreNumber <= 0) {
+        return 0;
+    }
+
+    const normalized = (scoreNumber / maxScoreNumber) * 4;
+    return Math.max(0, Math.min(4, normalized));
+};
+
+const getSemesterSortValue = (semester) => {
+    const values = String(semester || '').match(/\d+/g)?.map(Number) || [];
+    if (values.length >= 2) {
+        const term = values[0];
+        const year = values[values.length - 1];
+        return year * 10 + term;
+    }
+    if (values.length === 1) {
+        return values[0];
+    }
+    return 0;
+};
+
+const getSemesterDisplayLabel = (semester, index) => {
+    const values = String(semester || '').match(/\d+/g)?.map(Number) || [];
+    if (values.length >= 2) {
+        return `HK${values[0]}-${values[values.length - 1]}`;
+    }
+    return `Kỳ ${index + 1}`;
+};
+
+const getGpaRank = (gpa) => {
+    if (!Number.isFinite(gpa)) return 'Chưa xếp loại';
+    if (gpa >= 3.6 && gpa <= 4.0) return 'Xuất sắc';
+    if (gpa >= 3.2) return 'Giỏi';
+    if (gpa >= 2.5) return 'Khá';
+    if (gpa >= 2.0) return 'Trung bình';
+    if (gpa >= 1.0) return 'Yếu';
+    return 'Kém';
+};
+
 const Profile = () => {
-    const navigate = useNavigate();
     const { user, changePassword, isChangePasswordLoading } = useAuth();
+    const { courses, isLoading: loadingCourses } = useCourse();
+    const { mySubmissions, isLoading: loadingSubmissions } = useMySubmissions();
     const [passwordForm, setPasswordForm] = useState({
         oldPassword: '',
         newPassword: '',
         confirmPassword: ''
     });
 
-    const chartData = {
-        labels: ['KQ1', 'KQ2', 'KQ3', 'KQ4', 'KQ5', 'KQ6'],
+    const coursesById = useMemo(() => {
+        return (Array.isArray(courses) ? courses : []).reduce((acc, course) => {
+            const id = getCourseId(course);
+            if (id) {
+                acc[String(id)] = course;
+            }
+            return acc;
+        }, {});
+    }, [courses]);
+
+    const gradedSubmissions = useMemo(() => {
+        return (Array.isArray(mySubmissions) ? mySubmissions : []).filter((submission) => {
+            return submission?.status === 'GRADED' || Number.isFinite(Number(submission?.score));
+        });
+    }, [mySubmissions]);
+
+    const gradedCourseStats = useMemo(() => {
+        const map = new Map();
+
+        gradedSubmissions.forEach((submission) => {
+            const assignment = submission?.assignment || {};
+            const assignmentId = getSubmissionAssignmentId(submission);
+            if (!assignmentId) return;
+
+            const rawCourse = assignment?.courseId;
+            const courseId = rawCourse?._id || rawCourse?.id || rawCourse;
+            if (!courseId) return;
+
+            const courseFromAssignment = typeof rawCourse === 'object' ? rawCourse : null;
+            const fallbackCourse = coursesById[String(courseId)] || null;
+            const course = courseFromAssignment || fallbackCourse;
+
+            const normalizedScore = normalizeScoreTo4(submission?.score, assignment?.maxScore);
+
+            if (!map.has(String(courseId))) {
+                map.set(String(courseId), {
+                    courseId: String(courseId),
+                    courseName: course?.courseName || assignment?.title || 'Môn học',
+                    semester: course?.semester || 'Chưa phân học kỳ',
+                    credits: Number(course?.credits || 0),
+                    scoreTotal: 0,
+                    scoreCount: 0,
+                });
+            }
+
+            const entry = map.get(String(courseId));
+            entry.scoreTotal += normalizedScore;
+            entry.scoreCount += 1;
+
+            if (!entry.credits && Number(course?.credits || 0) > 0) {
+                entry.credits = Number(course.credits);
+            }
+        });
+
+        return Array.from(map.values()).map((item) => ({
+            ...item,
+            gpa4: item.scoreCount > 0 ? item.scoreTotal / item.scoreCount : 0,
+        }));
+    }, [gradedSubmissions, coursesById]);
+
+    const semesterGpaStats = useMemo(() => {
+        const semesterMap = new Map();
+
+        gradedCourseStats.forEach((course) => {
+            const semester = course.semester || 'Chưa phân học kỳ';
+            const weight = Number(course.credits || 0) > 0 ? Number(course.credits) : 1;
+
+            if (!semesterMap.has(semester)) {
+                semesterMap.set(semester, {
+                    semester,
+                    weightedTotal: 0,
+                    weightTotal: 0,
+                });
+            }
+
+            const current = semesterMap.get(semester);
+            current.weightedTotal += course.gpa4 * weight;
+            current.weightTotal += weight;
+        });
+
+        return Array.from(semesterMap.values())
+            .map((item) => ({
+                semester: item.semester,
+                gpa4: item.weightTotal > 0 ? item.weightedTotal / item.weightTotal : 0,
+            }))
+            .sort((a, b) => {
+                const diff = getSemesterSortValue(a.semester) - getSemesterSortValue(b.semester);
+                if (diff !== 0) return diff;
+                return String(a.semester).localeCompare(String(b.semester));
+            })
+            .map((item, index) => ({
+                ...item,
+                label: getSemesterDisplayLabel(item.semester, index),
+            }));
+    }, [gradedCourseStats]);
+
+    const cumulativeGpa = useMemo(() => {
+        if (!gradedCourseStats.length) return 0;
+
+        const totals = gradedCourseStats.reduce(
+            (acc, course) => {
+                const weight = Number(course.credits || 0) > 0 ? Number(course.credits) : 1;
+                acc.weightedTotal += course.gpa4 * weight;
+                acc.weightTotal += weight;
+                return acc;
+            },
+            { weightedTotal: 0, weightTotal: 0 }
+        );
+
+        return totals.weightTotal > 0 ? totals.weightedTotal / totals.weightTotal : 0;
+    }, [gradedCourseStats]);
+
+    const accumulatedCredits = useMemo(() => {
+        return gradedCourseStats.reduce((sum, course) => sum + Number(course.credits || 0), 0);
+    }, [gradedCourseStats]);
+
+    const totalCredits = useMemo(() => {
+        return (Array.isArray(courses) ? courses : []).reduce((sum, course) => sum + Number(course.credits || 0), 0);
+    }, [courses]);
+
+    const latestSemesterLabel = semesterGpaStats.length
+        ? semesterGpaStats[semesterGpaStats.length - 1].label
+        : '';
+
+    const currentGpaText = cumulativeGpa.toFixed(2);
+    const rankText = gradedCourseStats.length > 0 ? getGpaRank(cumulativeGpa) : 'Chưa xếp loại';
+    const isReportLoading = loadingCourses || loadingSubmissions;
+
+    const chartData = useMemo(() => ({
+        labels: semesterGpaStats.map((item) => item.label),
         datasets: [
             {
                 label: 'GPA',
-                data: [3.1, 3.4, 3.2, 3.5, 3.25, 3.3],
+                data: semesterGpaStats.map((item) => Number(item.gpa4.toFixed(2))),
                 backgroundColor: (context) => {
-                    const index = context.dataIndex;
-                    return index === 4 ? '#b71c1c' : '#cbd5e0';
+                    const label = context?.chart?.data?.labels?.[context.dataIndex];
+                    return label === latestSemesterLabel ? '#b71c1c' : '#cbd5e0';
                 },
                 borderRadius: 6,
                 barThickness: 32,
             },
         ],
-    };
+    }), [semesterGpaStats, latestSemesterLabel]);
 
-    const chartOptions = {
+    const chartOptions = useMemo(() => ({
         responsive: true,
         plugins: {
             legend: { display: false },
             tooltip: {
                 callbacks: {
-                    label: (context) => `GPA: ${context.raw}`
+                    label: (context) => `GPA: ${Number(context.raw || 0).toFixed(2)}`
                 }
             }
         },
@@ -93,16 +271,16 @@ const Profile = () => {
             x: {
                 grid: { display: false },
                 ticks: {
-                    color: (context) => context.tick.label === 'KQ5' ? '#b71c1c' : '#a0aec0',
+                    color: (context) => context.tick.label === latestSemesterLabel ? '#b71c1c' : '#a0aec0',
                     font: {
                         size: 12,
-                        weight: (context) => context.tick.label === 'KQ5' ? 'bold' : 'normal'
+                        weight: (context) => context.tick.label === latestSemesterLabel ? 'bold' : 'normal'
                     }
                 }
             }
         },
         maintainAspectRatio: false
-    };
+    }), [latestSemesterLabel]);
 
     const handleUpdatePassword = () => {
         if (!passwordForm.oldPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
@@ -252,7 +430,7 @@ const Profile = () => {
                                     </div>
                                     <div className={styles.statInfo}>
                                         <span className={styles.label}>GPA Hiện tại</span>
-                                        <div className={styles.value}>3.25</div>
+                                        <div className={styles.value}>{isReportLoading ? '--' : currentGpaText}</div>
                                     </div>
                                 </div>
 
@@ -262,7 +440,9 @@ const Profile = () => {
                                     </div>
                                     <div className={styles.statInfo}>
                                         <span className={styles.label}>Tín chỉ tích lũy</span>
-                                        <div className={styles.value}>85 <span>/ 150</span></div>
+                                        <div className={styles.value}>
+                                            {isReportLoading ? '--' : accumulatedCredits} <span>/ {isReportLoading ? '--' : totalCredits}</span>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -272,7 +452,7 @@ const Profile = () => {
                                     </div>
                                     <div className={styles.statInfo}>
                                         <span className={styles.label}>Xếp loại</span>
-                                        <div className={styles.value}>Giỏi</div>
+                                        <div className={styles.value}>{isReportLoading ? '--' : rankText}</div>
                                     </div>
                                 </div>
                             </div>
@@ -280,7 +460,22 @@ const Profile = () => {
                             <div className={styles.chartSection}>
                                 <div className={styles.chartTitle}>Biểu đồ GPA theo kỳ học (Thang 4)</div>
                                 <div className={styles.chartWrapper}>
-                                    <Bar data={chartData} options={chartOptions} />
+                                    {isReportLoading && (
+                                        <div className={styles.chartPlaceholder}>
+                                            <Spin size="small" />
+                                            <span>Đang tải dữ liệu học tập...</span>
+                                        </div>
+                                    )}
+
+                                    {!isReportLoading && semesterGpaStats.length === 0 && (
+                                        <div className={styles.chartPlaceholder}>
+                                            Chưa có dữ liệu GPA theo kỳ học.
+                                        </div>
+                                    )}
+
+                                    {!isReportLoading && semesterGpaStats.length > 0 && (
+                                        <Bar data={chartData} options={chartOptions} />
+                                    )}
                                 </div>
                             </div>
                         </div>

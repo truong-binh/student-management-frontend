@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Button, Input, Tag, message } from 'antd';
+import React, { useMemo, useState } from 'react';
+import { Button, Input, Spin, Tag, message } from 'antd';
 import {
     LockOutlined,
     CheckCircleFilled,
@@ -36,6 +36,11 @@ import MainLayout from '@/layouts/User/MainLayout';
 import styles from './styles.module.scss';
 import avatarImg from '@/assets/images/user/avatar__teacher.png';
 import { useAuth } from '@/hooks/useAuth';
+import { useCourse } from '@/hooks/useCourse';
+import { useQuery } from '@tanstack/react-query';
+import { courseApi } from '@/api/admin/course';
+import { assignmentApi } from '@/api/admin/assignment';
+import { submissionApi } from '@/api/admin/submission';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -47,31 +52,171 @@ const teacherMenuItems = [
     { key: 'feedback', label: 'Phản hồi', icon: <MessageOutlined />, path: '/teacher/feedback' },
 ];
 
+const getCourseId = (course) => course?._id || course?.id;
+
+const normalizeAssignmentList = (res) => {
+    if (!res?.success) return [];
+    if (Array.isArray(res.data)) return res.data;
+    return res.data?.items || [];
+};
+
+const normalizeSubmissionList = (res) => {
+    if (!res?.success) return [];
+    if (Array.isArray(res.data)) return res.data;
+    return res.data?.items || [];
+};
+
+const isSubmissionGraded = (submission) => {
+    const status = String(submission?.status || '').toUpperCase();
+    if (status === 'GRADED') return true;
+    return submission?.score !== null && submission?.score !== undefined;
+};
+
+const getTotalStudents = (res) => {
+    if (!res?.success) return 0;
+
+    const total =
+        res.pagination?.total ??
+        res.pagination?.totalItems ??
+        res.data?.pagination?.total ??
+        res.data?.pagination?.totalItems;
+
+    if (Number.isFinite(Number(total))) {
+        return Number(total);
+    }
+
+    if (Array.isArray(res.data)) {
+        return res.data.length;
+    }
+
+    if (Array.isArray(res.data?.items)) {
+        return res.data.items.length;
+    }
+
+    return 0;
+};
+
 const TeacherProfile = () => {
     const { user, changePassword, isChangePasswordLoading } = useAuth();
+    const { courses, isLoading: loadingCourses } = useCourse();
     const [passwordForm, setPasswordForm] = useState({
         oldPassword: '',
         newPassword: '',
         confirmPassword: '',
     });
 
-    const chartData = {
-        labels: ['INT1306', 'INT1310', 'INT1402', 'INT1332', 'INT1416'],
+    const courseIds = useMemo(
+        () => (Array.isArray(courses) ? courses.map(getCourseId).filter(Boolean) : []),
+        [courses]
+    );
+
+    const { data: totalStudents = 0, isLoading: loadingTotalStudents } = useQuery({
+        queryKey: ['teacher-profile-total-students', courseIds],
+        enabled: courseIds.length > 0,
+        queryFn: async () => {
+            const totals = await Promise.all(
+                courseIds.map(async (courseId) => {
+                    const studentsRes = await courseApi.getCourseStudents(courseId, { page: 1, limit: 1 });
+                    return getTotalStudents(studentsRes);
+                })
+            );
+
+            return totals.reduce((sum, count) => sum + Number(count || 0), 0);
+        },
+    });
+
+    const { data: gradingStatsByCourse = [], isLoading: loadingGradingStats } = useQuery({
+        queryKey: ['teacher-profile-grading-stats', courseIds],
+        enabled: courseIds.length > 0,
+        queryFn: async () => {
+            const coursePayloads = await Promise.all(
+                (Array.isArray(courses) ? courses : []).map(async (course) => {
+                    const courseId = getCourseId(course);
+                    if (!courseId) return null;
+
+                    const assignmentsRes = await assignmentApi.getAssignmentsByCourseId(courseId);
+                    const assignments = normalizeAssignmentList(assignmentsRes);
+
+                    if (assignments.length === 0) {
+                        return {
+                            courseId,
+                            label: course?.courseCode || course?.courseName || 'Lớp học',
+                            graded: 0,
+                            totalSubmitted: 0,
+                        };
+                    }
+
+                    const submissionGroups = await Promise.all(
+                        assignments.map(async (assignment) => {
+                            const assignmentId = assignment?._id || assignment?.id;
+                            if (!assignmentId) return [];
+
+                            const submissionsRes = await submissionApi.getSubmissionsByAssignmentId(assignmentId);
+                            return normalizeSubmissionList(submissionsRes);
+                        })
+                    );
+
+                    const submissions = submissionGroups.flat();
+                    const graded = submissions.filter(isSubmissionGraded).length;
+
+                    return {
+                        courseId,
+                        label: course?.courseCode || course?.courseName || 'Lớp học',
+                        graded,
+                        totalSubmitted: submissions.length,
+                    };
+                })
+            );
+
+            return coursePayloads.filter(Boolean);
+        },
+    });
+
+    const gradingTotals = useMemo(() => {
+        return gradingStatsByCourse.reduce(
+            (acc, item) => {
+                acc.graded += Number(item?.graded || 0);
+                acc.totalSubmitted += Number(item?.totalSubmitted || 0);
+                return acc;
+            },
+            { graded: 0, totalSubmitted: 0 }
+        );
+    }, [gradingStatsByCourse]);
+
+    const highlightedCourseLabel = useMemo(() => {
+        if (!gradingStatsByCourse.length) return '';
+
+        return [...gradingStatsByCourse].sort((a, b) => {
+            const gradedDiff = Number(b?.graded || 0) - Number(a?.graded || 0);
+            if (gradedDiff !== 0) return gradedDiff;
+            return String(a?.label || '').localeCompare(String(b?.label || ''));
+        })[0]?.label;
+    }, [gradingStatsByCourse]);
+
+    const isReportLoading = loadingCourses || loadingTotalStudents || loadingGradingStats;
+
+    const totalStudentsValue = loadingCourses || loadingTotalStudents ? '--' : String(totalStudents);
+    const totalClassesValue = loadingCourses ? '--' : String(courseIds.length);
+    const gradedValue = isReportLoading ? '--' : String(gradingTotals.graded);
+    const totalSubmittedValue = isReportLoading ? '--' : String(gradingTotals.totalSubmitted);
+
+    const chartData = useMemo(() => ({
+        labels: gradingStatsByCourse.map((item) => item.label),
         datasets: [
             {
                 label: 'Bài đã chấm',
-                data: [42, 38, 45, 30, 35],
+                data: gradingStatsByCourse.map((item) => item.graded),
                 backgroundColor: (context) => {
-                    const index = context.dataIndex;
-                    return index === 2 ? '#b71c1c' : '#cbd5e0';
+                    const label = context?.chart?.data?.labels?.[context.dataIndex];
+                    return label === highlightedCourseLabel ? '#b71c1c' : '#cbd5e0';
                 },
                 borderRadius: 6,
                 barThickness: 32,
             },
         ],
-    };
+    }), [gradingStatsByCourse, highlightedCourseLabel]);
 
-    const chartOptions = {
+    const chartOptions = useMemo(() => ({
         responsive: true,
         plugins: {
             legend: { display: false },
@@ -90,16 +235,16 @@ const TeacherProfile = () => {
             x: {
                 grid: { display: false },
                 ticks: {
-                    color: (context) => context.tick.label === 'INT1402' ? '#b71c1c' : '#a0aec0',
+                    color: (context) => context.tick.label === highlightedCourseLabel ? '#b71c1c' : '#a0aec0',
                     font: {
                         size: 12,
-                        weight: (context) => context.tick.label === 'INT1402' ? 'bold' : 'normal',
+                        weight: (context) => context.tick.label === highlightedCourseLabel ? 'bold' : 'normal',
                     },
                 },
             },
         },
         maintainAspectRatio: false,
-    };
+    }), [highlightedCourseLabel]);
 
     const handleUpdatePassword = () => {
         if (!passwordForm.oldPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
@@ -275,7 +420,7 @@ const TeacherProfile = () => {
                                     </div>
                                     <div className={styles.statInfo}>
                                         <span className={styles.label}>Tổng sinh viên</span>
-                                        <div className={styles.value}>184</div>
+                                        <div className={styles.value}>{totalStudentsValue}</div>
                                     </div>
                                 </div>
 
@@ -285,7 +430,7 @@ const TeacherProfile = () => {
                                     </div>
                                     <div className={styles.statInfo}>
                                         <span className={styles.label}>Lớp đang dạy</span>
-                                        <div className={styles.value}>5</div>
+                                        <div className={styles.value}>{totalClassesValue}</div>
                                     </div>
                                 </div>
 
@@ -296,7 +441,7 @@ const TeacherProfile = () => {
                                     <div className={styles.statInfo}>
                                         <span className={styles.label}>Bài đã chấm</span>
                                         <div className={styles.value}>
-                                            190 <span>/ 214</span>
+                                            {gradedValue} <span>/ {totalSubmittedValue}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -305,7 +450,22 @@ const TeacherProfile = () => {
                             <div className={styles.chartSection}>
                                 <div className={styles.chartTitle}>Số bài đã chấm theo lớp học phần</div>
                                 <div className={styles.chartWrapper}>
-                                    <Bar data={chartData} options={chartOptions} />
+                                    {isReportLoading && (
+                                        <div className={styles.chartPlaceholder}>
+                                            <Spin size="small" />
+                                            <span>Đang tải dữ liệu thống kê...</span>
+                                        </div>
+                                    )}
+
+                                    {!isReportLoading && gradingStatsByCourse.length === 0 && (
+                                        <div className={styles.chartPlaceholder}>
+                                            Chưa có dữ liệu chấm bài để thống kê.
+                                        </div>
+                                    )}
+
+                                    {!isReportLoading && gradingStatsByCourse.length > 0 && (
+                                        <Bar data={chartData} options={chartOptions} />
+                                    )}
                                 </div>
                             </div>
                         </div>
