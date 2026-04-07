@@ -151,6 +151,22 @@
     gap: 16px;
 }
 
+.loadingAssignments {
+    display: flex;
+    justify-content: center;
+    padding: 12px 0;
+}
+
+.emptyAssignments {
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px dashed #e2e8f0;
+    background: #fafafa;
+    text-align: center;
+    font-size: 13px;
+    color: #718096;
+}
+
 .assignmentItem {
     display: flex;
     align-items: center;
@@ -160,6 +176,17 @@
     background: #fafafa;
     border: 1px solid #f0f0f0;
     transition: box-shadow 0.2s, transform 0.2s;
+    cursor: pointer;
+
+    &:hover {
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+        transform: translateY(-1px);
+    }
+
+    &:focus-visible {
+        outline: 2px solid #3182ce;
+        outline-offset: 2px;
+    }
 
     .assignmentIcon {
         width: 44px;
@@ -382,6 +409,18 @@
     gap: 14px;
     padding: 14px 0;
     border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+        background-color: #fafafa;
+    }
+
+    &:focus-visible {
+        outline: 2px solid #3182ce;
+        outline-offset: 2px;
+        border-radius: 8px;
+    }
 
     &:last-child {
         border-bottom: none;

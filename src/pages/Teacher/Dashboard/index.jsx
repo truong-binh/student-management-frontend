@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import MainLayout from '@/layouts/User/MainLayout';
-import { Card, Calendar, Button, Timeline } from 'antd';
+import { Card, Calendar, Button, Spin, Timeline } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import {
     ClockCircleOutlined,
     CheckCircleOutlined,
     ArrowRightOutlined,
-    EnvironmentOutlined,
     LeftOutlined,
     RightOutlined,
     TeamOutlined,
@@ -29,6 +29,11 @@ import {
     Legend,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
+import { useQuery } from '@tanstack/react-query';
+import { useCourse } from '@/hooks/useCourse';
+import { assignmentApi } from '@/api/admin/assignment';
+import { courseApi } from '@/api/admin/course';
+import { submissionApi } from '@/api/admin/submission';
 import styles from './styles.module.scss';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
@@ -41,22 +46,373 @@ const teacherMenuItems = [
     { key: 'feedback', label: 'Phản hồi', icon: <MessageOutlined />, path: '/teacher/feedback' },
 ];
 
+const getCourseId = (course) => course?._id || course?.id;
+
+const normalizeAssignmentList = (res) => {
+    if (!res?.success) return [];
+    if (Array.isArray(res.data)) return res.data;
+    return res.data?.items || [];
+};
+
+const normalizeSubmissionList = (res) => {
+    if (!res?.success) return [];
+    if (Array.isArray(res.data)) return res.data;
+    return res.data?.items || [];
+};
+
+const isSubmissionGraded = (submission) => {
+    const status = String(submission?.status || '').toUpperCase();
+    if (status === 'GRADED') return true;
+    return submission?.score !== null && submission?.score !== undefined;
+};
+
+const hasSubmissionFeedback = (submission) => {
+    const feedbackStatus = String(submission?.feedbackStatus || '').toUpperCase();
+    return feedbackStatus === 'PENDING' || feedbackStatus === 'RESOLVED';
+};
+
+const getTotalStudents = (res) => {
+    if (!res?.success) return 0;
+
+    const total =
+        res.pagination?.total ??
+        res.pagination?.totalItems ??
+        res.data?.pagination?.total ??
+        res.data?.pagination?.totalItems;
+
+    if (Number.isFinite(Number(total))) {
+        return Number(total);
+    }
+
+    if (Array.isArray(res.data)) {
+        return res.data.length;
+    }
+
+    if (Array.isArray(res.data?.items)) {
+        return res.data.items.length;
+    }
+
+    return 0;
+};
+
+const getTimeMeta = (dueDate) => {
+    const now = dayjs();
+    const target = dayjs(dueDate);
+
+    if (!target.isValid()) {
+        return { label: '--', status: 'info' };
+    }
+
+    const diffHours = target.diff(now, 'hour', true);
+    if (diffHours <= 24) {
+        return { label: `Còn ${Math.max(1, Math.ceil(diffHours))} giờ`, status: 'warning' };
+    }
+
+    const diffDays = target.diff(now, 'day', true);
+    if (diffDays <= 7) {
+        return { label: `Còn ${Math.max(1, Math.ceil(diffDays))} ngày`, status: 'warning' };
+    }
+
+    return { label: target.format('HH:mm - DD/MM/YYYY'), status: 'info' };
+};
+
+const getIconMeta = (title) => {
+    const normalized = String(title || '').toLowerCase();
+    const isQuiz = normalized.includes('quiz') || normalized.includes('trắc nghiệm') || normalized.includes('kiểm tra');
+
+    if (isQuiz) {
+        return {
+            icon: <FormOutlined />,
+            iconBg: '#ebf8ff',
+            iconColor: '#3182ce',
+        };
+    }
+
+    return {
+        icon: <FileTextOutlined />,
+        iconBg: '#fff5f5',
+        iconColor: '#e53e3e',
+    };
+};
+
+const toMillis = (value) => {
+    const parsed = dayjs(value);
+    return parsed.isValid() ? parsed.valueOf() : 0;
+};
+
+const getNearestCourses = (courses = []) => {
+    return [...courses].sort((a, b) => {
+        const timeA = Math.max(toMillis(a?.updatedAt), toMillis(a?.createdAt));
+        const timeB = Math.max(toMillis(b?.updatedAt), toMillis(b?.createdAt));
+
+        if (timeA !== timeB) {
+            return timeB - timeA;
+        }
+
+        return String(a?.courseCode || '').localeCompare(String(b?.courseCode || ''));
+    });
+};
+
 const TeacherDashboard = () => {
+    const navigate = useNavigate();
     const [calendarValue, setCalendarValue] = useState(dayjs());
+    const [showAllAssignments, setShowAllAssignments] = useState(false);
+    const { courses, isLoading: loadingCourses } = useCourse();
+
+    const handleOpenClassOverview = (item) => {
+        const courseId = item?.courseId;
+        if (!courseId) return;
+
+        navigate(`/teacher/classes/${courseId}?tab=overview`);
+    };
+
+    const courseIds = useMemo(
+        () => (Array.isArray(courses) ? courses.map(getCourseId).filter(Boolean) : []),
+        [courses]
+    );
+
+    const { data: totalStudents = 0, isLoading: loadingTotalStudents } = useQuery({
+        queryKey: ['teacher-dashboard-total-students', courseIds],
+        enabled: courseIds.length > 0,
+        queryFn: async () => {
+            const totals = await Promise.all(
+                courseIds.map(async (courseId) => {
+                    const studentsRes = await courseApi.getCourseStudents(courseId, { page: 1, limit: 1 });
+                    return getTotalStudents(studentsRes);
+                })
+            );
+
+            return totals.reduce((sum, count) => sum + Number(count || 0), 0);
+        },
+    });
+
+    const { data: assignments = [], isLoading: loadingAssignments } = useQuery({
+        queryKey: ['teacher-dashboard-upcoming-assignments', courseIds],
+        enabled: courseIds.length > 0,
+        queryFn: async () => {
+            const coursesById = (Array.isArray(courses) ? courses : []).reduce((acc, course) => {
+                const id = getCourseId(course);
+                if (id) acc[String(id)] = course;
+                return acc;
+            }, {});
+
+            const coursePayloads = await Promise.all(
+                courseIds.map(async (courseId) => {
+                    const [assignmentsRes, studentsRes] = await Promise.all([
+                        assignmentApi.getAssignmentsByCourseId(courseId),
+                        courseApi.getCourseStudents(courseId, { page: 1, limit: 1 }),
+                    ]);
+
+                    const totalStudents = getTotalStudents(studentsRes);
+
+                    return {
+                        courseId,
+                        course: coursesById[String(courseId)] || null,
+                        totalStudents,
+                        assignments: normalizeAssignmentList(assignmentsRes),
+                    };
+                })
+            );
+
+            const now = dayjs();
+
+            const allAssignments = coursePayloads.flatMap((payload) => {
+                return payload.assignments.map((assignment) => ({
+                    ...assignment,
+                    course: payload.course,
+                    students: payload.totalStudents,
+                    courseId: assignment.courseId?._id || assignment.courseId || payload.courseId,
+                }));
+            });
+
+            const upcomingAssignments = allAssignments
+                .filter((assignment) => {
+                    const dueDate = dayjs(assignment.dueDate);
+                    return dueDate.isValid() && dueDate.isAfter(now);
+                })
+                .sort((a, b) => dayjs(a.dueDate).valueOf() - dayjs(b.dueDate).valueOf());
+
+            const withSubmissions = await Promise.all(
+                upcomingAssignments.map(async (assignment) => {
+                    const assignmentId = assignment._id || assignment.id;
+                    let submitted = 0;
+
+                    if (assignmentId) {
+                        const submissionsRes = await submissionApi.getSubmissionsByAssignmentId(assignmentId);
+                        if (submissionsRes?.success) {
+                            submitted = Array.isArray(submissionsRes.data)
+                                ? submissionsRes.data.length
+                                : (submissionsRes.data?.items || []).length;
+                        }
+                    }
+
+                    const timeMeta = getTimeMeta(assignment.dueDate);
+                    const iconMeta = getIconMeta(assignment.title);
+
+                    return {
+                        id: assignmentId || `${assignment.courseId}-${assignment.title}`,
+                        courseId: assignment.courseId,
+                        title: assignment.title || 'Bài tập',
+                        className: assignment.course?.courseName || assignment.course?.courseCode || 'Lớp học',
+                        dueDateValue: dayjs(assignment.dueDate).valueOf(),
+                        submitted,
+                        total: Number(assignment.students || 0),
+                        time: timeMeta.label,
+                        timeStatus: timeMeta.status,
+                        ...iconMeta,
+                    };
+                })
+            );
+
+            return withSubmissions.sort((a, b) => a.dueDateValue - b.dueDateValue);
+        },
+    });
+
+    const upcomingCourseCandidates = useMemo(
+        () => getNearestCourses(Array.isArray(courses) ? courses : []).slice(0, 3),
+        [courses]
+    );
+
+    const upcomingCourseIds = useMemo(
+        () => upcomingCourseCandidates.map((course) => getCourseId(course)).filter(Boolean),
+        [upcomingCourseCandidates]
+    );
+
+    const { data: upcomingClasses = [], isLoading: loadingUpcomingClasses } = useQuery({
+        queryKey: ['teacher-dashboard-upcoming-classes', upcomingCourseIds],
+        enabled: upcomingCourseIds.length > 0,
+        queryFn: async () => {
+            const upcomingPayloads = await Promise.all(
+                upcomingCourseCandidates.map(async (course, index) => {
+                    const courseId = getCourseId(course);
+                    let totalStudents = 0;
+
+                    if (courseId) {
+                        const studentsRes = await courseApi.getCourseStudents(courseId, { page: 1, limit: 1 });
+                        totalStudents = getTotalStudents(studentsRes);
+                    }
+
+                    return {
+                        id: courseId || `${course?.courseCode || 'course'}-${index}`,
+                        courseId,
+                        no: String(index + 1).padStart(2, '0'),
+                        courseName: course?.courseName || 'Môn học chưa cập nhật',
+                        courseCode: course?.courseCode || 'Chưa cập nhật mã học phần',
+                        students: totalStudents,
+                        semester: course?.semester || 'Chưa cập nhật học kì',
+                    };
+                })
+            );
+
+            return upcomingPayloads;
+        },
+    });
+
+    const { data: gradingStatsByCourse = [], isLoading: loadingGradingStats } = useQuery({
+        queryKey: ['teacher-dashboard-grading-stats', courseIds],
+        enabled: courseIds.length > 0,
+        queryFn: async () => {
+            const coursePayloads = await Promise.all(
+                (Array.isArray(courses) ? courses : []).map(async (course) => {
+                    const courseId = getCourseId(course);
+                    if (!courseId) return null;
+
+                    const assignmentsRes = await assignmentApi.getAssignmentsByCourseId(courseId);
+                    const assignments = normalizeAssignmentList(assignmentsRes);
+
+                    if (assignments.length === 0) {
+                        return {
+                            courseId,
+                            label: course?.courseCode || course?.courseName || 'Lớp học',
+                            graded: 0,
+                            notGraded: 0,
+                            feedback: 0,
+                        };
+                    }
+
+                    const submissionGroups = await Promise.all(
+                        assignments.map(async (assignment) => {
+                            const assignmentId = assignment?._id || assignment?.id;
+                            if (!assignmentId) return [];
+
+                            const submissionsRes = await submissionApi.getSubmissionsByAssignmentId(assignmentId);
+                            return normalizeSubmissionList(submissionsRes);
+                        })
+                    );
+
+                    const submissions = submissionGroups.flat();
+                    const summary = submissions.reduce(
+                        (acc, submission) => {
+                            if (isSubmissionGraded(submission)) {
+                                acc.graded += 1;
+                            } else {
+                                acc.notGraded += 1;
+                            }
+
+                            if (hasSubmissionFeedback(submission)) {
+                                acc.feedback += 1;
+                            }
+
+                            return acc;
+                        },
+                        { graded: 0, notGraded: 0, feedback: 0 }
+                    );
+
+                    return {
+                        courseId,
+                        label: course?.courseCode || course?.courseName || 'Lớp học',
+                        ...summary,
+                    };
+                })
+            );
+
+            return coursePayloads.filter(Boolean);
+        },
+    });
+
+    const displayedAssignments = useMemo(() => {
+        if (showAllAssignments) return assignments;
+        return assignments.slice(0, 4);
+    }, [assignments, showAllAssignments]);
+
+    const canShowAllAssignments = assignments.length > 4;
+    const isAssignmentsLoading = loadingCourses || loadingAssignments;
+
+    const handleOpenAssignmentDetail = (assignment) => {
+        const assignmentId = assignment?.id;
+        const courseId = assignment?.courseId;
+
+        if (!assignmentId || !courseId) return;
+
+        navigate(`/teacher/classes/${courseId}?tab=assignments&assignmentId=${assignmentId}`);
+    };
+
+    const gradingTotals = useMemo(() => {
+        return gradingStatsByCourse.reduce(
+            (acc, item) => {
+                acc.graded += Number(item?.graded || 0);
+                acc.notGraded += Number(item?.notGraded || 0);
+                return acc;
+            },
+            { graded: 0, notGraded: 0 }
+        );
+    }, [gradingStatsByCourse]);
+
+    const totalStudentsValue = loadingCourses || loadingTotalStudents ? '--' : String(totalStudents);
 
     const stats = [
-        { title: 'Tổng số sinh viên', value: '184', icon: <TeamOutlined />, color: '#3182ce' },
-        { title: 'Lớp học của bạn', value: '3', icon: <BookOutlined />, color: '#38a169' },
-        { title: 'Bài chưa chấm', value: '24', icon: <ClockCircleOutlined />, color: '#d69e2e' },
-        { title: 'Bài đã chấm', value: '160', icon: <CheckCircleOutlined />, color: '#3182ce' },
+        { title: 'Tổng số sinh viên', value: totalStudentsValue, icon: <TeamOutlined />, color: '#3182ce' },
+        { title: 'Lớp học của bạn', value: String(courseIds.length), icon: <BookOutlined />, color: '#38a169' },
+        { title: 'Bài chưa chấm', value: String(gradingTotals.notGraded), icon: <ClockCircleOutlined />, color: '#d69e2e' },
+        { title: 'Bài đã chấm', value: String(gradingTotals.graded), icon: <CheckCircleOutlined />, color: '#3182ce' },
     ];
 
-    const chartData = {
-        labels: ['INT1306', 'INT1310', 'INT1402', 'INT1332', 'INT1416'],
+    const chartData = useMemo(() => ({
+        labels: gradingStatsByCourse.map((item) => item.label),
         datasets: [
             {
                 label: 'Đã chấm',
-                data: [38, 22, 45, 30, 36],
+                data: gradingStatsByCourse.map((item) => item.graded),
                 backgroundColor: '#e53e3e',
                 borderRadius: 6,
                 barPercentage: 0.55,
@@ -64,7 +420,7 @@ const TeacherDashboard = () => {
             },
             {
                 label: 'Chưa chấm',
-                data: [10, 18, 5, 14, 8],
+                data: gradingStatsByCourse.map((item) => item.notGraded),
                 backgroundColor: '#4299e1',
                 borderRadius: 6,
                 barPercentage: 0.55,
@@ -72,14 +428,14 @@ const TeacherDashboard = () => {
             },
             {
                 label: 'Có phản hồi',
-                data: [20, 12, 30, 22, 28],
+                data: gradingStatsByCourse.map((item) => item.feedback),
                 backgroundColor: '#38b2ac',
                 borderRadius: 6,
                 barPercentage: 0.55,
                 categoryPercentage: 0.7,
             },
         ],
-    };
+    }), [gradingStatsByCourse]);
 
     const chartOptions = {
         responsive: true,
@@ -102,63 +458,9 @@ const TeacherDashboard = () => {
         },
     };
 
-    const assignments = [
-        {
-            title: 'Báo cáo bài tập lớn',
-            class: 'Nhập môn Công nghệ phần mềm',
-            time: 'Còn 2 ngày',
-            timeStatus: 'warning',
-            submitted: 42,
-            total: 45,
-            icon: <FileTextOutlined />,
-            iconBg: '#fff5f5',
-            iconColor: '#e53e3e',
-        },
-        {
-            title: 'Kiểm tra trắc nghiệm chương 3',
-            class: 'INT1306',
-            time: '09:00 - 15/03/2026',
-            timeStatus: 'info',
-            submitted: 30,
-            total: 45,
-            icon: <FormOutlined />,
-            iconBg: '#ebf8ff',
-            iconColor: '#3182ce',
-        },
-    ];
-
-    const upcomingClasses = [
-        {
-            no: '01',
-            status: 'SẮP DIỄN RA',
-            statusType: 'upcoming',
-            students: 45,
-            code: 'INT1340 - 20252 - 01',
-            time: '09:00 - 12:00',
-            subject: 'Nhập môn Công nghệ phần mềm',
-            room: 'HT2',
-        },
-        {
-            no: '02',
-            status: 'SẮP DIỄN RA',
-            statusType: 'upcoming',
-            students: 45,
-            code: 'INT1340 - 20252 - 01',
-            time: '09:00 - 12:00',
-            subject: 'Nhập môn Công nghệ phần mềm',
-            room: 'HT2',
-        },
-        {
-            no: '03',
-            status: 'ĐANG DIỄN RA',
-            statusType: 'active',
-            students: 45,
-            code: 'INT1340 - 20252 - 01',
-            time: '09:00 - 12:00',
-            subject: 'Nhập môn Công nghệ phần mềm',
-            room: 'HT2',
-        },
-    ];
+    const isUpcomingClassesLoading = loadingCourses || loadingUpcomingClasses;
+    const isChartLoading = loadingCourses || loadingGradingStats;
+    const hasChartData = gradingStatsByCourse.length > 0;
 
     return (
         <MainLayout menuItems={teacherMenuItems}>
@@ -196,7 +498,21 @@ const TeacherDashboard = () => {
                                 </div>
                             </div>
                             <div className={styles.chartWrap}>
-                                <Bar data={chartData} options={chartOptions} />
+                                {isChartLoading && (
+                                    <div className={styles.loadingAssignments}>
+                                        <Spin size="small" />
+                                    </div>
+                                )}
+
+                                {!isChartLoading && !hasChartData && (
+                                    <div className={styles.emptyAssignments}>
+                                        Chưa có dữ liệu chấm bài để thống kê.
+                                    </div>
+                                )}
+
+                                {!isChartLoading && hasChartData && (
+                                    <Bar data={chartData} options={chartOptions} />
+                                )}
                             </div>
                         </div>
 
@@ -207,20 +523,49 @@ const TeacherDashboard = () => {
                                     <ClockCircleOutlined style={{ color: '#3182ce' }} />
                                     <h3>Bài tập sắp hết hạn</h3>
                                 </div>
-                                <Button type="link" className={styles.viewAll}>Xem tất cả</Button>
+                                {canShowAllAssignments && (
+                                    <Button
+                                        type="link"
+                                        className={styles.viewAll}
+                                        onClick={() => setShowAllAssignments((prev) => !prev)}
+                                    >
+                                        {showAllAssignments ? 'Thu gọn' : 'Xem tất cả'}
+                                    </Button>
+                                )}
                             </div>
                             <div className={styles.assignmentList}>
-                                {assignments.map((item, i) => (
-                                    <div key={i} className={styles.assignmentItem}>
-                                        <div
-                                            className={styles.assignmentIcon}
-                                            style={{ background: item.iconBg, color: item.iconColor }}
-                                        >
+                                {isAssignmentsLoading && (
+                                    <div className={styles.loadingAssignments}>
+                                        <Spin size="small" />
+                                    </div>
+                                )}
+
+                                {!isAssignmentsLoading && displayedAssignments.length === 0 && (
+                                    <div className={styles.emptyAssignments}>
+                                        Không có bài tập sắp hết hạn.
+                                    </div>
+                                )}
+
+                                {!isAssignmentsLoading && displayedAssignments.map((item) => (
+                                    <div
+                                        key={item.id}
+                                        className={styles.assignmentItem}
+                                        onClick={() => handleOpenAssignmentDetail(item)}
+                                        role="button"
+                                        tabIndex={0}
+                                        onKeyDown={(event) => {
+                                            if (event.key === 'Enter' || event.key === ' ') {
+                                                event.preventDefault();
+                                                handleOpenAssignmentDetail(item);
+                                            }
+                                        }}
+                                    >
+                                        <div className={styles.assignmentIcon} style={{ background: item.iconBg, color: item.iconColor }}>
                                             {item.icon}
                                         </div>
                                         <div className={styles.assignmentInfo}>
                                             <h4>{item.title}</h4>
-                                            <p className={styles.classLabel}>Lớp: {item.class}</p>
+                                            <p className={styles.classLabel}>Lớp: {item.className}</p>
                                             <span className={`${styles.timeTag} ${styles[item.timeStatus]}`}>
                                                 {item.timeStatus === 'warning' && <ClockCircleOutlined style={{ marginRight: 4 }} />}
                                                 {item.time}
@@ -234,7 +579,7 @@ const TeacherDashboard = () => {
                                             <div className={styles.progressBar}>
                                                 <div
                                                     className={styles.progressFill}
-                                                    style={{ width: `${(item.submitted / item.total) * 100}%` }}
+                                                    style={{ width: `${item.total > 0 ? Math.round((item.submitted / item.total) * 100) : 0}%` }}
                                                 />
                                             </div>
                                         </div>
@@ -302,25 +647,39 @@ const TeacherDashboard = () => {
 
                         {/* Upcoming Classes */}
                         <div className={styles.upcomingSection}>
-                            <p className={styles.sectionHeader}>Lớp học phần sắp tới:</p>
-                            {upcomingClasses.map((cls, i) => (
-                                <div key={i} className={styles.classItem}>
+                            <p className={styles.sectionHeader}>Các lớp học phần</p>
+                            {isUpcomingClassesLoading && (
+                                <div className={styles.loadingAssignments}>
+                                    <Spin size="small" />
+                                </div>
+                            )}
+
+                            {!isUpcomingClassesLoading && upcomingClasses.length === 0 && (
+                                <div className={styles.emptyAssignments}>
+                                    Chưa có lớp học phần nào để hiển thị.
+                                </div>
+                            )}
+
+                            {!isUpcomingClassesLoading && upcomingClasses.map((cls) => (
+                                <div
+                                    key={cls.id}
+                                    className={styles.classItem}
+                                    onClick={() => handleOpenClassOverview(cls)}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(event) => {
+                                        if (event.key === 'Enter' || event.key === ' ') {
+                                            event.preventDefault();
+                                            handleOpenClassOverview(cls);
+                                        }
+                                    }}
+                                >
                                     <div className={styles.classNo}>{cls.no}</div>
                                     <div className={styles.classContent}>
-                                        <div className={styles.classTopRow}>
-                                            <span className={`${styles.statusBadge} ${styles[cls.statusType]}`}>
-                                                {cls.status}
-                                            </span>
-                                            <span className={styles.studentCount}>
-                                                <TeamOutlined style={{ marginRight: 4 }} />{cls.students} sinh viên
-                                            </span>
-                                        </div>
-                                        <h4 className={styles.classCode}>{cls.code}</h4>
-                                        <p className={styles.classTime}>{cls.time}</p>
-                                        <p className={styles.classSubject}>{cls.subject}</p>
-                                        <p className={styles.classRoom}>
-                                            <EnvironmentOutlined style={{ marginRight: 4 }} />{cls.room}
-                                        </p>
+                                        <h4 className={styles.classCode}>{cls.courseName}</h4>
+                                        <p className={styles.classTime}>Mã học phần: {cls.courseCode}</p>
+                                        <p className={styles.classSubject}>Số sinh viên: {cls.students}</p>
+                                        <p className={styles.classRoom}>Học kì: {cls.semester}</p>
                                     </div>
                                 </div>
                             ))}

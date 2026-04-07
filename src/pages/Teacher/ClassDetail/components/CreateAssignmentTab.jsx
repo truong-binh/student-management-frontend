@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from '../styles.module.scss';
 import { useCourseAssignments } from '@/hooks/useCourseAssignment';
 
-const CreateAssignmentTab = ({ classInfo = {}, courseId, setActiveTab }) => {
+const CreateAssignmentTab = ({ classInfo = {}, courseId }) => {
     const [form] = Form.useForm();
     const [dragging, setDragging] = useState(false);
     const [file, setFile] = useState(null);
@@ -33,6 +33,13 @@ const CreateAssignmentTab = ({ classInfo = {}, courseId, setActiveTab }) => {
         }
     };
 
+    const resetCreateForm = () => {
+        setSuccess(null);
+        form.resetFields();
+        setFile(null);
+        setFileName(null);
+    };
+
     const handleFinish = async (values) => {
         try {
             const formData = new FormData();
@@ -48,8 +55,14 @@ const CreateAssignmentTab = ({ classInfo = {}, courseId, setActiveTab }) => {
                 formData.append('file', file);
             }
 
-            await createAssignment(formData);
-            setSuccess(values.title || 'Bài tập mới');
+            const createdResponse = await createAssignment(formData);
+            const createdAssignment = createdResponse?.data || {};
+            const createdAssignmentId = createdAssignment._id || createdAssignment.id || null;
+
+            setSuccess({
+                title: createdAssignment.title || values.title || 'Bài tập mới',
+                id: createdAssignmentId,
+            });
         } catch (error) {
             // error is handled by the API interceptor or can be handled here
         }
@@ -66,7 +79,7 @@ const CreateAssignmentTab = ({ classInfo = {}, courseId, setActiveTab }) => {
                     </div>
                     <h2 className={styles.successTitle}>Tạo bài tập thành công!</h2>
                     <p className={styles.successDesc}>
-                        Bài tập <span className={styles.successHighlight}>{success}</span> đã được đăng tải
+                        Bài tập <span className={styles.successHighlight}>{success?.title}</span> đã được đăng tải
                         và thông báo đến toàn bộ sinh viên trong lớp{' '}
                         <span className={styles.successHighlight}>{groupCode}</span>.
                     </p>
@@ -75,6 +88,17 @@ const CreateAssignmentTab = ({ classInfo = {}, courseId, setActiveTab }) => {
                             size="large"
                             icon={<EyeOutlined />}
                             className={styles.successBtnOutline}
+                            onClick={() => {
+                                const assignmentId = success?.id;
+                                resetCreateForm();
+
+                                if (assignmentId) {
+                                    navigate(`?tab=assignments&assignmentId=${assignmentId}`);
+                                    return;
+                                }
+
+                                navigate('?tab=assignments');
+                            }}
                         >
                             Xem chi tiết
                         </Button>
@@ -85,11 +109,8 @@ const CreateAssignmentTab = ({ classInfo = {}, courseId, setActiveTab }) => {
                             icon={<UnorderedListOutlined />}
                             className={styles.successBtnFill}
                             onClick={() => {
-                                setSuccess(null);
-                                form.resetFields();
-                                setFile(null);
-                                setFileName(null);
-                                if (setActiveTab) setActiveTab('3');
+                                resetCreateForm();
+                                navigate('?tab=assignments');
                             }}
                         >
                             Về danh sách bài tập
