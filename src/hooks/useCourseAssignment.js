@@ -1,6 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { assignmentApi } from '@/api/admin/assignment';
 
+const extractAssignments = (payload) => {
+    if (Array.isArray(payload)) return payload;
+    if (Array.isArray(payload?.assignments)) return payload.assignments;
+    if (Array.isArray(payload?.items)) return payload.items;
+    return [];
+};
+
 export const useCourseAssignments = (courseId) => {
     const queryClient = useQueryClient();
 
@@ -9,7 +16,7 @@ export const useCourseAssignments = (courseId) => {
         queryFn: async () => {
             const res = await assignmentApi.getAssignmentsByCourseId(courseId);
             if (!res.success) throw res;
-            return Array.isArray(res.data) ? res.data : (res.data?.items || []);
+            return extractAssignments(res.data);
         },
         enabled: !!courseId,
     });

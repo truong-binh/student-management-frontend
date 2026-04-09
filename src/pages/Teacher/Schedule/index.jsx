@@ -38,6 +38,20 @@ const teacherMenuItems = [
 
 const getCourseId = (course) => course?._id || course?.id;
 
+const normalizeAssignmentList = (res) => {
+    if (!res?.success) return [];
+    if (Array.isArray(res.data)) return res.data;
+    if (Array.isArray(res.data?.assignments)) return res.data.assignments;
+    return res.data?.items || [];
+};
+
+const normalizeSubmissionList = (res) => {
+    if (!res?.success) return [];
+    if (Array.isArray(res.data)) return res.data;
+    if (Array.isArray(res.data?.submissions)) return res.data.submissions;
+    return res.data?.items || [];
+};
+
 const getTotalStudents = (res) => {
     if (!res?.success) return 0;
 
@@ -57,6 +71,10 @@ const getTotalStudents = (res) => {
 
     if (Array.isArray(res.data?.items)) {
         return res.data.items.length;
+    }
+
+    if (Array.isArray(res.data?.students)) {
+        return res.data.students.length;
     }
 
     return 0;
@@ -117,9 +135,7 @@ const TeacherSchedule = () => {
                         courseApi.getCourseStudents(courseId, { page: 1, limit: 1 }),
                     ]);
 
-                    const assignments = assignmentsRes?.success
-                        ? (Array.isArray(assignmentsRes.data) ? assignmentsRes.data : (assignmentsRes.data?.items || []))
-                        : [];
+                    const assignments = normalizeAssignmentList(assignmentsRes);
 
                     const totalStudents = getTotalStudents(studentsRes);
 
@@ -148,11 +164,7 @@ const TeacherSchedule = () => {
 
                     if (assignmentId) {
                         const submissionsRes = await submissionApi.getSubmissionsByAssignmentId(assignmentId);
-                        if (submissionsRes?.success) {
-                            submitted = Array.isArray(submissionsRes.data)
-                                ? submissionsRes.data.length
-                                : (submissionsRes.data?.items || []).length;
-                        }
+                        submitted = normalizeSubmissionList(submissionsRes).length;
                     }
 
                     const { type, typeLabel } = getAssignmentType({

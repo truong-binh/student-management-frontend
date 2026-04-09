@@ -49,6 +49,20 @@ const mapDeadlineStatus = (dueDate) => {
 
 const getCourseId = (course) => course?._id || course?.id;
 
+const extractAssignmentList = (payload) => {
+    if (Array.isArray(payload)) return payload;
+    if (Array.isArray(payload?.assignments)) return payload.assignments;
+    if (Array.isArray(payload?.items)) return payload.items;
+    return [];
+};
+
+const extractEntityId = (value) => {
+    if (!value) return null;
+    if (typeof value === 'string') return value;
+    if (typeof value === 'object') return value._id || value.id || null;
+    return null;
+};
+
 const getSubmissionAssignmentId = (submission) => {
     return submission?.assignment?._id || submission?.assignment?.id || submission?.assignment;
 };
@@ -76,7 +90,7 @@ const Dashboard = () => {
             return responses.flatMap((res, index) => {
                 if (!res?.success) return [];
 
-                const assignmentList = Array.isArray(res.data) ? res.data : res.data?.items || [];
+                const assignmentList = extractAssignmentList(res.data);
                 return assignmentList.map((assignment) => ({
                     ...assignment,
                     courseId: assignment.courseId || courseIds[index],
@@ -171,8 +185,9 @@ const Dashboard = () => {
             const assignmentId = getSubmissionAssignmentId(submission);
             const dashboardAssignment = assignmentId ? dashboardAssignmentById[String(assignmentId)] : null;
             const assignmentCourseId =
-                submission.assignment?.courseId ||
-                submission.assignment?.course ||
+                extractEntityId(submission.assignment?.courseId) ||
+                extractEntityId(submission.assignment?.course) ||
+                extractEntityId(dashboardAssignment?.courseId) ||
                 dashboardAssignment?.courseId;
             const course = coursesById[String(assignmentCourseId)] || null;
 

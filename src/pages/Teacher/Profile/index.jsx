@@ -57,12 +57,14 @@ const getCourseId = (course) => course?._id || course?.id;
 const normalizeAssignmentList = (res) => {
     if (!res?.success) return [];
     if (Array.isArray(res.data)) return res.data;
+    if (Array.isArray(res.data?.assignments)) return res.data.assignments;
     return res.data?.items || [];
 };
 
 const normalizeSubmissionList = (res) => {
     if (!res?.success) return [];
     if (Array.isArray(res.data)) return res.data;
+    if (Array.isArray(res.data?.submissions)) return res.data.submissions;
     return res.data?.items || [];
 };
 
@@ -91,6 +93,10 @@ const getTotalStudents = (res) => {
 
     if (Array.isArray(res.data?.items)) {
         return res.data.items.length;
+    }
+
+    if (Array.isArray(res.data?.students)) {
+        return res.data.students.length;
     }
 
     return 0;
