@@ -19,6 +19,7 @@ import dayjs from 'dayjs';
 import MainLayout from '@/layouts/User/MainLayout';
 import styles from './styles.module.scss';
 import { useAssignmentDetail } from '@/hooks/useCourseAssignment';
+import { useCourseDetail } from '@/hooks/useCourse';
 import { useMySubmissions } from '@/hooks/useSubmission';
 
 const AssignmentResult = () => {
@@ -26,6 +27,7 @@ const AssignmentResult = () => {
     const { id, assignmentId } = useParams();
 
     const { assignment } = useAssignmentDetail(assignmentId);
+    const { data: courseData } = useCourseDetail(id);
     const { mySubmissions } = useMySubmissions();
     const [previewOpen, setPreviewOpen] = React.useState(false);
 
@@ -35,6 +37,7 @@ const AssignmentResult = () => {
     });
 
     const displayData = assignment || {};
+    const courseName = courseData?.courseName || displayData.course?.courseName || displayData.courseId?.courseName || id;
 
     const handleBack = () => {
         navigate(`/classes/${id}?tab=assignments`);
@@ -64,7 +67,7 @@ const AssignmentResult = () => {
                         <div className={styles.breadcrumbs}>
                             <span>Lớp học phần</span>
                             <span className={styles.separator}>&gt;</span>
-                            <span>{id}</span>
+                            <span>{courseName}</span>
                             <span className={styles.separator}>&gt;</span>
                             <span>{displayData.title || 'Bài tập'}</span>
                         </div>

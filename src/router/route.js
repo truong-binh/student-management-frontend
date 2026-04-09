@@ -11,6 +11,7 @@ import UpcomingDeadlines from "@/pages/User/UpcomingDeadlines";
 import GradeOverview from "@/pages/User/GradeOverview";
 import MyClasses from "@/pages/User/Classes";
 import ClassDetail from "@/pages/User/ClassDetail";
+import ClassAnnouncements from "@/pages/User/ClassAnnouncements";
 import AssignmentSubmit from "@/pages/User/AssignmentSubmit";
 import AssignmentResult from "@/pages/User/AssignmentResult";
 import GradeFeedback from "@/pages/User/GradeFeedback";
@@ -77,6 +78,11 @@ const router = createBrowserRouter([
   {
     path: "/classes/:id",
     element: <ClassDetail />,
+    loader: ({ request, params }) => rootLoader({ request, params }, true),
+  },
+  {
+    path: "/classes/:id/announcements",
+    element: <ClassAnnouncements />,
     loader: ({ request, params }) => rootLoader({ request, params }, true),
   },
   {

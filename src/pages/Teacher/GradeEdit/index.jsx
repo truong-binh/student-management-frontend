@@ -18,6 +18,7 @@ import dayjs from 'dayjs';
 import MainLayout from '@/layouts/User/MainLayout';
 import styles from './styles.module.scss';
 import { useAssignmentDetail } from '@/hooks/useCourseAssignment';
+import { useCourseDetail } from '@/hooks/useCourse';
 import { useSubmissionDetail, useSubmissionFeedback } from '@/hooks/useSubmission';
 
 const { TextArea } = Input;
@@ -45,6 +46,7 @@ const TeacherGradeEdit = () => {
 
     const { submission, isLoading: isSubLoading, gradeSubmissionByAI, isGrading } = useSubmissionDetail(studentId);
     const { assignment, isLoading: isAssignLoading } = useAssignmentDetail(assignmentId);
+    const { data: courseData } = useCourseDetail(id);
 
 
     const gradeInfo = getGradeLabel(submission?.score);
@@ -129,6 +131,7 @@ const TeacherGradeEdit = () => {
 
     const isPending = submission.feedbackStatus === 'PENDING';
     const isResolved = submission.feedbackStatus === 'RESOLVED';
+    const courseName = courseData?.courseName || assignment?.course?.courseName || assignment?.courseId?.courseName || id;
 
     return (
         <MainLayout menuItems={teacherMenuItems}>
@@ -149,7 +152,7 @@ const TeacherGradeEdit = () => {
                             <div className={styles.breadcrumbs}>
                                 <span>Lớp học</span>
                                 <span className={styles.separator}>&gt;</span>
-                                <span>{id}</span>
+                                <span>{courseName}</span>
                                 <span className={styles.separator}>&gt;</span>
                                 <span>DS bài tập</span>
                                 <span className={styles.separator}>&gt;</span>

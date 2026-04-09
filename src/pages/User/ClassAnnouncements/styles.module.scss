@@ -1,0 +1,154 @@
+.pageWrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.pageHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.backBtn {
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.pageHeading {
+    flex: 1;
+
+    .headingTitleRow {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 6px;
+
+        .headingIcon {
+            color: #b71c1c;
+            font-size: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 26px;
+            color: #1f2937;
+            font-weight: 800;
+        }
+    }
+
+    p {
+        margin: 0;
+        color: #64748b;
+        font-size: 14px;
+        font-weight: 600;
+    }
+}
+
+.totalBadge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 116px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: #fff5f5;
+    color: #b71c1c;
+    font-size: 13px;
+    font-weight: 700;
+    border: 1px solid #fecaca;
+}
+
+.announcementList {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.announcementItem {
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    padding: 16px 18px;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+}
+
+.announcementHeader {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.announcementAuthor {
+    color: #1f2937;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.announcementDate {
+    color: #94a3b8;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.announcementContent {
+    color: #334155;
+    font-size: 14px;
+    line-height: 1.65;
+    white-space: pre-line;
+}
+
+.emptyState {
+    min-height: 220px;
+    border-radius: 14px;
+    border: 1px dashed #cbd5e1;
+    background: #f8fafc;
+    color: #64748b;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .pageWrap {
+        padding: 14px;
+    }
+
+    .pageHeader {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .backBtn {
+        width: fit-content;
+    }
+
+    .pageHeading {
+        .headingTitleRow {
+            h1 {
+                font-size: 20px;
+            }
+        }
+    }
+
+    .totalBadge {
+        min-width: 0;
+        width: fit-content;
+    }
+
+    .announcementItem {
+        padding: 12px;
+    }
+
+    .announcementHeader {
+        flex-direction: column;
+        gap: 4px;
+        margin-bottom: 8px;
+    }
+}
