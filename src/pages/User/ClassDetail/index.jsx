@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import MainLayout from '@/layouts/User/MainLayout';
-import { Tabs, Progress, Spin } from 'antd';
+import { Tabs, Progress, Spin, Button, Modal } from 'antd';
 import {
     InfoCircleOutlined,
     UserOutlined,
     FormOutlined,
     ClockCircleOutlined,
-    EnvironmentOutlined
+    EnvironmentOutlined,
+    BookOutlined,
+    IdcardOutlined,
+    ReadOutlined,
+    SolutionOutlined
 } from '@ant-design/icons';
 import styles from './styles.module.scss';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -20,6 +24,7 @@ const { TabPane } = Tabs;
 const ClassDetail = () => {
     const { id } = useParams();
     const [searchParams, setSearchParams] = useSearchParams();
+    const [isCourseInfoOpen, setIsCourseInfoOpen] = useState(false);
     const { data: courseData, isLoading, isError } = useCourseDetail(id);
 
     const activeTab = searchParams.get('tab') || 'overview';
@@ -48,6 +53,46 @@ const ClassDetail = () => {
         );
     }
 
+    const courseInfoRows = [
+        {
+            key: 'course-code',
+            label: 'Mã môn học',
+            value: courseData.courseCode || '---',
+            icon: <IdcardOutlined />,
+        },
+        {
+            key: 'course-name',
+            label: 'Tên môn học',
+            value: courseData.courseName || '---',
+            icon: <BookOutlined />,
+        },
+        {
+            key: 'teacher-name',
+            label: 'Tên Giáo viên',
+            value: courseData.lecturerId?.fullName || '---',
+            icon: <SolutionOutlined />,
+        },
+        {
+            key: 'semester',
+            label: 'Học kỳ',
+            value: courseData.semester || '---',
+            icon: <ReadOutlined />,
+        },
+        {
+            key: 'credits',
+            label: 'Số tín chỉ',
+            value: courseData.credits != null ? `${courseData.credits} tín chỉ` : '---',
+            icon: <FormOutlined />,
+        },
+        {
+            key: 'description',
+            label: 'Mô tả lớp học',
+            value: courseData.description || 'Chưa có mô tả cho học phần này.',
+            icon: <InfoCircleOutlined />,
+            isDescription: true,
+        },
+    ];
+
     return (
         <MainLayout>
             <div className={styles.classDetailPage}>
@@ -55,6 +100,14 @@ const ClassDetail = () => {
                     <div className={styles.metaInfo}>
                         <span className={styles.badge}>{courseData.courseCode || '---'}</span>
                         <span className={styles.status}>{courseData.status || 'Đang học'}</span>
+                        <Button
+                            type="text"
+                            shape="circle"
+                            aria-label="Xem mô tả lớp học"
+                            className={styles.statusInfoBtn}
+                            onClick={() => setIsCourseInfoOpen(true)}
+                            icon={<InfoCircleOutlined />}
+                        />
                     </div>
                     <h1 className={styles.title}>{courseData.courseName || '---'}</h1>
                     <div className={styles.details}>
@@ -102,6 +155,38 @@ const ClassDetail = () => {
                         </Tabs.TabPane>
                     </Tabs>
                 </div>
+
+                <Modal
+                    centered
+                    open={isCourseInfoOpen}
+                    onCancel={() => setIsCourseInfoOpen(false)}
+                    footer={null}
+                    width={720}
+                    zIndex={1400}
+                    destroyOnClose
+                    title="Thông tin học phần"
+                    className={styles.courseInfoModal}
+                >
+                    <div className={styles.courseInfoHero}>
+                        <span className={styles.courseInfoHeroCode}>{courseData.courseCode || '---'}</span>
+                        <h3 className={styles.courseInfoHeroName}>{courseData.courseName || '---'}</h3>
+                    </div>
+                    <div className={styles.courseInfoList}>
+                        {courseInfoRows.map((row) => (
+                            <div className={styles.courseInfoItem} key={row.key}>
+                                <span className={styles.courseInfoIcon}>{row.icon}</span>
+                                <div className={styles.courseInfoContent}>
+                                    <span className={styles.courseInfoLabel}>{row.label}</span>
+                                    <span
+                                        className={`${styles.courseInfoValue} ${row.isDescription ? styles.courseInfoDescription : ''}`}
+                                    >
+                                        {row.value}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </Modal>
             </div>
         </MainLayout>
     );

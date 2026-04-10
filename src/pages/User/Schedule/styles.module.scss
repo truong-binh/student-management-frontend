@@ -80,13 +80,13 @@
         border-top: 1px solid #f0f4f8 !important;
         margin: 0 !important;
         padding: 8px 10px !important;
-        height: 140px !important;
+        height: 96px !important;
         transition: all 0.2s ease;
         display: flex;
         flex-direction: column;
 
         @media (max-width: 1024px) {
-            height: 100px !important;
+            height: 84px !important;
         }
 
         @media (max-width: 768px) {
@@ -109,17 +109,26 @@
     }
 
     :global(.ant-picker-cell:not(.ant-picker-cell-in-view)) {
+        background: #e9eff6 !important;
+
         .ant-picker-calendar-date {
-            background: #fcfcfc;
-            opacity: 0.5;
+            background: #e1e9f2 !important;
+            border-top-color: #d2dde8 !important;
+            opacity: 1;
+        }
+
+        .ant-picker-calendar-date-today,
+        .ant-picker-calendar-date-selected {
+            background: #e1e9f2 !important;
+            border-top: 1px solid #d2dde8 !important;
         }
 
         .ant-picker-calendar-date-value {
-            color: #cbd5e0 !important;
+            color: #7f8ea3 !important;
         }
 
         .calendarEvent {
-            filter: grayscale(1) opacity(0.5);
+            filter: grayscale(1) opacity(0.28);
         }
     }
 
@@ -482,7 +491,7 @@
         padding: 16px;
 
         :global(.ant-picker-calendar-full .ant-picker-calendar-date) {
-            height: 110px !important;
+            height: 76px !important;
             padding: 6px 8px !important;
         }
     }

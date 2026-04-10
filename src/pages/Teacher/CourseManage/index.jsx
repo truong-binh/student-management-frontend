@@ -227,9 +227,9 @@ const TeacherCourseManage = () => {
 
                         <Form.Item
                             name="description"
-                            label="Mô tả học phần"
+                            label="Mô tả lớp học"
                         >
-                            <TextArea rows={4} placeholder="Nhập mô tả học phần..." />
+                            <TextArea rows={4} placeholder="Nhập mô tả lớp học..." />
                         </Form.Item>
 
                         <Form.Item className={styles.formActions}>

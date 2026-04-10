@@ -1,6 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { submissionApi } from '@/api/admin/submission';
 
+const extractList = (payload, keys = []) => {
+    if (Array.isArray(payload)) return payload;
+
+    for (const key of keys) {
+        if (Array.isArray(payload?.[key])) {
+            return payload[key];
+        }
+    }
+
+    return [];
+};
+
+const getCourseId = (course) => course?._id || course?.id;
+
 export const useAssignmentSubmissions = (assignmentId) => {
     const queryClient = useQueryClient();
 
@@ -9,7 +23,7 @@ export const useAssignmentSubmissions = (assignmentId) => {
         queryFn: async () => {
             const res = await submissionApi.getSubmissionsByAssignmentId(assignmentId);
             if (!res.success) throw res;
-            return Array.isArray(res.data) ? res.data : [];
+            return extractList(res.data, ['submissions', 'items']);
         },
         enabled: !!assignmentId,
     });
@@ -19,7 +33,7 @@ export const useAssignmentSubmissions = (assignmentId) => {
         queryFn: async () => {
             const res = await submissionApi.getNotSubmittedStudents(assignmentId);
             if (!res.success) throw res;
-            return Array.isArray(res.data) ? res.data : [];
+            return extractList(res.data, ['students', 'items', 'notSubmitted']);
         },
         enabled: !!assignmentId,
     });
@@ -115,7 +129,7 @@ export const useMySubmissions = () => {
         queryFn: async () => {
             const res = await submissionApi.getMySubmissions();
             if (!res.success) throw res;
-            return Array.isArray(res.data) ? res.data : [];
+            return extractList(res.data, ['submissions', 'items']);
         },
     });
 
@@ -194,7 +208,7 @@ export const useAssignmentFeedbacks = (assignmentId) => {
         queryFn: async () => {
             const res = await submissionApi.getAssignmentFeedbacks(assignmentId);
             if (!res.success) throw res;
-            return Array.isArray(res.data) ? res.data : [];
+            return extractList(res.data, ['feedbacks', 'items']);
         },
         enabled: !!assignmentId,
     });
@@ -207,17 +221,20 @@ export const useAssignmentFeedbacks = (assignmentId) => {
 
 export const useAllTeacherFeedbacks = (courses = []) => {
     const query = useQuery({
-        queryKey: ['all-teacher-feedbacks', courses.map(c => c._id).join(',')],
+        queryKey: ['all-teacher-feedbacks', courses.map((c) => getCourseId(c)).filter(Boolean).join(',')],
         queryFn: async () => {
             if (!courses.length) return [];
 
             const { assignmentApi } = await import('@/api/admin/assignment');
             const assignmentResults = await Promise.all(
-                courses.map(course =>
-                    assignmentApi.getAssignmentsByCourseId(course._id)
-                        .then(res => (res.success && Array.isArray(res.data) ? res.data : (res.data?.items || [])))
+                courses.map((course) => {
+                    const courseId = getCourseId(course);
+                    if (!courseId) return Promise.resolve([]);
+
+                    return assignmentApi.getAssignmentsByCourseId(courseId)
+                        .then((res) => (res.success ? extractList(res.data, ['assignments', 'items']) : []))
                         .catch(() => [])
-                )
+                })
             );
 
             const allAssignments = assignmentResults.flatMap((assignments, idx) =>
@@ -230,7 +247,7 @@ export const useAllTeacherFeedbacks = (courses = []) => {
                 allAssignments.map(assignment =>
                     submissionApi.getAssignmentFeedbacks(assignment._id || assignment.id)
                         .then(res => {
-                            const feedbacks = Array.isArray(res.data) ? res.data : [];
+                            const feedbacks = extractList(res.data, ['feedbacks', 'items']);
                             return feedbacks.map(f => ({
                                 ...f,
                                 assignmentTitle: assignment.title,

@@ -21,6 +21,7 @@ import dayjs from 'dayjs';
 import MainLayout from '@/layouts/User/MainLayout';
 import styles from './styles.module.scss';
 import { useAssignmentDetail } from '@/hooks/useCourseAssignment';
+import { useCourseDetail } from '@/hooks/useCourse';
 import { useMySubmissions, useStudentSubmissions } from '@/hooks/useSubmission';
 
 const { Dragger } = Upload;
@@ -30,6 +31,7 @@ const AssignmentSubmit = () => {
     const { id, assignmentId } = useParams();
 
     const { assignment: detailData, isLoading: isDetailLoading } = useAssignmentDetail(assignmentId);
+    const { data: courseData } = useCourseDetail(id);
     const { mySubmissions, isLoading: isSubmissionsLoading } = useMySubmissions();
     const { submitAssignment, isSubmitting } = useStudentSubmissions(assignmentId);
 
@@ -45,6 +47,7 @@ const AssignmentSubmit = () => {
     }, [mySubmissions, assignmentId]);
 
     const displayData = detailData || {};
+    const courseName = courseData?.courseName || displayData.course?.courseName || displayData.courseId?.courseName || id;
 
     const [timeLeft, setTimeLeft] = useState(null);
 
@@ -188,7 +191,7 @@ const AssignmentSubmit = () => {
                             <div className={styles.breadcrumbs}>
                                 <span>Lớp học phần</span>
                                 <span className={styles.separator}>&gt;</span>
-                                <span>{id}</span>
+                                <span>{courseName}</span>
                                 <span className={styles.separator}>&gt;</span>
                                 <span>Nộp bài</span>
                             </div>

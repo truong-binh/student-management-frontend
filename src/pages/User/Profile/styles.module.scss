@@ -429,6 +429,17 @@
             background: #f8fafc;
             border-radius: 16px;
             padding: 20px;
+
+            .chartPlaceholder {
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                color: #718096;
+                font-size: 14px;
+                text-align: center;
+            }
         }
     }
 }

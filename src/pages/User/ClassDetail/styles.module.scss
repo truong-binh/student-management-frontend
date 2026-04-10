@@ -22,10 +22,18 @@
             height: 500px;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        >* {
+            position: relative;
+            z-index: 1;
         }
 
         .metaInfo {
             display: flex;
+            align-items: center;
             gap: 12px;
             margin-bottom: 12px;
 
@@ -44,6 +52,27 @@
                 border-radius: 6px;
                 font-size: 13px;
                 font-weight: 700;
+            }
+
+            .statusInfoBtn {
+                width: 26px;
+                min-width: 26px;
+                height: 26px;
+                border-radius: 999px;
+                border: 1px solid rgba(255, 255, 255, 0.5);
+                color: #ffffff !important;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                background: rgba(255, 255, 255, 0.08);
+                position: relative;
+                z-index: 2;
+
+                &:hover {
+                    background: rgba(255, 255, 255, 0.2) !important;
+                    border-color: rgba(255, 255, 255, 0.75) !important;
+                    color: #ffffff !important;
+                }
             }
         }
 
@@ -255,8 +284,175 @@
                     font-size: 14px;
                     color: #4a5568;
                     line-height: 1.5;
+                    white-space: pre-line;
+                }
+
+                .annExpandBtn {
+                    margin-top: 8px;
+                    padding: 0;
+                    height: auto;
+                    color: #b71c1c;
+                    font-weight: 600;
                 }
             }
+        }
+
+        .announcementHeaderRow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 20px;
+
+            .cardHeader {
+                margin-bottom: 0;
+            }
+
+            .announcementSeeAllBtn {
+                padding: 0;
+                height: auto;
+                font-weight: 700;
+                color: #b71c1c;
+            }
+        }
+
+        .courseStatsGrid {
+            margin-top: 10px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .courseStatItem {
+            background: #f8fafc;
+            border: 1px solid #edf2f7;
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .courseStatIcon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .courseStatMeta {
+            min-width: 0;
+        }
+
+        .courseStatLabel {
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .courseStatValue {
+            color: #1f2937;
+            font-size: 28px;
+            line-height: 1;
+            font-weight: 800;
+        }
+
+        .assignmentChartWrap {
+            margin-top: 14px;
+            border-top: 1px solid #edf2f7;
+            padding-top: 14px;
+        }
+
+        .assignmentChartTitle {
+            font-size: 14px;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 10px;
+        }
+
+        .assignmentChartLoading {
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .assignmentDonutSection {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .assignmentDonut {
+            width: 128px;
+            height: 128px;
+            border-radius: 50%;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .assignmentDonutCenter {
+            position: absolute;
+            inset: 18px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            span {
+                font-size: 30px;
+                line-height: 1;
+                font-weight: 800;
+                color: #1f2937;
+            }
+
+            small {
+                margin-top: 4px;
+                font-size: 11px;
+                font-weight: 700;
+                color: #64748b;
+                text-transform: uppercase;
+                letter-spacing: 0.3px;
+            }
+        }
+
+        .assignmentLegend {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 190px;
+        }
+
+        .assignmentLegendItem {
+            display: grid;
+            grid-template-columns: 14px 1fr auto;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .legendDot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            display: inline-block;
+        }
+
+        .legendLabel {
+            color: #475569;
+            font-weight: 600;
+        }
+
+        .legendValue {
+            color: #0f172a;
+            font-weight: 800;
         }
     }
 
@@ -594,6 +790,7 @@
             color: #718096;
         }
     }
+
 }
 
 @media (max-width: 1200px) {
@@ -723,6 +920,44 @@
             border-radius: 14px;
             margin-bottom: 16px;
 
+            .announcementHeaderRow {
+                align-items: flex-start;
+
+                .announcementSeeAllBtn {
+                    margin-top: 2px;
+                }
+            }
+
+            .courseStatsGrid {
+                grid-template-columns: 1fr;
+            }
+
+            .courseStatValue {
+                font-size: 24px;
+            }
+
+            .assignmentDonutSection {
+                align-items: flex-start;
+            }
+
+            .assignmentDonut {
+                width: 112px;
+                height: 112px;
+            }
+
+            .assignmentDonutCenter {
+                inset: 16px;
+
+                span {
+                    font-size: 24px;
+                }
+            }
+
+            .assignmentLegend {
+                min-width: 0;
+                width: 100%;
+            }
+
             .description {
                 font-size: 14px;
             }
@@ -778,5 +1013,166 @@
                 font-size: 12px;
             }
         }
+
+    }
+}
+
+.courseInfoModal {
+    :global(.ant-modal) {
+        max-width: calc(100vw - 16px) !important;
+        margin: 8px auto;
+    }
+
+    :global(.ant-modal-content) {
+        border-radius: 16px;
+        padding: 20px 20px 16px;
+        background: linear-gradient(180deg, #fff 0%, #fcfcfd 100%);
+    }
+
+    :global(.ant-modal-header) {
+        margin-bottom: 12px;
+    }
+
+    :global(.ant-modal-title) {
+        font-size: 28px;
+        font-weight: 800;
+        color: #1f2937;
+    }
+}
+
+.courseInfoHero {
+    border: 1px solid #f1f5f9;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #fff5f5 0%, #fff 100%);
+    padding: 14px 16px;
+    margin-bottom: 12px;
+}
+
+.courseInfoHeroCode {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #b71c1c;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.courseInfoHeroName {
+    margin: 0;
+    font-size: 20px;
+    line-height: 1.35;
+    color: #991b1b;
+    font-weight: 800;
+}
+
+.courseInfoList {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.courseInfoItem {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 10px;
+    align-items: start;
+    padding: 11px 12px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+}
+
+.courseInfoIcon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #e2e8f0;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.courseInfoContent {
+    min-width: 0;
+}
+
+.courseInfoLabel {
+    display: block;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+}
+
+.courseInfoValue {
+    display: block;
+    color: #0f172a;
+    font-size: 16px;
+    line-height: 1.45;
+    font-weight: 650;
+}
+
+.courseInfoDescription {
+    white-space: pre-line;
+    font-size: 15px;
+    line-height: 1.65;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .classDetailPage {
+        .headerBanner {
+            .metaInfo {
+                .statusInfoBtn {
+                    width: 30px;
+                    min-width: 30px;
+                    height: 30px;
+                }
+            }
+        }
+    }
+
+    .courseInfoModal {
+        :global(.ant-modal) {
+            max-width: calc(100vw - 12px) !important;
+            margin: 6px auto;
+        }
+
+        :global(.ant-modal-content) {
+            padding: 16px 14px 14px;
+        }
+
+        :global(.ant-modal-title) {
+            font-size: 22px;
+        }
+    }
+
+    .courseInfoHeroName {
+        font-size: 17px;
+    }
+
+    .courseInfoItem {
+        grid-template-columns: 32px 1fr;
+        padding: 10px;
+    }
+
+    .courseInfoIcon {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+
+    .courseInfoValue {
+        font-size: 14px;
+    }
+
+    .courseInfoDescription {
+        font-size: 14px;
     }
 }

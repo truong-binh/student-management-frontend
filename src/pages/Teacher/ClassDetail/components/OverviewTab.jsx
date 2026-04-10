@@ -58,7 +58,71 @@ const getMaterialTime = (createdAt) => {
     return createdTime.isValid() ? `Đã tải lên ${createdTime.format('DD/MM/YYYY - HH:mm')}` : '--';
 };
 
-const OverviewTab = ({ description: defaultDesc, courseId }) => {
+const safeDecodeURIComponent = (value = '') => {
+    try {
+        return decodeURIComponent(value);
+    } catch {
+        return value;
+    }
+};
+
+const isLikelyMojibake = (value = '') => /Ã.|Â.|á»|áº|Æ|Ä|Å|Ð|�/.test(value);
+
+const decodePotentialMojibake = (value = '') => {
+    if (typeof value !== 'string') return '';
+
+    const normalizedValue = safeDecodeURIComponent(value.trim());
+    if (!normalizedValue) return '';
+    if (!isLikelyMojibake(normalizedValue)) return normalizedValue;
+
+    try {
+        const bytes = Uint8Array.from(normalizedValue, (char) => char.charCodeAt(0) & 0xff);
+        const decodedValue = new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+        return decodedValue || normalizedValue;
+    } catch {
+        return normalizedValue;
+    }
+};
+
+const sanitizeFilenamePart = (value, fallback = '') => {
+    const normalized = decodePotentialMojibake(value || '')
+        .replace(/[<>:"/\\|?*\u0000-\u001F]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    return normalized || fallback;
+};
+
+const getFileNameFromUrl = (fileUrl = '') => {
+    if (!fileUrl) return '';
+
+    try {
+        const pathName = new URL(fileUrl).pathname;
+        const rawFileName = pathName.split('/').pop() || '';
+        return decodePotentialMojibake(rawFileName);
+    } catch {
+        const rawFileName = fileUrl.split('/').pop()?.split('?')[0] || '';
+        return decodePotentialMojibake(rawFileName);
+    }
+};
+
+const getMaterialDisplayTitle = (material) => {
+    const normalizedTitle = decodePotentialMojibake(material?.title || '');
+    if (normalizedTitle) return normalizedTitle;
+
+    const fileNameFromUrl = getFileNameFromUrl(material?.fileUrl || '');
+    return fileNameFromUrl || 'Tài liệu không tên';
+};
+
+const buildDownloadFileName = (material, courseCode, courseName) => {
+    const normalizedCourseCode = sanitizeFilenamePart(courseCode, 'Mon-hoc');
+    const normalizedCourseName = sanitizeFilenamePart(courseName, 'Khong-ten-mon');
+    const normalizedMaterialTitle = sanitizeFilenamePart(getMaterialDisplayTitle(material), 'Tai-lieu');
+
+    return `${normalizedCourseCode} - ${normalizedCourseName} - ${normalizedMaterialTitle}`;
+};
+
+const OverviewTab = ({ description: defaultDesc, courseId, courseCode, courseName }) => {
     const [announcement, setAnnouncement] = useState('');
     const [description, setDescription] = useState(
         defaultDesc || 'Chưa có mô tả cho học phần này.'
@@ -167,28 +231,44 @@ const OverviewTab = ({ description: defaultDesc, courseId }) => {
         }
     };
 
-    const handleDownloadMaterial = (material) => {
+    const handleDownloadMaterial = async (material) => {
         if (!material?.fileUrl) {
             message.error('Không tìm thấy đường dẫn tài liệu');
             return;
         }
 
-        const link = document.createElement('a');
-        link.href = material.fileUrl;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        if (material.title) {
-            link.setAttribute('download', material.title);
-        }
+        const downloadFileName = buildDownloadFileName(material, courseCode, courseName);
 
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        try {
+            const response = await fetch(material.fileUrl);
+            if (!response.ok) throw new Error('Không thể tải file từ máy chủ');
+
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.setAttribute('download', downloadFileName);
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
+        } catch {
+            const link = document.createElement('a');
+            link.href = material.fileUrl;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.setAttribute('download', downloadFileName);
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     };
 
     const openRenameMaterialModal = (material) => {
         setRenamingMaterial(material);
-        setRenamingTitle(material?.title || '');
+        setRenamingTitle(getMaterialDisplayTitle(material));
     };
 
     const closeRenameModal = () => {
@@ -241,7 +321,7 @@ const OverviewTab = ({ description: defaultDesc, courseId }) => {
                         <div className={styles.cardHeader}>
                             <span className={styles.cardHeaderLeft}>
                                 <InfoCircleOutlined className={styles.icon} />
-                                Mô tả học phần
+                                Mô tả lớp học
                             </span>
                             <Button
                                 type="link"
@@ -315,6 +395,7 @@ const OverviewTab = ({ description: defaultDesc, courseId }) => {
                                 visibleMaterials.map((material) => {
                                     const materialId = material._id || material.id;
                                     const presentation = getMaterialPresentation(material.type);
+                                    const materialTitle = getMaterialDisplayTitle(material);
 
                                     return (
                                         <div key={materialId || material.createdAt} className={styles.fileItem}>
@@ -326,7 +407,7 @@ const OverviewTab = ({ description: defaultDesc, courseId }) => {
                                                     {presentation.icon}
                                                 </div>
                                                 <div className={styles.fileMeta}>
-                                                    <div className={styles.fileName}>{material.title || 'Tài liệu không tên'}</div>
+                                                    <div className={styles.fileName}>{materialTitle}</div>
                                                     <div className={styles.fileSize}>
                                                         {(material.type || 'file').toUpperCase()} • {getMaterialTime(material.createdAt)}
                                                     </div>
