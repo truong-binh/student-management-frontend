@@ -154,7 +154,7 @@ const CreateAssignmentTab = ({ classInfo = {}, courseId }) => {
                     name="description"
                 >
                     <Input.TextArea
-                        rows={5}
+                        rows={12}
                         className={styles.pinkInput}
                         placeholder="Mô tả chi tiết yêu cầu bài tập..."
                     />
@@ -220,14 +220,16 @@ const CreateAssignmentTab = ({ classInfo = {}, courseId }) => {
                         <div className={styles.uploadIconCircle}>
                             <FileOutlined className={styles.uploadFileIcon} />
                         </div>
-                        {fileName ? (
-                            <p className={styles.uploadFileName}>{fileName}</p>
-                        ) : (
-                            <>
-                                <p className={styles.uploadMainText}>Nhấp để tải lên hoặc kéo thả file vào đây</p>
-                                <p className={styles.uploadHint2}>Hỗ trợ PDF, DOCX, ZIP (Tối đa 25MB)</p>
-                            </>
-                        )}
+                        <div className={styles.uploadContent}>
+                            {fileName ? (
+                                <p className={styles.uploadFileName}>{fileName}</p>
+                            ) : (
+                                <>
+                                    <p className={styles.uploadMainText}>Nhấp để tải lên hoặc kéo thả file vào đây</p>
+                                    <p className={styles.uploadHint2}>Hỗ trợ PDF, DOCX, ZIP (Tối đa 25MB)</p>
+                                </>
+                            )}
+                        </div>
                     </div>
                 </Form.Item>
 

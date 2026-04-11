@@ -59,7 +59,7 @@ const AttendanceTab = () => {
     }
 
     const attendanceRate = summary.total > 0
-        ? Math.round((summary.present / summary.total) * 100)
+        ? Math.round(((summary.total - summary.absent) / summary.total) * 100)
         : 100;
 
     return (

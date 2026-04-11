@@ -17,7 +17,7 @@ import { useSearchParams } from 'react-router-dom';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const typeIcon = {
-    lab: { bg: '#ebf8ff', color: '#3182ce', symbol: '>_' },
+    lab: { bg: '#fff5f5', color: '#b71c1c', symbol: '>_' },
     object: { bg: '#f0fff4', color: '#38a169', symbol: '{}' },
     check: { bg: '#fffbeb', color: '#d69e2e', symbol: '✓' },
     alert: { bg: '#fff5f5', color: '#e53e3e', symbol: '!' },
@@ -49,7 +49,7 @@ const AssignmentsTab = ({ classInfo, courseId }) => {
                 title: a.title,
                 deadline: new Date(a.dueDate).toLocaleString('vi-VN'),
                 status: isOverdue ? 'completed' : 'opening',
-                type: types[i % 4], // cycle through icons
+                type: types[i % 4],
                 original: a,
             };
         });
@@ -128,11 +128,11 @@ const AssignmentsTab = ({ classInfo, courseId }) => {
         );
     }
 
-    /* donut chart */
+
     const donutData = {
         datasets: [{
             data: [counts.opening, counts.completed, counts.graded],
-            backgroundColor: ['#38a169', '#3182ce', '#e53e3e'],
+            backgroundColor: ['#38a169', '#d32f2f', '#e53e3e'],
             borderWidth: 0,
             hoverOffset: 6,
         }],
@@ -150,9 +150,7 @@ const AssignmentsTab = ({ classInfo, courseId }) => {
 
     return (
         <div className={styles.assignWrap}>
-            {/* ── Left: assignment list ── */}
             <div className={styles.assignLeft}>
-                {/* Filter tabs */}
                 <div className={styles.assignFilterRow}>
                     {FILTERS.map(([key, label, cnt]) => (
                         <button
@@ -165,7 +163,6 @@ const AssignmentsTab = ({ classInfo, courseId }) => {
                     ))}
                 </div>
 
-                {/* List */}
                 <div className={styles.assignList2}>
                     {displayed.map(item => {
                         const icon = typeIcon[item.type];
@@ -197,7 +194,6 @@ const AssignmentsTab = ({ classInfo, courseId }) => {
                     })}
                 </div>
 
-                {/* See more */}
                 {remaining > 0 && (
                     <button className={styles.seeMoreBtn} onClick={() => setShowAll(true)}>
                         <DownOutlined /> Xem thêm {remaining} bài tập khác
@@ -205,7 +201,6 @@ const AssignmentsTab = ({ classInfo, courseId }) => {
                 )}
             </div>
 
-            {/* ── Right: stats card ── */}
             <div className={styles.assignStatsCard}>
                 <div className={styles.statsCardHeader}>
                     <span className={styles.statsCardTitle}>Thống kê bài tập</span>
@@ -227,7 +222,7 @@ const AssignmentsTab = ({ classInfo, courseId }) => {
                         <span className={styles.legendCount}>{String(counts.opening).padStart(2, '0')} bài</span>
                     </div>
                     <div className={styles.legendItem}>
-                        <span className={styles.legendDot} style={{ background: '#3182ce' }} />
+                        <span className={styles.legendDot} style={{ background: '#d32f2f' }} />
                         <span className={styles.legendText}>Quá hạn</span>
                         <span className={styles.legendCount}>{String(counts.completed).padStart(2, '0')} bài</span>
                     </div>

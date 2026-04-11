@@ -26,7 +26,7 @@ const StudentsTab = ({ courseId }) => {
         isImportingExcel,
     } = useCourseStudents(courseId, { page, limit, search });
 
-    const students = Array.isArray(data) ? data : (data?.items || []);
+    const students = (Array.isArray(data) ? data : (data?.items || [])).filter(item => !!item.student);
     const totalItems = data?.pagination?.totalItems || students.length;
 
     const handleSearch = () => {

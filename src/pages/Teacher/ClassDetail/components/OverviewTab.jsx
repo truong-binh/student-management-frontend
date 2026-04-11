@@ -26,31 +26,12 @@ import { useCourseMaterials } from '@/hooks/useCourseMaterial';
 
 const { TextArea } = Input;
 
-const getMaterialPresentation = (type = '') => {
-    const ext = type.toLowerCase();
-
-    if (ext === 'pdf') {
-        return { icon: <FilePdfOutlined />, iconBg: '#ebf8ff', iconColor: '#3b82f6' };
-    }
-
-    if (['doc', 'docx'].includes(ext)) {
-        return { icon: <FileWordOutlined />, iconBg: '#e6f7ff', iconColor: '#1677ff' };
-    }
-
-    if (['xls', 'xlsx', 'csv'].includes(ext)) {
-        return { icon: <FileExcelOutlined />, iconBg: '#f0fff4', iconColor: '#22c55e' };
-    }
-
-    if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) {
-        return { icon: <FileZipOutlined />, iconBg: '#fffbeb', iconColor: '#d69e2e' };
-    }
-
-    if (['ppt', 'pptx', 'txt'].includes(ext)) {
-        return { icon: <FileTextOutlined />, iconBg: '#fff7e6', iconColor: '#fa8c16' };
-    }
-
-    return { icon: <FileOutlined />, iconBg: '#f7fafc', iconColor: '#64748b' };
-};
+import { 
+    getFilePresentation as getMaterialPresentation, 
+    getFileNameFromUrl, 
+    buildDownloadFileName, 
+    getMaterialDisplayTitle 
+} from '@/utils/filePresentation';
 
 const getMaterialTime = (createdAt) => {
     if (!createdAt) return '--';
@@ -58,76 +39,8 @@ const getMaterialTime = (createdAt) => {
     return createdTime.isValid() ? `Đã tải lên ${createdTime.format('DD/MM/YYYY - HH:mm')}` : '--';
 };
 
-const safeDecodeURIComponent = (value = '') => {
-    try {
-        return decodeURIComponent(value);
-    } catch {
-        return value;
-    }
-};
-
-const isLikelyMojibake = (value = '') => /Ã.|Â.|á»|áº|Æ|Ä|Å|Ð|�/.test(value);
-
-const decodePotentialMojibake = (value = '') => {
-    if (typeof value !== 'string') return '';
-
-    const normalizedValue = safeDecodeURIComponent(value.trim());
-    if (!normalizedValue) return '';
-    if (!isLikelyMojibake(normalizedValue)) return normalizedValue;
-
-    try {
-        const bytes = Uint8Array.from(normalizedValue, (char) => char.charCodeAt(0) & 0xff);
-        const decodedValue = new TextDecoder('utf-8', { fatal: false }).decode(bytes);
-        return decodedValue || normalizedValue;
-    } catch {
-        return normalizedValue;
-    }
-};
-
-const sanitizeFilenamePart = (value, fallback = '') => {
-    const normalized = decodePotentialMojibake(value || '')
-        .replace(/[<>:"/\\|?*\u0000-\u001F]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-    return normalized || fallback;
-};
-
-const getFileNameFromUrl = (fileUrl = '') => {
-    if (!fileUrl) return '';
-
-    try {
-        const pathName = new URL(fileUrl).pathname;
-        const rawFileName = pathName.split('/').pop() || '';
-        return decodePotentialMojibake(rawFileName);
-    } catch {
-        const rawFileName = fileUrl.split('/').pop()?.split('?')[0] || '';
-        return decodePotentialMojibake(rawFileName);
-    }
-};
-
-const getMaterialDisplayTitle = (material) => {
-    const normalizedTitle = decodePotentialMojibake(material?.title || '');
-    if (normalizedTitle) return normalizedTitle;
-
-    const fileNameFromUrl = getFileNameFromUrl(material?.fileUrl || '');
-    return fileNameFromUrl || 'Tài liệu không tên';
-};
-
-const buildDownloadFileName = (material, courseCode, courseName) => {
-    const normalizedCourseCode = sanitizeFilenamePart(courseCode, 'Mon-hoc');
-    const normalizedCourseName = sanitizeFilenamePart(courseName, 'Khong-ten-mon');
-    const normalizedMaterialTitle = sanitizeFilenamePart(getMaterialDisplayTitle(material), 'Tai-lieu');
-
-    return `${normalizedCourseCode} - ${normalizedCourseName} - ${normalizedMaterialTitle}`;
-};
-
 const OverviewTab = ({ description: defaultDesc, courseId, courseCode, courseName }) => {
     const [announcement, setAnnouncement] = useState('');
-    const [description, setDescription] = useState(
-        defaultDesc || 'Chưa có mô tả cho học phần này.'
-    );
-    const [editingDesc, setEditingDesc] = useState(false);
     const [deletingAnnouncementId, setDeletingAnnouncementId] = useState(null);
     const [renamingMaterial, setRenamingMaterial] = useState(null);
     const [renamingTitle, setRenamingTitle] = useState('');
@@ -316,51 +229,89 @@ const OverviewTab = ({ description: defaultDesc, courseId, courseCode, courseNam
     return (
         <div className={styles.overviewWrap}>
             <div className={styles.overviewGrid}>
+                {/* Left Column: Announcements (Timeline) */}
                 <div className={styles.overviewLeft}>
-                    <div className={styles.card}>
+                    <div className={`${styles.card} ${styles.announcementSection}`} style={{ margin: 0 }}>
                         <div className={styles.cardHeader}>
                             <span className={styles.cardHeaderLeft}>
-                                <InfoCircleOutlined className={styles.icon} />
-                                Mô tả lớp học
+                                <MessageOutlined className={styles.icon} />
+                                Thông báo lớp học
                             </span>
-                            <Button
-                                type="link"
-                                icon={<EditOutlined />}
-                                className={styles.editBtn}
-                                onClick={() => setEditingDesc(!editingDesc)}
-                            >
-                                {editingDesc ? 'Lưu' : 'Chỉnh sửa'}
-                            </Button>
                         </div>
-                        {editingDesc ? (
-                            <TextArea
-                                rows={6}
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                className={styles.descTextarea}
-                            />
-                        ) : (
-                            <p className={styles.description}>{description}</p>
-                        )}
-                    </div>
 
-                    <div className={styles.card}>
-                        <div className={styles.cardHeader}>
-                            <span className={styles.cardHeaderLeft}>
-                                <DatabaseOutlined className={styles.icon} />
-                                Đề cương
-                            </span>
+                        <div className={styles.postInput}>
+                            <TextArea
+                                rows={3}
+                                placeholder="Nhập thông báo mới cho sinh viên của bạn..."
+                                value={announcement}
+                                onChange={(e) => setAnnouncement(e.target.value)}
+                                className={styles.postTextarea}
+                            />
+                            <div className={styles.postActions}>
+                                <div className={styles.postTools}></div>
+                                <Button
+                                    type="primary"
+                                    danger
+                                    className={styles.postBtn}
+                                    onClick={handlePost}
+                                    loading={isCreatingAnnouncement}
+                                    disabled={!announcement.trim() || !courseId}
+                                >
+                                    Đăng thông báo
+                                </Button>
+                            </div>
                         </div>
-                        <div className={styles.uploadArea}>
-                            <InboxOutlined className={styles.uploadIcon} />
-                            <p className={styles.uploadText}>Kéo thả hoặc nhấn để tải lên đề cương</p>
-                            <p className={styles.uploadHint}>Định dạng hỗ trợ: PDF, DOCX (Tối đa 10MB)</p>
+
+                        <div className={styles.postList}>
+                            {isLoadingAnnouncements ? (
+                                <div className={styles.postEmptyState}>Đang tải thông báo...</div>
+                            ) : announcements.length === 0 ? (
+                                <div className={styles.postEmptyState}>Chưa có thông báo nào cho lớp học này.</div>
+                            ) : (
+                                announcements.map((post) => {
+                                    const announcementId = post._id || post.id;
+
+                                    return (
+                                        <div key={announcementId || post.createdAt} className={styles.postItem}>
+                                            <Avatar src={post.createdBy?.avatar || userDefault} size={44} className={styles.postAvatar} />
+                                            <div className={styles.postBody}>
+                                                <div className={styles.postHeader}>
+                                                    <div>
+                                                        <span className={styles.postName}>{getAnnouncementAuthor(post.createdBy)}</span>
+                                                        <span className={styles.postTime}>{getAnnouncementTime(post.createdAt)}</span>
+                                                    </div>
+                                                    <Popconfirm
+                                                        title="Xóa thông báo này?"
+                                                        description="Hành động này không thể hoàn tác."
+                                                        okText="Xóa"
+                                                        cancelText="Hủy"
+                                                        okButtonProps={{ danger: true }}
+                                                        onConfirm={() => handleDeleteAnnouncement(announcementId)}
+                                                        disabled={!announcementId}
+                                                    >
+                                                        <Button
+                                                            type="text"
+                                                            danger
+                                                            icon={<DeleteOutlined />}
+                                                            className={styles.moreBtn}
+                                                            loading={deletingAnnouncementId === announcementId && isDeletingAnnouncement}
+                                                            disabled={!announcementId}
+                                                        />
+                                                    </Popconfirm>
+                                                </div>
+                                                <p className={styles.postContent}>{post.content}</p>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
                         </div>
                     </div>
                 </div>
 
+                {/* Right Column: Sidebar (Materials) */}
                 <div className={styles.overviewRight}>
-                    <div className={styles.card} style={{ height: '100%' }}>
+                    <div className={styles.card}>
                         <div className={styles.cardHeader}>
                             <span className={styles.cardHeaderLeft}>
                                 <DatabaseOutlined className={styles.icon} />
@@ -376,7 +327,7 @@ const OverviewTab = ({ description: defaultDesc, courseId, courseCode, courseNam
                                 disabled={!courseId}
                                 onClick={openFileDialog}
                             >
-                                Thêm tài liệu
+                                Thêm
                             </Button>
                         </div>
                         <input
@@ -388,9 +339,9 @@ const OverviewTab = ({ description: defaultDesc, courseId, courseCode, courseNam
                         />
                         <div className={styles.fileList}>
                             {isLoadingMaterials ? (
-                                <div className={styles.postEmptyState}>Đang tải tài liệu...</div>
+                                <div className={styles.postEmptyState}>Đang tải...</div>
                             ) : sortedMaterials.length === 0 ? (
-                                <div className={styles.postEmptyState}>Chưa có tài liệu nào cho lớp học này.</div>
+                                <div className={styles.postEmptyState}>Chưa có tài liệu.</div>
                             ) : (
                                 visibleMaterials.map((material) => {
                                     const materialId = material._id || material.id;
@@ -402,15 +353,18 @@ const OverviewTab = ({ description: defaultDesc, courseId, courseCode, courseNam
                                             <div className={styles.fileInfo}>
                                                 <div
                                                     className={styles.fileIcon}
-                                                    style={{ background: presentation.iconBg, color: presentation.iconColor }}
+                                                    style={{ 
+                                                        background: presentation.iconBg, 
+                                                        color: presentation.iconColor,
+                                                        width: '36px',
+                                                        height: '36px',
+                                                        fontSize: '16px'
+                                                    }}
                                                 >
                                                     {presentation.icon}
                                                 </div>
                                                 <div className={styles.fileMeta}>
-                                                    <div className={styles.fileName}>{materialTitle}</div>
-                                                    <div className={styles.fileSize}>
-                                                        {(material.type || 'file').toUpperCase()} • {getMaterialTime(material.createdAt)}
-                                                    </div>
+                                                    <div className={styles.fileName} style={{ fontSize: '13px' }}>{materialTitle}</div>
                                                 </div>
                                             </div>
                                             <div className={styles.fileActions}>
@@ -418,35 +372,21 @@ const OverviewTab = ({ description: defaultDesc, courseId, courseCode, courseNam
                                                     <Button
                                                         type="text"
                                                         icon={<CloudDownloadOutlined />}
-                                                        className={`${styles.downloadBtn} ${styles.actionBtn}`}
-                                                        onClick={() => handleDownloadMaterial(material)}
-                                                    />
-                                                </Tooltip>
-                                                <Tooltip title="Đổi tên tài liệu">
-                                                    <Button
-                                                        type="text"
-                                                        icon={<EditOutlined />}
                                                         className={styles.actionBtn}
-                                                        onClick={() => openRenameMaterialModal(material)}
-                                                        disabled={!materialId}
+                                                        style={{ padding: '4px' }}
+                                                        onClick={() => handleDownloadMaterial(material)}
                                                     />
                                                 </Tooltip>
                                                 <Popconfirm
                                                     title="Xóa tài liệu này?"
-                                                    description="Hành động này không thể hoàn tác."
-                                                    okText="Xóa"
-                                                    cancelText="Hủy"
-                                                    okButtonProps={{ danger: true }}
                                                     onConfirm={() => handleDeleteMaterial(materialId)}
-                                                    disabled={!materialId}
                                                 >
                                                     <Button
                                                         type="text"
                                                         danger
                                                         icon={<DeleteOutlined />}
                                                         className={styles.actionBtn}
-                                                        loading={deletingMaterialId === materialId && isDeletingMaterial}
-                                                        disabled={!materialId}
+                                                        style={{ padding: '4px' }}
                                                     />
                                                 </Popconfirm>
                                             </div>
@@ -459,97 +399,14 @@ const OverviewTab = ({ description: defaultDesc, courseId, courseCode, courseNam
                             <Button
                                 type="link"
                                 danger
-                                style={{ padding: 0, marginTop: 12, fontWeight: 600 }}
-                                onClick={() => setShowAllMaterials((previous) => !previous)}
+                                size="small"
+                                style={{ marginTop: 12, padding: 0 }}
+                                onClick={() => setShowAllMaterials((prev) => !prev)}
                             >
-                                {showAllMaterials ? 'Thu gọn tài liệu' : 'Xem tất cả tài liệu'}
+                                {showAllMaterials ? 'Thu gọn' : 'Xem tất cả'}
                             </Button>
                         )}
                     </div>
-                </div>
-            </div>
-
-            <div className={`${styles.card} ${styles.announcementSection}`}>
-                <div className={styles.cardHeader}>
-                    <span className={styles.cardHeaderLeft}>
-                        <MessageOutlined className={styles.icon} />
-                        Thông báo lớp học
-                    </span>
-                </div>
-
-                <div className={styles.postInput}>
-                    <TextArea
-                        rows={3}
-                        placeholder="Nhập thông báo mới cho sinh viên của bạn..."
-                        value={announcement}
-                        onChange={(e) => setAnnouncement(e.target.value)}
-                        className={styles.postTextarea}
-                    />
-                    <div className={styles.postActions}>
-                        <div className={styles.postTools}>
-                            <Tooltip title="Đính kèm ảnh">
-                                <Button type="text" icon={<PictureOutlined />} className={styles.toolBtn} />
-                            </Tooltip>
-                            <Tooltip title="Đính kèm file">
-                                <Button type="text" icon={<PaperClipOutlined />} className={styles.toolBtn} />
-                            </Tooltip>
-                        </div>
-                        <Button
-                            type="primary"
-                            danger
-                            className={styles.postBtn}
-                            onClick={handlePost}
-                            loading={isCreatingAnnouncement}
-                            disabled={!announcement.trim() || !courseId}
-                        >
-                            Đăng thông báo
-                        </Button>
-                    </div>
-                </div>
-
-                <div className={styles.postList}>
-                    {isLoadingAnnouncements ? (
-                        <div className={styles.postEmptyState}>Đang tải thông báo...</div>
-                    ) : announcements.length === 0 ? (
-                        <div className={styles.postEmptyState}>Chưa có thông báo nào cho lớp học này.</div>
-                    ) : (
-                        announcements.map((post) => {
-                            const announcementId = post._id || post.id;
-
-                            return (
-                                <div key={announcementId || post.createdAt} className={styles.postItem}>
-                                    <Avatar src={post.createdBy?.avatar || userDefault} size={44} className={styles.postAvatar} />
-                                    <div className={styles.postBody}>
-                                        <div className={styles.postHeader}>
-                                            <div>
-                                                <span className={styles.postName}>{getAnnouncementAuthor(post.createdBy)}</span>
-                                                <span className={styles.postTime}>{getAnnouncementTime(post.createdAt)}</span>
-                                            </div>
-                                            <Popconfirm
-                                                title="Xóa thông báo này?"
-                                                description="Hành động này không thể hoàn tác."
-                                                okText="Xóa"
-                                                cancelText="Hủy"
-                                                okButtonProps={{ danger: true }}
-                                                onConfirm={() => handleDeleteAnnouncement(announcementId)}
-                                                disabled={!announcementId}
-                                            >
-                                                <Button
-                                                    type="text"
-                                                    danger
-                                                    icon={<DeleteOutlined />}
-                                                    className={styles.moreBtn}
-                                                    loading={deletingAnnouncementId === announcementId && isDeletingAnnouncement}
-                                                    disabled={!announcementId}
-                                                />
-                                            </Popconfirm>
-                                        </div>
-                                        <p className={styles.postContent}>{post.content}</p>
-                                    </div>
-                                </div>
-                            );
-                        })
-                    )}
                 </div>
             </div>
 

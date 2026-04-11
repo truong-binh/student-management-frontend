@@ -185,21 +185,6 @@ const TeacherClasses = () => {
                                             GV: {item.lecturerId?.fullName || '---'}
                                         </p>
 
-                                        <div className={styles.progressSection}>
-                                            <div className={styles.progressHeader}>
-                                                <span className={styles.progressLabel}>TIẾN ĐỘ</span>
-                                                <span className={styles.progressValue} style={{ color: color }}>
-                                                    {percent}%
-                                                </span>
-                                            </div>
-                                            <Progress
-                                                percent={percent}
-                                                showInfo={false}
-                                                strokeColor={color}
-                                                trailColor="#edf2f7"
-                                                size={['100%', 6]}
-                                            />
-                                        </div>
 
                                         <Button
                                             className={styles.accessBtn}

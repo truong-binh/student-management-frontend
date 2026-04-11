@@ -160,7 +160,7 @@ const Dashboard = () => {
     }, [pendingAssignments]);
 
     const deadlineItems = useMemo(() => {
-        return upcomingDeadlineAssignments.slice(0, 3).map((assignment) => ({
+        return upcomingDeadlineAssignments.slice(0, 5).map((assignment) => ({
             assignmentId: assignment.id,
             classId: assignment.courseId,
             title: assignment.title,
@@ -181,7 +181,7 @@ const Dashboard = () => {
     }, [mySubmissions]);
 
     const recentGrades = useMemo(() => {
-        return gradedSubmissions.slice(0, 3).map((submission) => {
+        return gradedSubmissions.slice(0, 5).map((submission) => {
             const assignmentId = getSubmissionAssignmentId(submission);
             const dashboardAssignment = assignmentId ? dashboardAssignmentById[String(assignmentId)] : null;
             const assignmentCourseId =
@@ -335,40 +335,11 @@ const Dashboard = () => {
                                 >
                                     Xem toàn bộ bảng điểm
                                 </Button>
-                            </div>
-                        </div>
-
-                        <div className={styles.activityCard}>
-                            <div className={styles.cardHeader}>
-                                <h3>Hoạt động gần đây</h3>
-                            </div>
-                            <Timeline className={styles.activityTimeline}>
-                                <Timeline.Item dot={<div className={styles.activityDotRed} />}>
-                                    <div className={styles.activityContent}>
-                                        <p><strong>Giảng viên Nguyễn Thị B</strong> đã đăng một thông báo mới trong lớp <span className={styles.linkText}>Phát triển ứng dụng Web</span>.</p>
-                                        <span className={styles.timeAgo}>10 phút trước</span>
-                                        <div className={styles.activityComment}>
-                                            &quot;Các em nhớ nộp bài tập lớn đúng hạn vào ngày mai nhé...&quot;
-                                        </div>
-                                    </div>
-                                </Timeline.Item>
-                                <Timeline.Item dot={<div className={styles.activityDotBlue} />}>
-                                    <div className={styles.activityContent}>
-                                        <p>Bạn đã nộp bài tập <strong>Thực hành SQL</strong> thành công.</p>
-                                        <span className={styles.timeAgo}>2 giờ trước</span>
-                                    </div>
-                                </Timeline.Item>
-                                <Timeline.Item dot={<div className={styles.activityDotGreen} />}>
-                                    <div className={styles.activityContent}>
-                                        <p>Đã có điểm môn <strong>Triết học Mác - Lênin</strong>.</p>
-                                        <span className={styles.timeAgo}>Hôm qua</span>
-                                    </div>
-                                </Timeline.Item>
-                            </Timeline>
                         </div>
                     </div>
+                </div>
 
-                    <div className={styles.contentRight}>
+                <div className={styles.contentRight}>
                         <Card className={styles.calendarCard}>
                             <Calendar
                                 fullscreen={false}

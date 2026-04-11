@@ -1,0 +1,236 @@
+.codeReviewContainer {
+    background: #ffffff;
+    border: 1px solid #e1e4e8;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 20px 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+.reviewHeader {
+    padding: 16px 20px;
+    background: #f6f8fa;
+    border-bottom: 1px solid #e1e4e8;
+
+    .headerInfo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .mainIcon {
+            font-size: 24px;
+            color: #0366d6;
+        }
+
+        h4 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: #24292e;
+        }
+
+        span {
+            font-size: 12px;
+            color: #586069;
+        }
+    }
+}
+
+.loadingArea {
+    padding: 60px;
+    text-align: center;
+    background: #fcfcfc;
+}
+
+.codeViewport {
+    overflow-x: auto;
+    background: #ffffff;
+}
+
+.codeTable {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+
+    tr:hover {
+        background-color: #f6f8fa;
+    }
+}
+
+.codeRow {
+    &.hasErrorHighlight {
+        background-color: #fffbdd;
+        
+        &:hover {
+            background-color: #fff5b1;
+        }
+    }
+}
+
+.lineNum {
+    width: 50px;
+    min-width: 50px;
+    padding: 0 10px;
+    text-align: right;
+    color: rgba(27, 31, 35, 0.3);
+    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+    font-size: 12px;
+    user-select: none;
+    border-right: 1px solid #e1e4e8;
+}
+
+.codeCell {
+    padding: 2px 16px;
+    
+    pre {
+        margin: 0;
+        font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+        font-size: 13px;
+        line-height: 20px;
+        color: #24292e;
+        white-space: pre;
+    }
+}
+
+.commentRow {
+    background-color: #f6f8fa;
+    border-top: 1px solid #e1e4e8;
+    border-bottom: 1px solid #e1e4e8;
+}
+
+.commentGutter {
+    border-right: 1px solid #e1e4e8;
+    display: flex;
+    justify-content: center;
+    padding-top: 12px;
+
+    .aiAvatar {
+        width: 28px;
+        height: 28px;
+        background: #0366d6;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        box-shadow: 0 2px 5px rgba(3, 102, 214, 0.2);
+    }
+}
+
+.commentCell {
+    padding: 12px 16px;
+}
+
+.commentBox {
+    background: #ffffff;
+    border: 1px solid #c8e1ff;
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 3px 12px rgba(149, 157, 165, 0.1);
+
+    &::before {
+        content: "";
+        position: absolute;
+        left: -8px;
+        top: 10px;
+        width: 14px;
+        height: 14px;
+        background: #ffffff;
+        border-left: 1px solid #c8e1ff;
+        border-bottom: 1px solid #c8e1ff;
+        transform: rotate(45deg);
+    }
+}
+
+.commentHeader {
+    padding: 8px 12px;
+    background: #f1f8ff;
+    border-bottom: 1px solid #c8e1ff;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    .aiBadge {
+        font-size: 12px;
+        font-weight: 600;
+        color: #0366d6;
+    }
+
+    .locationTag {
+        background: #e1e4e8;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 11px;
+        color: #444d56;
+        font-weight: 500;
+    }
+}
+
+.commentBody {
+    padding: 12px;
+
+    .issueText {
+        font-size: 14px;
+        color: #d73a49;
+        font-weight: 500;
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+        line-height: 1.5;
+
+        .errorIcon {
+            margin-top: 4px;
+        }
+    }
+}
+
+.suggestionBlock {
+    margin-top: 12px;
+    padding: 10px;
+    background: #f0fff4;
+    border: 1px solid #dcffe4;
+    border-radius: 6px;
+    display: flex;
+    gap: 10px;
+
+    .suggestIcon {
+        color: #28a745;
+        font-size: 16px;
+        margin-top: 2px;
+    }
+
+    .suggestText {
+        font-size: 13px;
+        color: #22863a;
+        line-height: 1.6;
+
+        strong {
+            color: #1b612c;
+        }
+    }
+}
+
+.reviewFooter {
+    padding: 20px;
+    background: #f6f8fa;
+    border-top: 1px solid #e1e4e8;
+
+    .summaryTitle {
+        font-weight: 600;
+        font-size: 15px;
+        color: #24292e;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    p {
+        margin: 0;
+        font-size: 14px;
+        color: #586069;
+        line-height: 1.6;
+    }
+}

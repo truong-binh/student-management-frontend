@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Button, Card, Empty, Input, Select, Spin, Table, Tag } from 'antd';
 import {
     ArrowLeftOutlined,
+    ArrowRightOutlined,
     SearchOutlined,
     StarOutlined,
     TrophyOutlined,
@@ -192,10 +193,9 @@ const GradeOverview = () => {
             dataIndex: 'scoreText',
             key: 'scoreText',
             width: 140,
-            render: (value, record) => (
+            render: (value) => (
                 <div className={styles.scoreCell}>
                     <strong>{value}</strong>
-                    <Tag color="green">{record.letter}</Tag>
                 </div>
             ),
         },
@@ -212,16 +212,16 @@ const GradeOverview = () => {
             width: 150,
             render: (_, record) => (
                 <Button
-                    type="primary"
+                    type="link"
                     danger
-                    size="small"
                     disabled={!record.assignmentId || !record.classId}
                     onClick={() => {
                         if (!record.assignmentId || !record.classId) return;
                         navigate(`/classes/${record.classId}/assignments/${record.assignmentId}/result`);
                     }}
+                    className={styles.detailBtn}
                 >
-                    Xem chi tiết
+                    Xem chi tiết <ArrowRightOutlined />
                 </Button>
             ),
         },
@@ -232,41 +232,44 @@ const GradeOverview = () => {
     return (
         <MainLayout>
             <div className={styles.page}>
-                <Card className={styles.heroCard}>
-                    <div className={styles.heroTop}>
-                        <div>
-                            <h1>Toàn bộ bảng điểm</h1>
-                            <p>Danh sách các bài đã chấm điểm, cập nhật theo thời gian mới nhất.</p>
-                        </div>
-                        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/dashboard')}>
-                            Quay lại dashboard
-                        </Button>
+                <div className={styles.header}>
+                    <Button 
+                        type="text" 
+                        icon={<ArrowLeftOutlined />} 
+                        onClick={() => navigate('/dashboard')}
+                        className={styles.backBtn}
+                    >
+                        Quay lại Dashboard
+                    </Button>
+                    <div className={styles.titleSection}>
+                        <h1>Toàn bộ bảng điểm</h1>
+                        <p>Theo dõi chi tiết kết quả học tập của tất cả các môn</p>
                     </div>
+                </div>
 
-                    <div className={styles.statsRow}>
-                        <div className={styles.statItem}>
-                            <StarOutlined />
-                            <div>
-                                <span>Điểm trung bình</span>
-                                <strong>{stats.avg}</strong>
-                            </div>
-                        </div>
-                        <div className={styles.statItem}>
-                            <TrophyOutlined />
-                            <div>
-                                <span>Điểm cao nhất</span>
-                                <strong>{stats.highest}</strong>
-                            </div>
-                        </div>
-                        <div className={styles.statItem}>
-                            <BarChartOutlined />
-                            <div>
-                                <span>Bài đã chấm</span>
-                                <strong>{stats.total}</strong>
-                            </div>
+                <div className={styles.statsContainer}>
+                    <div className={styles.statCard}>
+                        <div className={styles.statIcon} style={{ background: '#fff5f5', color: '#e53e3e' }}><StarOutlined /></div>
+                        <div className={styles.statInfo}>
+                            <div className={styles.statLabel}>Điểm trung bình</div>
+                            <div className={styles.statValue}>{stats.avg}</div>
                         </div>
                     </div>
-                </Card>
+                    <div className={styles.statCard}>
+                        <div className={styles.statIcon} style={{ background: '#fffcf0', color: '#ecc94b' }}><TrophyOutlined /></div>
+                        <div className={styles.statInfo}>
+                            <div className={styles.statLabel}>Điểm cao nhất</div>
+                            <div className={styles.statValue}>{stats.highest}</div>
+                        </div>
+                    </div>
+                    <div className={styles.statCard}>
+                        <div className={styles.statIcon} style={{ background: '#f0fff4', color: '#38a169' }}><BarChartOutlined /></div>
+                        <div className={styles.statInfo}>
+                            <div className={styles.statLabel}>Bài đã chấm</div>
+                            <div className={styles.statValue}>{stats.total}</div>
+                        </div>
+                    </div>
+                </div>
 
                 <Card className={styles.filterCard}>
                     <Input

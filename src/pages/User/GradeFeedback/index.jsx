@@ -11,12 +11,17 @@ import {
     HistoryOutlined,
     FileZipOutlined,
     MessageOutlined,
-    UndoOutlined
+    UndoOutlined,
+    CheckCircleFilled,
+    CloseCircleFilled,
+    BulbOutlined,
+    SafetyCertificateOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import MainLayout from '@/layouts/User/MainLayout';
 import ModalDefault from '@/components/Modal';
 import styles from './styles.module.scss';
+import clsx from 'clsx';
 import { useMySubmissions, useSubmissionFeedback } from '@/hooks/useSubmission';
 import dayjs from 'dayjs';
 
@@ -144,7 +149,58 @@ const GradeFeedback = () => {
                                     <RobotOutlined /> Phản hồi từ AI
                                 </div>
                                 <div className={styles.aiFeedbackBox}>
-                                    {submission?.aiFeedback ? (
+                                    {submission?.aiFeedbackData ? (
+                                        <div className={styles.aiStructuredBox}>
+                                            {submission.aiFeedbackData.summary && (
+                                                <div className={styles.aiSummary}>
+                                                    {submission.aiFeedbackData.summary}
+                                                </div>
+                                            )}
+
+                                            {submission.aiFeedbackData.strengths?.length > 0 && (
+                                                <div className={styles.aiSection}>
+                                                    <div className={clsx(styles.aiSectionTitle, styles.pros)}>
+                                                        <SafetyCertificateOutlined /> Ưu điểm
+                                                    </div>
+                                                    {submission.aiFeedbackData.strengths.map((str, idx) => (
+                                                        <div key={idx} className={styles.aiStrengthItem}>
+                                                            <CheckCircleFilled className={styles.aiIconSuccess} />
+                                                            <span>{str}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {submission.aiFeedbackData.errors?.length > 0 && (
+                                                <div className={styles.aiSection}>
+                                                    <div className={clsx(styles.aiSectionTitle, styles.cons)}>
+                                                        <CloseCircleFilled /> Cần cải thiện
+                                                    </div>
+                                                    <div className={styles.aiErrorList}>
+                                                        {submission.aiFeedbackData.errors.slice(0, 10).map((err, idx) => (
+                                                            <div key={idx} className={styles.aiErrorItem}>
+                                                                <div className={styles.aiErrorHeader}>
+                                                                    <span className={styles.aiLocation}>{err.location}</span>
+                                                                    <span className={styles.aiIssue}>{err.issue}</span>
+                                                                </div>
+                                                                {err.suggestion && (
+                                                                    <div className={styles.aiSuggestion}>
+                                                                        <BulbOutlined className={styles.aiIconSuggestion} />
+                                                                        <span>{err.suggestion}</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                        {submission.aiFeedbackData.errors.length > 10 && (
+                                                            <div style={{ fontSize: '11px', color: '#64748b', textAlign: 'center', fontStyle: 'italic' }}>
+                                                                Và {submission.aiFeedbackData.errors.length - 10} lỗi khác...
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : submission?.aiFeedback ? (
                                         <div className={styles.feedbackItem} style={{ whiteSpace: 'pre-wrap' }}>
                                             {submission.aiFeedback}
                                         </div>
@@ -184,7 +240,7 @@ const GradeFeedback = () => {
                                     </div>
                                     <div className={styles.headerInfo}>
                                         <h3>Lịch sử phúc khảo</h3>
-                                        <p>Nội dung thắc mắc bạn đã gửi và phản hồi của Giảng viên</p>
+                                        <p>Theo dõi tiến độ giải quyết thắc mắc của bạn</p>
                                     </div>
                                 </div>
 
@@ -218,7 +274,7 @@ const GradeFeedback = () => {
                                                         icon={<UndoOutlined />}
                                                         loading={isDeleting}
                                                     >
-                                                        Thu hồi
+                                                        Thu hồi yêu cầu
                                                     </Button>
                                                 </Popconfirm>
                                             </div>
@@ -242,7 +298,8 @@ const GradeFeedback = () => {
                                             lineHeight: '1.6',
                                             border: `1px solid ${submission.feedbackStatus === 'RESOLVED' ? '#bbf7d0' : '#fef3c7'}`,
                                             minHeight: '80px',
-                                            fontStyle: submission.feedbackStatus === 'RESOLVED' ? 'normal' : 'italic'
+                                            fontStyle: submission.feedbackStatus === 'RESOLVED' ? 'normal' : 'italic',
+                                            fontSize: '14px'
                                         }}>
                                             {submission.lecturerReply?.content || (submission.feedbackStatus === 'RESOLVED' ? 'Giảng viên đã xem và giải quyết yêu cầu của bạn.' : 'Giảng viên đang xem xét thắc mắc của bạn. Vui lòng chờ đợi.')}
                                             {submission.feedbackStatus === 'RESOLVED' && (
@@ -267,7 +324,6 @@ const GradeFeedback = () => {
                                 </div>
 
                                 <div className={styles.formBody}>
-
                                     <div className={styles.field}>
                                         <label>Chi tiết thắc mắc <span className={styles.required}>*</span></label>
                                         <TextArea
@@ -313,17 +369,17 @@ const GradeFeedback = () => {
                         </div>
                         <h3>Gửi yêu cầu thành công!</h3>
                         <p className={styles.desc}>
-                            Yêu cầu phúc khảo cho bài tập <strong>Bài tập tuần 5 - INT1302</strong> đã được gửi đến Giảng viên. Chúng tôi sẽ thông báo cho bạn ngay khi có kết quả.
+                            Yêu cầu phúc khảo cho bài tập <strong>{assignment?.title}</strong> đã được gửi đến Giảng viên. Chúng tôi sẽ thông báo cho bạn ngay khi có kết quả.
                         </p>
 
                         <div className={styles.infoTable}>
                             <div className={styles.infoRow}>
                                 <label>Mã yêu cầu (Ticket ID)</label>
-                                <span className={styles.ticketId}>#PK-2024-001</span>
+                                <span className={styles.ticketId}>#PK-{assignmentId.slice(-4)}-{submission?.id?.slice(-4)}</span>
                             </div>
                             <div className={styles.infoRow}>
                                 <label>Thời gian gửi</label>
-                                <span>12/10/2026 15:45</span>
+                                <span>{dayjs().format('DD/MM/YYYY HH:mm')}</span>
                             </div>
                         </div>
 
@@ -336,9 +392,9 @@ const GradeFeedback = () => {
                             </Button>
                             <Button
                                 className={styles.progressBtn}
-                                onClick={() => navigate('/feedback')}
+                                onClick={() => setIsSuccessModalOpen(false)}
                             >
-                                Theo dõi tiến độ
+                                Xem tiến độ
                             </Button>
                         </div>
                     </div>
