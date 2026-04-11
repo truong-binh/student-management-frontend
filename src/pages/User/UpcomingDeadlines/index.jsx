@@ -183,32 +183,35 @@ const UpcomingDeadlines = () => {
     return (
         <MainLayout>
             <div className={styles.page}>
-                <Card className={styles.heroCard}>
-                    <div className={styles.heroTop}>
-                        <div>
-                            <h1>Hạn nộp sắp tới</h1>
-                            <p>Toàn bộ bài tập chưa nộp được sắp xếp theo hạn gần nhất.</p>
-                        </div>
-                        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/dashboard')}>
-                            Quay lại dashboard
-                        </Button>
+                <div className={styles.header}>
+                    <Button 
+                        type="text" 
+                        icon={<ArrowLeftOutlined />} 
+                        onClick={() => navigate('/dashboard')}
+                        className={styles.backBtn}
+                    >
+                        Quay lại Dashboard
+                    </Button>
+                    <div className={styles.titleSection}>
+                        <h1>Hạn nộp sắp tới</h1>
+                        <p>Danh sách bài tập chưa nộp sắp xếp theo thời gian</p>
                     </div>
+                </div>
 
-                    <div className={styles.metrics}>
-                        <div className={styles.metricItem}>
-                            <span>Tổng cần xử lý</span>
-                            <strong>{stats.total}</strong>
-                        </div>
-                        <div className={styles.metricItem}>
-                            <span>Trong 24 giờ</span>
-                            <strong>{stats.in24h}</strong>
-                        </div>
-                        <div className={styles.metricItem}>
-                            <span>Trong 7 ngày</span>
-                            <strong>{stats.in7d}</strong>
-                        </div>
+                <div className={styles.metricsContainer}>
+                    <div className={styles.metricCard}>
+                        <div className={styles.metricValue}>{stats.total}</div>
+                        <div className={styles.metricLabel}>Tổng bài tập</div>
                     </div>
-                </Card>
+                    <div className={styles.metricCard}>
+                        <div className={`${styles.metricValue} ${styles.urgent}`}>{stats.in24h}</div>
+                        <div className={styles.metricLabel}>Trong 24h tới</div>
+                    </div>
+                    <div className={styles.metricCard}>
+                        <div className={styles.metricValue}>{stats.in7d}</div>
+                        <div className={styles.metricLabel}>Trong 7 ngày</div>
+                    </div>
+                </div>
 
                 <Card className={styles.filterCard}>
                     <Input
@@ -232,51 +235,59 @@ const UpcomingDeadlines = () => {
                 </Card>
 
                 <Spin spinning={isLoading}>
-                    {filteredAssignments.length === 0 ? (
-                        <Card className={styles.emptyCard}>
-                            <Empty
-                                description="Không có bài tập phù hợp với bộ lọc"
-                                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                            />
-                        </Card>
-                    ) : (
-                        <div className={styles.deadlineGrid}>
-                            {filteredAssignments.map((assignment, index) => {
-                                const tone = getDeadlineTone(assignment.dueDate);
-                                return (
-                                    <Card key={`${assignment.id || assignment.title}-${index}`} className={styles.deadlineCard}>
-                                        <div className={`${styles.cardHead} ${styles[tone]}`}>
-                                            <Tag color={tone === 'urgent' ? 'red' : tone === 'warning' ? 'orange' : 'blue'}>
-                                                {tone === 'urgent' ? 'Khẩn' : tone === 'warning' ? 'Ưu tiên' : 'Bình thường'}
-                                            </Tag>
-                                            <span>{assignment.dueDate?.isValid() ? assignment.dueDate.format('DD/MM/YYYY HH:mm') : 'Chưa có hạn'}</span>
+                    <div className={styles.contentSection}>
+                        {filteredAssignments.length === 0 ? (
+                            <div className={styles.emptyState}>
+                                <Empty
+                                    description="Tuyệt vời! Không còn bài tập nào sắp hết hạn."
+                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                />
+                            </div>
+                        ) : (
+                            <div className={styles.deadlineGrid}>
+                                {filteredAssignments.map((assignment, index) => {
+                                    const tone = getDeadlineTone(assignment.dueDate);
+                                    return (
+                                        <div key={`${assignment.id || assignment.title}-${index}`} className={styles.deadlineCard}>
+                                            <div className={styles.cardHeader}>
+                                                <Tag color={tone === 'urgent' ? 'red' : tone === 'warning' ? 'orange' : 'blue'} className={styles.statusTag}>
+                                                    {tone === 'urgent' ? 'Khẩn cấp' : tone === 'warning' ? 'Sắp tới hạn' : 'Đang mở'}
+                                                </Tag>
+                                                <span className={styles.dateText}>
+                                                    {assignment.dueDate?.isValid() ? assignment.dueDate.format('HH:mm - DD/MM') : '---'}
+                                                </span>
+                                            </div>
+                                            
+                                            <div className={styles.cardBody}>
+                                                <h3 className={styles.assignmentTitle}>{assignment.title || 'Bài tập'}</h3>
+                                                <p className={styles.courseName}>{assignment.course?.courseName || 'Môn học'}</p>
+                                                
+                                                <div className={`${styles.timeLeft} ${styles[tone]}`}>
+                                                    <ClockCircleOutlined />
+                                                    <span>{getTimeLeftText(assignment.dueDate)}</span>
+                                                </div>
+                                            </div>
+
+                                            <div className={styles.cardFooter}>
+                                                <Button
+                                                    type="primary"
+                                                    danger
+                                                    block
+                                                    onClick={() => {
+                                                        if (!assignment.id || !assignment.classId) return;
+                                                        navigate(`/classes/${assignment.classId}/assignments/${assignment.id}`);
+                                                    }}
+                                                    className={styles.submitBtn}
+                                                >
+                                                    Nộp bài ngay
+                                                </Button>
+                                            </div>
                                         </div>
-
-                                        <h3>{assignment.title || 'Bài tập chưa đặt tên'}</h3>
-                                        <p>{assignment.course?.courseName || 'Môn học chưa xác định'}</p>
-
-                                        <div className={styles.timeLeft}>
-                                            <ClockCircleOutlined />
-                                            <span>{getTimeLeftText(assignment.dueDate)}</span>
-                                        </div>
-
-                                        <Button
-                                            type="primary"
-                                            danger
-                                            icon={<ArrowRightOutlined />}
-                                            disabled={!assignment.id || !assignment.classId}
-                                            onClick={() => {
-                                                if (!assignment.id || !assignment.classId) return;
-                                                navigate(`/classes/${assignment.classId}/assignments/${assignment.id}`);
-                                            }}
-                                        >
-                                            Đi nộp bài
-                                        </Button>
-                                    </Card>
-                                );
-                            })}
-                        </div>
-                    )}
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
                 </Spin>
             </div>
         </MainLayout>

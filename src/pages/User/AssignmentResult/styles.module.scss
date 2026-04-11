@@ -218,44 +218,78 @@
         margin-bottom: 16px;
     }
 
+.fileList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
     .fileItem {
         display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: 12px;
-        padding: 12px;
-        background: #f7fafc;
-        border-radius: 10px;
-        border: 1px solid #edf2f7;
+        background: #f8fafc;
+        padding: 12px 16px;
+        border-radius: 12px;
+        transition: all 0.2s;
 
-        .icon {
-            color: #3182ce;
-            font-size: 18px;
+        &:hover {
+            background: #f1f5f9;
         }
 
-        .info {
+        .fileInfo {
+            display: flex;
+            align-items: center;
+            gap: 16px;
             flex: 1;
+            min-width: 0;
 
-            .name {
-                font-weight: 600;
-                font-size: 13px;
-                color: #2d3748;
+            .fileIcon {
+                width: 44px;
+                height: 44px;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 20px;
+                flex-shrink: 0;
             }
 
-            .meta {
-                font-size: 11px;
-                color: #a0aec0;
+            .fileMeta {
+                flex: 1;
+                min-width: 0;
+
+                .fileName {
+                    font-weight: 600;
+                    color: #2d3748;
+                    font-size: 14px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+                .fileSize {
+                    font-size: 12px;
+                    color: #718096;
+                    margin-top: 2px;
+                }
             }
         }
 
-        .download {
-            color: #cbd5e0;
+        .downloadBtn {
+            font-size: 18px;
+            color: #a0aec0;
             cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
 
             &:hover {
                 color: #b71c1c;
+                background: white;
             }
         }
     }
+}
 }
 
 .rightCol {
@@ -541,3 +575,176 @@
         font-size: 12px;
     }
 }
+
+/* ── Code Preview ── */
+.codePreview {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f8fafc;
+    margin-top: 12px;
+}
+
+.codeHeader {
+    padding: 8px 16px;
+    background: #edf2f7;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 11px;
+    font-weight: 700;
+    color: #4a5568;
+    text-transform: uppercase;
+}
+
+.codeBackground {
+    max-height: 350px;
+    overflow: auto;
+    background: #1a202c;
+}
+
+.preCode {
+    margin: 0;
+    padding: 12px 0;
+    font-family: 'Fira Code', 'Consolas', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #e2e8f0;
+}
+
+.codeLine {
+    display: flex;
+    padding: 0 12px;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+}
+
+.lineNumber {
+    width: 32px;
+    color: #4b5563;
+    user-select: none;
+    text-align: right;
+    padding-right: 12px;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    margin-right: 12px;
+}
+
+.lineText {
+    flex: 1;
+    white-space: pre;
+}
+
+
+/* ── AI Structured Feedback ── */
+.aiStructuredBody {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.aiSummary {
+    padding: 16px;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 12px;
+    color: #0369a1;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.aiSection {
+    margin-bottom: 8px;
+}
+
+.aiSectionTitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #1e293b;
+
+    &.pros {
+        color: #166534;
+    }
+
+    &.cons {
+        color: #991b1b;
+    }
+}
+
+.aiErrorList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.aiErrorItem {
+    padding: 16px;
+    background: #fff;
+    border: 1px solid #fee2e2;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.aiErrorHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.aiLocation {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    background: #f1f5f9;
+    color: #475569;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.aiIssue {
+    font-size: 14px;
+    font-weight: 600;
+    color: #b91c1c;
+    flex: 1;
+}
+
+.aiSuggestion {
+    display: flex;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px dashed #fecaca;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.aiStrengthItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #f0fdf4;
+    border: 1px solid #dcfce7;
+    border-radius: 10px;
+    color: #166534;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.aiIconSuccess {
+    color: #22c55e;
+    margin-top: 3px;
+}
+
+.aiIconError {
+    color: #ef4444;
+}
+
+.aiIconSuggestion {
+    color: #3b82f6;
+    margin-top: 2px;
+}

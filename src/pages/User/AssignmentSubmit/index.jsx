@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Upload, Table, Tag, Modal, message } from 'antd';
+import { Button, Upload, Tag, Modal, message } from 'antd';
 import {
     ArrowLeftOutlined,
     FilePdfOutlined,
@@ -15,6 +15,7 @@ import {
     CloudUploadOutlined,
     EyeOutlined,
 } from '@ant-design/icons';
+import { getFilePresentation, getFileNameFromUrl } from '@/utils/filePresentation';
 import { useNavigate, useParams } from 'react-router-dom';
 import clsx from 'clsx';
 import dayjs from 'dayjs';
@@ -35,7 +36,7 @@ const AssignmentSubmit = () => {
     const { mySubmissions, isLoading: isSubmissionsLoading } = useMySubmissions();
     const { submitAssignment, isSubmitting } = useStudentSubmissions(assignmentId);
 
-    const [fileToUpload, setFileToUpload] = useState(null);
+    const [fileList, setFileList] = useState([]);
     const [previewOpen, setPreviewOpen] = useState(false);
 
     const submission = React.useMemo(() => {
@@ -80,95 +81,64 @@ const AssignmentSubmit = () => {
         return () => clearInterval(interval);
     }, [displayData.dueDate]);
 
-    const historyData = submission ? [
-        {
-            key: submission.id || submission._id,
-            fileName: submission.fileUrl ? decodeURIComponent(submission.fileUrl.split('/').pop().split('?')[0]) : 'Bài nộp',
-            submitTime: dayjs(submission.createdAt).format('DD/MM/YYYY - HH:mm'),
-            size: '-',
-            status: 'success',
-            fileUrl: submission.fileUrl
-        }
-    ] : [];
-
-    const columns = [
-        {
-            title: 'Tên File',
-            dataIndex: 'fileName',
-            key: 'fileName',
-            render: (text) => (
-                <div className={styles.fileCell}>
-                    {text.endsWith('.zip') ? (
-                        <FileZipOutlined className={styles.icon} />
-                    ) : (
-                        <FileTextOutlined className={styles.icon} />
-                    )}
-                    {text}
-                </div>
-            ),
-        },
-        {
-            title: 'Thời gian nộp',
-            dataIndex: 'submitTime',
-            key: 'submitTime',
-        },
-        {
-            title: 'Kích thước',
-            dataIndex: 'size',
-            key: 'size',
-        },
-        {
-            title: 'Trạng thái',
-            dataIndex: 'status',
-            key: 'status',
-            render: () => (
-                <Tag color="success" style={{ borderRadius: '4px' }}>Đã tải lên</Tag>
-            ),
-        },
-        {
-            title: 'Hành động',
-            key: 'action',
-            render: (_, record) => (
-                <div className={styles.actionCell}>
-                    <span className={styles.download} onClick={() => window.open(record.fileUrl, '_blank')} style={{ cursor: 'pointer', color: '#3182ce' }}>Tải xuống</span>
-                </div>
-            ),
-        },
-    ];
+    const historyData = React.useMemo(() => {
+        if (!submission) return [];
+        const fileUrls = submission.attachments || submission.fileUrls || (submission.fileUrl ? [submission.fileUrl] : []);
+        return fileUrls.map((url, index) => {
+            const fileName = url ? getFileNameFromUrl(url) : `File đính kèm ${index + 1}`;
+            return {
+                key: `${submission.id || submission._id || 'sub'}-${index}`,
+                fileName: fileName,
+                submitTime: dayjs(submission.createdAt).format('DD/MM/YYYY - HH:mm'),
+                size: '-',
+                status: 'success',
+                fileUrl: url
+            };
+        });
+    }, [submission]);
 
     const handleBack = () => {
         navigate(`/classes/${id}?tab=assignments`);
     };
 
     const uploadProps = {
-        name: 'file',
-        multiple: false,
+        name: 'files',
+        multiple: true,
         beforeUpload: (file) => {
             const isLt5M = file.size / 1024 / 1024 < 5;
             if (!isLt5M) {
-                message.error('File nộp phải nhỏ hơn 5MB!');
+                message.error(`${file.name} vượt quá 5MB!`);
                 return Upload.LIST_IGNORE;
             }
-            setFileToUpload(file);
+            if (fileList.length >= 10) {
+                message.error('Chỉ được nộp tối đa 10 file!');
+                return Upload.LIST_IGNORE;
+            }
+            setFileList(prev => [...prev, file]);
             return false;
         },
-        onRemove: () => {
-            setFileToUpload(null);
+        onRemove: (file) => {
+            setFileList(prev => prev.filter(f => f.uid !== file.uid));
         },
-        maxCount: 1,
-        fileList: fileToUpload ? [fileToUpload] : [],
+        maxCount: 10,
+        fileList: fileList,
     };
 
     const handleSubmit = async () => {
-        if (!fileToUpload) {
-            message.warning('Vui lòng chọn file để nộp!');
+        if (fileList.length === 0) {
+            message.warning('Vui lòng chọn ít nhất một file để nộp!');
             return;
         }
         try {
             const formData = new FormData();
-            formData.append('file', fileToUpload);
+            
+            fileList.forEach(file => {
+                const targetFile = file.originFileObj || file;
+                formData.append('files', targetFile);
+            });
+            
             await submitAssignment(formData);
-            setFileToUpload(null);
+            setFileList([]);
             message.success('Nộp bài thành công! AI đang chấm điểm...');
         } catch (error) {
             message.error(error.response?.data?.message || error?.message || 'Lỗi khi nộp bài');
@@ -186,7 +156,6 @@ const AssignmentSubmit = () => {
                         <div className={styles.titleInfo}>
                             <div className={styles.titleRow}>
                                 <h1>{displayData.title || 'Đang tải...'}</h1>
-                                <span className={styles.classCode}>{id}</span>
                             </div>
                             <div className={styles.breadcrumbs}>
                                 <span>Lớp học phần</span>
@@ -207,20 +176,38 @@ const AssignmentSubmit = () => {
                                 </div>
 
                                 {displayData.fileUrl && (
-                                    <div style={{ padding: '12px 16px', background: '#f7fafc', border: '1px solid #e2e8f0', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 16, marginTop: 16 }}>
-                                        <div style={{ width: 40, height: 40, background: '#ebf8ff', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3182ce', fontSize: 22 }}>
-                                            <FilePdfOutlined />
-                                        </div>
-                                        <div style={{ flex: 1, minWidth: 0 }}>
-                                            <div style={{ fontWeight: 600, color: '#2d3748', fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                {decodeURIComponent(displayData.fileUrl.split('/').pop().split('?')[0])}
-                                            </div>
-                                            <div style={{ fontSize: 12, color: '#718096' }}>Tài liệu / Yêu cầu đề bài</div>
-                                        </div>
-                                        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-                                            <Button icon={<EyeOutlined />} size="small" onClick={() => setPreviewOpen(true)}>Xem trước</Button>
-                                            <Button icon={<DownloadOutlined />} size="small" type="primary" onClick={() => window.open(displayData.fileUrl, '_blank')}>Tải xuống</Button>
-                                        </div>
+                                    <div className={styles.fileList} style={{ marginTop: 16 }}>
+                                        {(() => {
+                                            const fileName = getFileNameFromUrl(displayData.fileUrl);
+                                            const pres = getFilePresentation(fileName);
+                                            return (
+                                                <div className={styles.fileItem} style={{ border: '1px solid #e2e8f0' }}>
+                                                    <div className={styles.fileInfo}>
+                                                        <div className={styles.fileIcon} style={{ background: pres.iconBg, color: pres.iconColor }}>
+                                                            {pres.icon}
+                                                        </div>
+                                                        <div className={styles.fileMeta}>
+                                                            <div className={styles.fileName}>{fileName}</div>
+                                                            <div className={styles.fileSize}>
+                                                                {(fileName.split('.').pop() || 'file').toUpperCase()} • Tài liệu / Yêu cầu đề bài
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div style={{ display: 'flex', gap: 6 }}>
+                                                        <Button
+                                                            icon={<EyeOutlined />}
+                                                            size="small"
+                                                            onClick={() => setPreviewOpen(true)}
+                                                            style={{ border: 'none', background: 'transparent', color: '#64748b' }}
+                                                        />
+                                                        <DownloadOutlined
+                                                            className={styles.downloadBtn}
+                                                            onClick={() => window.open(displayData.fileUrl, '_blank')}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            );
+                                        })()}
                                     </div>
                                 )}
 
@@ -244,8 +231,8 @@ const AssignmentSubmit = () => {
                                 <h3>Khu vực nộp bài</h3>
                                 {!submission ? (
                                     <>
-                                        <div className={styles.uploadArea}>
-                                            <Dragger {...uploadProps}>
+                                        <div className={clsx(styles.uploadArea, timeLeft === 'Overdue' && styles.disabled)}>
+                                            <Dragger {...uploadProps} disabled={timeLeft === 'Overdue'}>
                                                 <div className={styles.uploadIcons}>
                                                     <FileTextOutlined />
                                                     <FolderOpenOutlined />
@@ -255,22 +242,24 @@ const AssignmentSubmit = () => {
                                                     Kéo thả file vào đây hoặc <span>chọn file</span>
                                                 </p>
                                                 <p className={styles.uploadHint}>
-                                                    Hỗ trợ: .pdf, .docx, .cpp, .zip, .txt...
+                                                    Hỗ trợ: PDF, DOCX, CPP, ZIP, JS, PY... (Tối đa 10 file)
                                                 </p>
                                                 <div className={styles.limitTag}>
-                                                    <WarningOutlined /> Dung lượng tối đa: 5MB
+                                                    <WarningOutlined /> 5MB mỗi file • Tối đa 10 file
                                                 </div>
                                             </Dragger>
                                         </div>
                                         <div className={styles.actionRow}>
                                             <Button
                                                 type="primary"
-                                                danger
+                                                danger={timeLeft !== 'Overdue'}
                                                 icon={<CloudUploadOutlined />}
                                                 onClick={handleSubmit}
                                                 loading={isSubmitting}
+                                                disabled={isSubmitting || timeLeft === 'Overdue'}
+                                                style={timeLeft === 'Overdue' ? { background: '#f5f5f5', color: '#8c8c8c', borderColor: '#d9d9d9' } : {}}
                                             >
-                                                Nộp bài
+                                                {timeLeft === 'Overdue' ? 'Đã quá hạn nộp' : 'Nộp bài'}
                                             </Button>
                                             <Button onClick={handleBack} disabled={isSubmitting}>
                                                 Hủy
@@ -378,12 +367,34 @@ const AssignmentSubmit = () => {
 
                     <div className={styles.historySection}>
                         <h3>Lịch sử nộp bài</h3>
-                        <Table
-                            columns={columns}
-                            dataSource={historyData}
-                            pagination={false}
-                            className={styles.historyTable}
-                        />
+                        <div className={styles.fileList} style={{ marginTop: 16 }}>
+                            {historyData.length === 0 ? (
+                                <div style={{ color: '#999', textAlign: 'center', padding: '24px 0' }}>Chưa có bài nộp nào.</div>
+                            ) : (
+                                historyData.map((item, idx) => {
+                                    const pres = getFilePresentation(item.fileName);
+                                    return (
+                                        <div className={styles.fileItem} key={item.key || idx}>
+                                            <div className={styles.fileInfo}>
+                                                <div className={styles.fileIcon} style={{ background: pres.iconBg, color: pres.iconColor }}>
+                                                    {pres.icon}
+                                                </div>
+                                                <div className={styles.fileMeta}>
+                                                    <div className={styles.fileName}>{item.fileName}</div>
+                                                    <div className={styles.fileSize}>
+                                                        {(item.fileName.split('.').pop() || 'file').toUpperCase()} • Đã tải lên {item.submitTime}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <DownloadOutlined
+                                                className={styles.downloadBtn}
+                                                onClick={() => window.open(item.fileUrl, '_blank')}
+                                            />
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
                     </div>
                 </div>
             </MainLayout>

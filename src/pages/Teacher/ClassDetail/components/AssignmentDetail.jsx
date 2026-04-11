@@ -11,23 +11,26 @@ import {
     MessageOutlined,
     SearchOutlined,
     StarOutlined,
+    EyeOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
-import { DeleteOutlined, FileTextOutlined, EyeOutlined, RobotOutlined } from '@ant-design/icons';
+import { DeleteOutlined, RobotOutlined } from '@ant-design/icons';
+import { getFilePresentation, getFileNameFromUrl } from '@/utils/filePresentation';
+
 import { useAssignmentDetail } from '@/hooks/useCourseAssignment';
 import { useAssignmentSubmissions, useSubmissionDetail } from '@/hooks/useSubmission';
+import { useCourseStudents } from '@/hooks/useCourseStudent';
 import { Modal, Form, DatePicker, message, Popconfirm, Spin } from 'antd';
 import dayjs from 'dayjs';
 import styles from '../styles.module.scss';
 
-const PAGE_SIZE = 4;
+const PAGE_SIZE = 10;
 
 const STUDENT_FILTERS = [
     { key: 'all', label: 'Tất cả' },
     { key: 'submitted', label: 'Đã nộp' },
     { key: 'missing', label: 'Chưa nộp' },
-    { key: 'graded', label: 'Đã chấm' },
-    { key: 'feedback', label: 'Phản hồi', hasDot: true },
+    { key: 'feedback', label: 'Phản hồI', hasDot: true },
 ];
 
 const COLORS = ['#e53e3e', '#d69e2e', '#805ad5', '#3182ce', '#38b2ac', '#ed64a6', '#48bb78', '#f6ad55', '#c53030', '#5a67d8'];
@@ -41,7 +44,7 @@ const getInitials = (name) => {
 
 const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
     const navigate = useNavigate();
-    const { id } = useParams();
+    const { id: courseId } = useParams();
     const assignmentId = assignment.original._id || assignment.original.id;
 
     const {
@@ -55,10 +58,12 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
 
     const {
         submissions,
-        notSubmittedStudents,
         isSubmissionsLoading,
-        isNotSubmittedLoading
     } = useAssignmentSubmissions(assignmentId);
+
+    // Fetch all students in course to compare with submissions
+    const { data: courseStudentsData, isLoading: isStudentsLoading } = useCourseStudents(courseId, { limit: 1000 });
+    const courseStudents = (Array.isArray(courseStudentsData) ? courseStudentsData : courseStudentsData?.items || []).filter(item => !!item.student);
 
     const displayData = detailData || assignment.original;
 
@@ -71,21 +76,22 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
 
-    const groupCode = classInfo.groupCode || classInfo.code || 'D21CQCN01-B';
-    const classTitle = classInfo.title || 'Lập trình hướng đối tượng';
-    const semester = classInfo.semester || 'Học kỳ 1 - 2023-2024';
+    const groupCode = classInfo.groupCode || classInfo.code || 'TH036';
+    const classTitle = classInfo.title || 'LỚP TEST';
+    const semester = classInfo.semester || 'Học kỳ 1 - 2026';
 
     const mappedSubmissions = submissions.map((sub, i) => {
+        const studentInfo = sub.student;
         const hasFeedback = sub.feedbackStatus && sub.feedbackStatus !== 'NONE';
         const isPending = sub.feedbackStatus === 'PENDING';
 
         return {
             id: sub.id || sub._id,
-            studentId: sub.student?.id || sub.student?._id,
-            name: sub.student?.fullName || 'Không rõ',
-            initials: getInitials(sub.student?.fullName),
+            studentId: studentInfo?.id || studentInfo?._id,
+            name: studentInfo?.fullName || 'Không rõ',
+            initials: getInitials(studentInfo?.fullName),
             color: COLORS[i % COLORS.length],
-            msv: sub.student?.userCode || 'N/A',
+            msv: studentInfo?.userCode || 'N/A',
             status: hasFeedback ? 'feedback' : (sub.status === 'GRADED' ? 'graded' : 'submitted'),
             hasFeedback,
             isPending,
@@ -96,25 +102,33 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
         };
     });
 
+    // Determine who hasn't submitted by comparing course students and submissions
+    const submittedStudentIds = new Set(mappedSubmissions.map(s => String(s.studentId)));
+    
+    const mappedNotSubmitted = courseStudents
+        .filter(enrollment => !submittedStudentIds.has(String(enrollment.student?._id || enrollment.student?.id)))
+        .map((enrollment, i) => {
+            const stu = enrollment.student;
+            return {
+                id: `not-sub-${stu._id || stu.id}`,
+                studentId: stu._id || stu.id,
+                name: stu.fullName || 'Không rõ',
+                initials: getInitials(stu.fullName),
+                color: COLORS[(mappedSubmissions.length + i) % COLORS.length],
+                msv: stu.userCode || 'N/A',
+                status: 'missing',
+                hasFeedback: false,
+                score: null,
+                fileUrl: null
+            };
+        });
+
+    const allStudents = [...mappedSubmissions, ...mappedNotSubmitted];
+
     const truncateText = (text, maxLength) => {
         if (!text) return '';
         return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
     };
-
-    const mappedNotSubmitted = notSubmittedStudents.map((stu, i) => ({
-        id: `not-sub-${stu._id || stu.id}`,
-        studentId: stu._id || stu.id,
-        name: stu.fullName || 'Không rõ',
-        initials: getInitials(stu.fullName),
-        color: COLORS[(submissions.length + i) % COLORS.length],
-        msv: stu.userCode || 'N/A',
-        status: 'missing',
-        hasFeedback: false,
-        score: null,
-        fileUrl: null
-    }));
-
-    const allStudents = [...mappedSubmissions, ...mappedNotSubmitted];
 
     const feedbackCount = allStudents.filter(s => s.hasFeedback).length;
 
@@ -122,8 +136,10 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
         const matchSearch = s.name.toLowerCase().includes(search.toLowerCase()) ||
             s.msv.toLowerCase().includes(search.toLowerCase());
         if (!matchSearch) return false;
+        
         if (studentFilter === 'all') return true;
         if (studentFilter === 'feedback') return s.hasFeedback;
+        if (studentFilter === 'submitted') return (s.status === 'submitted' || s.status === 'graded' || s.status === 'feedback');
         return s.status === studentFilter;
     });
 
@@ -132,7 +148,7 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
     const statusBadge = (s) => {
         if (s.isPending) return <span className={`${styles.stBadge} ${styles.stFeedback}`}>ĐANG KHIẾU NẠI</span>;
         if (s.status === 'RESOLVED' || s.status === 'feedback') {
-            return <span className={`${styles.stBadge} ${styles.stGraded}`}>ĐÃ GIẢI QUYẾT</span>;
+            return <span className={`${styles.stBadge} ${styles.stGraded}`}>Đã giải quyết</span>;
         }
         if (s.status === 'graded') return <span className={`${styles.stBadge} ${styles.stGraded}`}>ĐÃ CHẤM</span>;
         if (s.status === 'submitted') return <span className={`${styles.stBadge} ${styles.stSubmitted}`}>ĐÃ NỘP</span>;
@@ -195,6 +211,15 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
         setIsEditModalOpen(true);
     };
 
+    if (isLoading || isSubmissionsLoading || isStudentsLoading) {
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 400 }}>
+                <Spin size="large" />
+                <div style={{ marginTop: 16, color: '#64748b' }}>Đang tải dữ liệu bài tập...</div>
+            </div>
+        );
+    }
+
     return (
         <div className={styles.adWrap}>
             <button className={styles.adBackBtn} onClick={onBack}>
@@ -248,7 +273,7 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
                         <StarOutlined /> Điểm tối đa: {displayData.maxScore || 10}
                     </span>
                     <span className={styles.adInfoItem}>
-                        <TeamOutlined /> Sĩ số: {classInfo.totalStudents || 45} Sinh viên
+                        <TeamOutlined /> Sĩ số: {allStudents.length} Sinh viên
                     </span>
                 </div>
 
@@ -258,33 +283,38 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
                     </p>
 
                     {displayData.fileUrl && (
-                        <div style={{ marginTop: 24, padding: '12px 16px', background: '#f7fafc', border: '1px solid #e2e8f0', borderRadius: 12, display: 'inline-flex', alignItems: 'center', gap: 16 }}>
-                            <div style={{ width: 44, height: 44, background: '#ebf8ff', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3182ce', fontSize: 24 }}>
-                                <FileTextOutlined />
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', maxWidth: 400 }}>
-                                <span style={{ fontWeight: 600, color: '#2d3748', fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                    {decodeURIComponent(displayData.fileUrl.split('/').pop().split('?')[0]) || 'Tệp đính kèm.pdf'}
-                                </span>
-                                <span style={{ fontSize: 12, color: '#718096' }}>Tài liệu tham khảo / Yêu cầu đề bài</span>
-                            </div>
-                            <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
-                                <Button
-                                    icon={<EyeOutlined />}
-                                    onClick={() => setPreviewOpen(true)}
-                                    style={{ borderRadius: 6 }}
-                                >
-                                    Xem trước
-                                </Button>
-                                <Button
-                                    type="primary"
-                                    icon={<DownloadOutlined />}
-                                    onClick={() => window.open(displayData.fileUrl, '_blank')}
-                                    style={{ borderRadius: 6, background: '#2b6cb0', borderColor: '#2b6cb0' }}
-                                >
-                                    Tải xuống
-                                </Button>
-                            </div>
+                        <div className={styles.fileList} style={{ marginTop: 24 }}>
+                            {(() => {
+                                const fileName = getFileNameFromUrl(displayData.fileUrl);
+                                const pres = getFilePresentation(fileName);
+                                return (
+                                    <div className={styles.fileItem} style={{ border: '1px solid #e2e8f0', background: '#f8fafc' }}>
+                                        <div className={styles.fileInfo}>
+                                            <div className={styles.fileIcon} style={{ background: pres.iconBg, color: pres.iconColor }}>
+                                                {pres.icon}
+                                            </div>
+                                            <div className={styles.fileMeta}>
+                                                <div className={styles.fileName}>{fileName}</div>
+                                                <div className={styles.fileSize}>
+                                                    {(fileName.split('.').pop() || 'file').toUpperCase()} • Tài liệu tham khảo / Yêu cầu đề bài
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: 6 }}>
+                                            <Button
+                                                icon={<EyeOutlined />}
+                                                size="small"
+                                                onClick={() => setPreviewOpen(true)}
+                                                style={{ border: 'none', background: 'transparent', color: '#64748b' }}
+                                            />
+                                            <DownloadOutlined
+                                                className={styles.downloadBtn}
+                                                onClick={() => window.open(displayData.fileUrl, '_blank')}
+                                            />
+                                        </div>
+                                    </div>
+                                );
+                            })()}
                         </div>
                     )}
                 </div>
@@ -293,19 +323,23 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
             <div className={styles.adTableCard}>
                 <div className={styles.adTableHeader}>
                     <div className={styles.adStudentFilters}>
-                        {STUDENT_FILTERS.map(f => (
-                            <button
-                                key={f.key}
-                                className={`${styles.adFilterBtn} ${studentFilter === f.key ? styles.adFilterBtnActive : ''}`}
-                                onClick={() => { setStudentFilter(f.key); setCurrentPage(1); }}
-                            >
-                                {f.label}
-                                {f.key === 'all' && ` (${allStudents.length})`}
-                                {f.hasDot && feedbackCount > 0 && (
-                                    <span className={styles.adFeedbackDot} />
-                                )}
-                            </button>
-                        ))}
+                        {STUDENT_FILTERS.map(f => {
+                            let count = 0;
+                            if (f.key === 'all') count = allStudents.length;
+                            else if (f.key === 'submitted') count = allStudents.filter(s => s.status === 'submitted' || s.status === 'graded' || s.status === 'feedback').length;
+                            else if (f.key === 'missing') count = allStudents.filter(s => s.status === 'missing').length;
+                            else if (f.key === 'feedback') count = feedbackCount;
+
+                            return (
+                                <button
+                                    key={f.key}
+                                    className={`${styles.adFilterBtn} ${studentFilter === f.key ? styles.adFilterBtnActive : ''}`}
+                                    onClick={() => { setStudentFilter(f.key); setCurrentPage(1); }}
+                                >
+                                    {f.label} ({count})
+                                </button>
+                            );
+                        })}
                     </div>
                     <Input
                         prefix={<SearchOutlined />}
@@ -365,26 +399,28 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
                                 </td>
                                 <td className={styles.adDownloadCell}>
                                     {s.status !== 'missing' ? (
-                                        <DownCircleOutlined
-                                            className={styles.adDownIcon}
-                                            style={{ cursor: 'pointer', fontSize: 20, color: '#3182ce' }}
+                                        <Button
+                                            type="text"
+                                            size="small"
+                                            icon={<DownloadOutlined style={{ fontSize: 20 }} />}
+                                            style={{ color: '#b71c1c', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}
                                             onClick={() => window.open(s.fileUrl, '_blank')}
-                                            title="Tải bài làm"
+                                            title="Tải xuống bài làm"
                                         />
                                     ) : (
-                                        <span className={styles.adNoFile}>○</span>
+                                        <span style={{ color: '#cbd5e0' }}>—</span>
                                     )}
                                 </td>
-                                <td>
+                                <td className={styles.adActionCell}>
                                     {s.status !== 'missing' ? (
-                                        <div style={{ display: 'flex', gap: 8 }}>
+                                        <>
                                             <Button
                                                 size="small"
                                                 type={s.status === 'graded' ? 'default' : 'primary'}
                                                 danger={s.status === 'graded'}
                                                 icon={<EditOutlined />}
                                                 className={styles.adGradeBtn}
-                                                onClick={() => navigate(`/teacher/classes/${id}/assignments/${assignmentId}/grade-edit/${s.id}`)}
+                                                onClick={() => navigate(`/teacher/classes/${courseId}/assignments/${assignmentId}/grade-edit/${s.id}`)}
                                             >
                                                 {s.status === 'graded' ? 'SỬA ĐIỂM' : 'CHẤM ĐIỂM'}
                                             </Button>
@@ -400,7 +436,7 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
                                                     AI Chấm
                                                 </Button>
                                             )}
-                                        </div>
+                                        </>
                                     ) : null}
                                 </td>
                             </tr>
@@ -442,7 +478,7 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
                         <Input />
                     </Form.Item>
                     <Form.Item label="Thông tin bài tập" name="description">
-                        <Input.TextArea rows={4} />
+                        <Input.TextArea className={styles.pinkInput} />
                     </Form.Item>
                     <div style={{ display: 'flex', gap: 16 }}>
                         <Form.Item label="Hạn nộp bài" name="deadline" style={{ flex: 1 }}>

@@ -20,6 +20,8 @@ const AssignmentsTab = () => {
     const { id: classId } = useParams();
     const [filter, setFilter] = useState('all');
     const [sortBy, setSortBy] = useState('newest');
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 5;
 
     const { assignments: rawAssignments, isLoading: isAssignmentsLoading } = useCourseAssignments(classId);
     const { mySubmissions, isLoading: isSubmissionsLoading } = useMySubmissions();
@@ -64,7 +66,9 @@ const AssignmentsTab = () => {
         if (filter === 'all') {
             base = assignments;
         } else if (filter === 'opening') {
-            base = assignments.filter(item => item.status === 'opening' || item.status === 'overdue');
+            base = assignments.filter(item => item.status === 'opening');
+        } else if (filter === 'submitted') {
+            base = assignments.filter(item => item.status === 'submitted' || item.status === 'graded');
         } else {
             base = assignments.filter(item => item.status === filter);
         }
@@ -84,6 +88,16 @@ const AssignmentsTab = () => {
         });
     }, [filter, assignments, sortBy]);
 
+    const paginatedAssignments = useMemo(() => {
+        const startIndex = (currentPage - 1) * pageSize;
+        return filteredAssignments.slice(startIndex, startIndex + pageSize);
+    }, [filteredAssignments, currentPage, pageSize]);
+
+    const handleFilterChange = (newFilter) => {
+        setFilter(newFilter);
+        setCurrentPage(1);
+    };
+
     const handleAction = (item) => {
         if (item.status === 'opening' || item.status === 'overdue') {
             navigate(`/classes/${classId}/assignments/${item.id}`);
@@ -96,9 +110,9 @@ const AssignmentsTab = () => {
 
     const counts = {
         all: assignments.length,
-        opening: assignments.filter(a => a.status === 'opening' || a.status === 'overdue').length,
-        submitted: assignments.filter(a => a.status === 'submitted').length,
-        graded: assignments.filter(a => a.status === 'graded').length,
+        opening: assignments.filter(a => a.status === 'opening').length,
+        submitted: assignments.filter(a => a.status === 'submitted' || a.status === 'graded').length,
+        overdue: assignments.filter(a => a.status === 'overdue').length,
     };
 
     if (isAssignmentsLoading || isSubmissionsLoading) {
@@ -113,7 +127,7 @@ const AssignmentsTab = () => {
                         type={filter === 'all' ? 'primary' : 'default'}
                         danger={filter === 'all'}
                         className={styles.filterButton}
-                        onClick={() => setFilter('all')}
+                        onClick={() => handleFilterChange('all')}
                     >
                         Tất cả ({counts.all})
                     </Button>
@@ -121,7 +135,7 @@ const AssignmentsTab = () => {
                         type={filter === 'opening' ? 'primary' : 'default'}
                         danger={filter === 'opening'}
                         className={styles.filterButton}
-                        onClick={() => setFilter('opening')}
+                        onClick={() => handleFilterChange('opening')}
                     >
                         Đang mở ({counts.opening})
                     </Button>
@@ -129,17 +143,17 @@ const AssignmentsTab = () => {
                         type={filter === 'submitted' ? 'primary' : 'default'}
                         danger={filter === 'submitted'}
                         className={styles.filterButton}
-                        onClick={() => setFilter('submitted')}
+                        onClick={() => handleFilterChange('submitted')}
                     >
                         Đã nộp ({counts.submitted})
                     </Button>
                     <Button
-                        type={filter === 'graded' ? 'primary' : 'default'}
-                        danger={filter === 'graded'}
+                        type={filter === 'overdue' ? 'primary' : 'default'}
+                        danger={filter === 'overdue'}
                         className={styles.filterButton}
-                        onClick={() => setFilter('graded')}
+                        onClick={() => handleFilterChange('overdue')}
                     >
-                        Đã chấm ({counts.graded})
+                        Quá hạn ({counts.overdue})
                     </Button>
                 </div>
                 <Select
@@ -154,7 +168,7 @@ const AssignmentsTab = () => {
             </div>
 
             <div className={styles.assignmentList}>
-                {filteredAssignments.map(item => (
+                {paginatedAssignments.map(item => (
                     <div key={item.id} className={styles.assignItem}>
                         <div className={styles.assignIcon}>
                             {item.type === 'quiz' ? <FormOutlined /> : <BookOutlined />}
@@ -184,9 +198,14 @@ const AssignmentsTab = () => {
                                 )}
                             </div>
                             <div className={styles.assignAction}>
-                                {(item.status === 'opening' || item.status === 'overdue') && (
-                                    <Button type="primary" danger={item.status === 'opening'} onClick={() => handleAction(item)}>
+                                {item.status === 'opening' && (
+                                    <Button type="primary" onClick={() => handleAction(item)}>
                                         Làm bài ngay
+                                    </Button>
+                                )}
+                                {item.status === 'overdue' && (
+                                    <Button onClick={() => handleAction(item)}>
+                                        Xem chi tiết
                                     </Button>
                                 )}
                                 {item.status === 'submitted' && (
@@ -207,9 +226,16 @@ const AssignmentsTab = () => {
 
             <footer className={styles.footer}>
                 <div className={styles.paginationInfo}>
-                    Hiển thị {filteredAssignments.length > 0 ? 1 : 0} đến {filteredAssignments.length} của {filteredAssignments.length} bài tập
+                    Hiển thị {filteredAssignments.length > 0 ? (currentPage - 1) * pageSize + 1 : 0} đến {Math.min(currentPage * pageSize, filteredAssignments.length)} của {filteredAssignments.length} bài tập
                 </div>
-                <Pagination defaultCurrent={1} total={filteredAssignments.length} pageSize={5} size="middle" />
+                <Pagination
+                    current={currentPage}
+                    total={filteredAssignments.length}
+                    pageSize={pageSize}
+                    onChange={setCurrentPage}
+                    size="middle"
+                    showSizeChanger={false}
+                />
             </footer>
         </div>
     );

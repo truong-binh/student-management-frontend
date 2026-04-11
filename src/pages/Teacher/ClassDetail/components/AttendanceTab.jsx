@@ -19,7 +19,8 @@ const AttendanceTab = () => {
     const [selectedWeek, setSelectedWeek] = useState(1);
     const [currentPage, setCurrentPage] = useState(1);
 
-    const { attendance, isLoading, refetch } = useClassAttendance(courseId, selectedWeek);
+    const { attendance: rawAttendance = [], isLoading, refetch } = useClassAttendance(courseId, selectedWeek);
+    const attendance = rawAttendance.filter(item => !!item.student);
     const { importAttendance, isLoading: isImporting } = useAttendanceImport(courseId);
 
     const total = attendance.length;
@@ -67,7 +68,7 @@ const AttendanceTab = () => {
             'PRESENT': { text: 'Có mặt', color: '#2f855a' },
             'ABSENT': { text: 'Vắng', color: '#e53e3e' },
             'EXCUSED': { text: 'Có phép', color: '#c05621' },
-            'LATE': { text: 'Đi muộn', color: '#3182ce' },
+            'LATE': { text: 'Đi muộn', color: '#c05621' },
         };
         return map[status] || { text: status, color: '#4a5568' };
     };
@@ -161,7 +162,7 @@ const AttendanceTab = () => {
                                         <tr key={record._id}>
                                             <td>
                                                 <div className={styles.studentName}>
-                                                    <span className={styles.studentAvatar} style={{ background: '#3182ce' }}>
+                                                    <span className={styles.studentAvatar} style={{ background: '#b71c1c' }}>
                                                         {record.student?.fullName?.charAt(0)}
                                                     </span>
                                                     {record.student?.fullName}

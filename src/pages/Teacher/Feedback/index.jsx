@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Table, Select, message, Spin } from 'antd';
+import { Button, Table, Select, message, Spin, Avatar } from 'antd';
 import {
     CheckCircleOutlined,
     ArrowRightOutlined,
@@ -10,15 +10,13 @@ import {
     CalendarOutlined,
     UserOutlined,
     FileTextOutlined,
-    IdcardOutlined,
-    CalendarFilled,
-    TeamOutlined,
-    ExclamationCircleOutlined,
-    SendOutlined,
 } from '@ant-design/icons';
 import MainLayout from '@/layouts/User/MainLayout';
 import styles from './styles.module.scss';
 import clsx from 'clsx';
+import { useCourse } from '@/hooks/useCourse';
+import { useCourseAssignments } from '@/hooks/useCourseAssignment';
+import { useAssignmentFeedbacks, useAllTeacherFeedbacks } from '@/hooks/useSubmission';
 
 const { Option } = Select;
 
@@ -30,9 +28,17 @@ const teacherMenuItems = [
     { key: 'feedback', label: 'Phản hồi', icon: <MessageOutlined />, path: '/teacher/feedback' },
 ];
 
-import { useCourse } from '@/hooks/useCourse';
-import { useCourseAssignments } from '@/hooks/useCourseAssignment';
-import { useAssignmentFeedbacks, useAllTeacherFeedbacks } from '@/hooks/useSubmission';
+const COLORS = [
+    '#e53e3e', '#d69e2e', '#805ad5', '#3182ce', '#38b2ac', 
+    '#ed64a6', '#48bb78', '#f6ad55', '#c53030', '#5a67d8'
+];
+
+const getInitials = (name) => {
+    if (!name) return 'SV';
+    const parts = name.trim().split(' ');
+    if (parts.length === 1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};
 
 const TeacherFeedback = () => {
     const navigate = useNavigate();
@@ -70,24 +76,40 @@ const TeacherFeedback = () => {
         {
             title: 'Sinh viên',
             key: 'student',
-            render: (_, record) => (
-                <div className={styles.studentCell}>
-                    <span className={styles.feedbackIcon} style={{ background: '#3182ce' }}>
-                        <FileTextOutlined />
-                    </span>
-                    <div className={styles.studentName}>{record.student?.fullName || record.student?.username}</div>
-                </div>
-            ),
+            render: (_, record, index) => {
+                const name = record.student?.fullName || record.student?.username || 'Sinh viên';
+                const initials = getInitials(name);
+                const color = COLORS[index % COLORS.length];
+                return (
+                    <div className={styles.studentCell}>
+                        <div 
+                            className={styles.studentAvatar} 
+                            style={{ 
+                                background: color, 
+                                width: 32, 
+                                height: 32, 
+                                borderRadius: 8, 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontWeight: 600,
+                                fontSize: 12,
+                                marginRight: 12,
+                                flexShrink: 0
+                            }}
+                        >
+                            {initials}
+                        </div>
+                        <div className={styles.studentName}>{name}</div>
+                    </div>
+                );
+            },
         },
         {
             title: 'Mã SV',
             key: 'msv',
             render: (_, record) => <span className={styles.msvText}>{record.student?.userCode || '-'}</span>,
-        },
-        {
-            title: 'Lớp học',
-            key: 'classCode',
-            render: () => <span className={styles.classCode}>{courses.find(c => c._id === selectedCourseId)?.title || '-'}</span>,
         },
         {
             title: 'LỜI PHẢN HỒI',
@@ -128,7 +150,7 @@ const TeacherFeedback = () => {
                         icon={<ArrowRightOutlined />}
                         onClick={() => path && navigate(path)}
                         disabled={!path}
-                        style={{ fontWeight: 600, color: '#3182ce' }}
+                        style={{ fontWeight: 600, color: '#b71c1c' }}
                     >
                         Xem chi tiết
                     </Button>
@@ -137,9 +159,45 @@ const TeacherFeedback = () => {
         },
     ];
 
-
     const overviewColumns = [
-        ...columns.slice(0, 2),
+        {
+            title: 'Sinh viên',
+            key: 'student',
+            render: (_, record, index) => {
+                const name = record.student?.fullName || record.student?.username || 'Sinh viên';
+                const initials = getInitials(name);
+                const color = COLORS[index % COLORS.length];
+                return (
+                    <div className={styles.studentCell}>
+                        <div 
+                            className={styles.studentAvatar} 
+                            style={{ 
+                                background: color, 
+                                width: 32, 
+                                height: 32, 
+                                borderRadius: 8, 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontWeight: 600,
+                                fontSize: 12,
+                                marginRight: 12,
+                                flexShrink: 0
+                            }}
+                        >
+                            {initials}
+                        </div>
+                        <div className={styles.studentName}>{name}</div>
+                    </div>
+                );
+            },
+        },
+        {
+            title: 'Mã SV',
+            key: 'msv',
+            render: (_, record) => <span className={styles.msvText}>{record.student?.userCode || '-'}</span>,
+        },
         {
             title: 'Lớp / Bài tập',
             key: 'assignment',
@@ -152,7 +210,52 @@ const TeacherFeedback = () => {
                 </div>
             ),
         },
-        ...columns.slice(2),
+        {
+            title: 'LỜI PHẢN HỒI',
+            key: 'content',
+            render: (_, record) => (
+                <div className={styles.contentPreview}>
+                    {truncateText(record.studentFeedback?.content, 70)}
+                </div>
+            ),
+        },
+        {
+            title: 'TRẠNG THÁI',
+            key: 'status',
+            render: (_, record) => {
+                const isPending = record.feedbackStatus === 'PENDING';
+                return (
+                    <div className={clsx(styles.statusGroup, isPending ? styles.unreplied : styles.replied)}>
+                        <div className={styles.dot} />
+                        {isPending ? 'Chưa trả lời' : 'Đã trả lời'}
+                    </div>
+                );
+            },
+        },
+        {
+            title: '',
+            key: 'action',
+            render: (_, record) => {
+                const courseId = record.courseInfo?._id || record.courseInfo?.id || selectedCourseId;
+                const assignmentId = record.assignment?._id || record.assignment?.id
+                    || record.assignment;
+                const submissionId = record._id || record.id;
+                const path = courseId && assignmentId && submissionId
+                    ? `/teacher/classes/${courseId}/assignments/${assignmentId}/grade-edit/${submissionId}`
+                    : null;
+                return (
+                    <Button
+                        type="link"
+                        icon={<ArrowRightOutlined />}
+                        onClick={() => path && navigate(path)}
+                        disabled={!path}
+                        style={{ fontWeight: 600, color: '#b71c1c' }}
+                    >
+                        Xem chi tiết
+                    </Button>
+                );
+            },
+        },
     ];
 
     const renderListView = () => (
@@ -176,15 +279,6 @@ const TeacherFeedback = () => {
                         >
                             <CheckCircleOutlined style={{ marginRight: 6 }} /> Lọc theo lớp / bài tập
                         </div>
-                        {pageMode === 'overview' && (
-                            <div
-                                className={styles.filterTab}
-                                onClick={refetchAll}
-                                style={{ opacity: isAllLoading ? 0.6 : 1, pointerEvents: isAllLoading ? 'none' : 'auto' }}
-                            >
-                                Làm mới
-                            </div>
-                        )}
                     </div>
 
                     <div className={styles.filterTabs}>
@@ -258,8 +352,12 @@ const TeacherFeedback = () => {
                 </div>
 
                 <div className={styles.mobileFeedbackList}>
-                    {filtered.map((record) => {
+                    {filtered.map((record, index) => {
                         const isPending = record.feedbackStatus === 'PENDING';
+                        const name = record.student?.fullName || record.student?.username || 'Sinh viên';
+                        const initials = getInitials(name);
+                        const color = COLORS[index % COLORS.length];
+
                         const courseId = record.courseInfo?._id || record.courseInfo?.id || selectedCourseId;
                         const assignmentId = record.assignment?._id || record.assignment?.id || record.assignment;
                         const submissionId = record._id || record.id;
@@ -274,11 +372,27 @@ const TeacherFeedback = () => {
                             >
                                 <div className={styles.mobileCardHeader}>
                                     <div className={styles.studentCell}>
-                                        <span className={styles.feedbackIcon} style={{ background: '#3182ce' }}>
-                                            <FileTextOutlined />
-                                        </span>
+                                        <div 
+                                            className={styles.studentAvatar} 
+                                            style={{ 
+                                                background: color, 
+                                                width: 36, 
+                                                height: 36, 
+                                                borderRadius: 8, 
+                                                display: 'flex', 
+                                                alignItems: 'center', 
+                                                justifyContent: 'center',
+                                                color: 'white',
+                                                fontWeight: 600,
+                                                fontSize: 14,
+                                                marginRight: 12,
+                                                flexShrink: 0
+                                            }}
+                                        >
+                                            {initials}
+                                        </div>
                                         <div>
-                                            <div className={styles.studentName}>{record.student?.fullName || record.student?.username}</div>
+                                            <div className={styles.studentName}>{name}</div>
                                             <div className={styles.mobileMeta}>{record.student?.userCode || '-'}</div>
                                         </div>
                                     </div>
@@ -289,7 +403,7 @@ const TeacherFeedback = () => {
                                 </div>
                                 <div className={styles.mobileContent}>{truncateText(record.studentFeedback?.content, 120)}</div>
                                 <div className={styles.mobileCardFooter}>
-                                    <span className={styles.mobileAction}>
+                                    <span className={styles.mobileAction} style={{ color: '#b71c1c' }}>
                                         Xem chi tiết <ArrowRightOutlined />
                                     </span>
                                 </div>
@@ -313,4 +427,3 @@ const TeacherFeedback = () => {
 };
 
 export default TeacherFeedback;
-

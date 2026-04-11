@@ -8,17 +8,11 @@ import {
     CalendarOutlined,
     ClockCircleOutlined,
     CheckCircleOutlined,
-    FilePdfOutlined,
-    FileWordOutlined,
-    FileExcelOutlined,
-    FileZipOutlined,
-    FileTextOutlined,
-    FileOutlined,
-    VideoCameraOutlined,
     ScheduleOutlined,
-    UserOutlined,
+    VideoCameraOutlined,
     MessageOutlined,
-    QuestionCircleOutlined
+    QuestionCircleOutlined,
+    UserOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import styles from '../styles.module.scss';
@@ -27,96 +21,13 @@ import { useCourseMaterials } from '@/hooks/useCourseMaterial';
 import { useMyAttendance } from '@/hooks/useAttendance';
 import { useCourseAssignments } from '@/hooks/useCourseAssignment';
 import { useMySubmissions } from '@/hooks/useSubmission';
-
-const getMaterialPresentation = (type = '') => {
-    const ext = type.toLowerCase();
-
-    if (ext === 'pdf') {
-        return { icon: <FilePdfOutlined />, iconBg: '#ebf8ff', iconColor: '#3b82f6' };
-    }
-
-    if (['doc', 'docx'].includes(ext)) {
-        return { icon: <FileWordOutlined />, iconBg: '#e6f7ff', iconColor: '#1677ff' };
-    }
-
-    if (['xls', 'xlsx', 'csv'].includes(ext)) {
-        return { icon: <FileExcelOutlined />, iconBg: '#f0fff4', iconColor: '#22c55e' };
-    }
-
-    if (['zip', 'rar', '7z', 'tar', 'gz'].includes(ext)) {
-        return { icon: <FileZipOutlined />, iconBg: '#fffbeb', iconColor: '#d69e2e' };
-    }
-
-    if (['ppt', 'pptx', 'txt'].includes(ext)) {
-        return { icon: <FileTextOutlined />, iconBg: '#fff7e6', iconColor: '#fa8c16' };
-    }
-
-    return { icon: <FileOutlined />, iconBg: '#f7fafc', iconColor: '#64748b' };
-};
-
-const safeDecodeURIComponent = (value = '') => {
-    try {
-        return decodeURIComponent(value);
-    } catch {
-        return value;
-    }
-};
-
-const isLikelyMojibake = (value = '') => /Ã.|Â.|á»|áº|Æ|Ä|Å|Ð|�/.test(value);
-
-const decodePotentialMojibake = (value = '') => {
-    if (typeof value !== 'string') return '';
-
-    const normalizedValue = safeDecodeURIComponent(value.trim());
-    if (!normalizedValue) return '';
-    if (!isLikelyMojibake(normalizedValue)) return normalizedValue;
-
-    try {
-        const bytes = Uint8Array.from(normalizedValue, (char) => char.charCodeAt(0) & 0xff);
-        const decodedValue = new TextDecoder('utf-8', { fatal: false }).decode(bytes);
-        return decodedValue || normalizedValue;
-    } catch {
-        return normalizedValue;
-    }
-};
-
-const sanitizeFilenamePart = (value, fallback = '') => {
-    const normalized = decodePotentialMojibake(value || '')
-        .replace(/[<>:"/\\|?*\u0000-\u001F]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-    return normalized || fallback;
-};
-
-const getFileNameFromUrl = (fileUrl = '') => {
-    if (!fileUrl) return '';
-
-    try {
-        const pathName = new URL(fileUrl).pathname;
-        const rawFileName = pathName.split('/').pop() || '';
-        return decodePotentialMojibake(rawFileName);
-    } catch {
-        const rawFileName = fileUrl.split('/').pop()?.split('?')[0] || '';
-        return decodePotentialMojibake(rawFileName);
-    }
-};
-
-const getMaterialDisplayTitle = (material) => {
-    const normalizedTitle = decodePotentialMojibake(material?.title || '');
-    if (normalizedTitle) return normalizedTitle;
-
-    const fileNameFromUrl = getFileNameFromUrl(material?.fileUrl || '');
-    return fileNameFromUrl || 'Tài liệu không tên';
-};
-
-const buildDownloadFileName = (material, courseCode, courseName) => {
-    const normalizedCourseCode = sanitizeFilenamePart(courseCode, 'Mon-hoc');
-    const normalizedCourseName = sanitizeFilenamePart(courseName, 'Khong-ten-mon');
-    const normalizedMaterialTitle = sanitizeFilenamePart(getMaterialDisplayTitle(material), 'Tai-lieu');
-
-    return `${normalizedCourseCode} - ${normalizedCourseName} - ${normalizedMaterialTitle}`;
-};
+import { 
+    getFilePresentation, 
+    getFileNameFromUrl, 
+    sanitizeFilenamePart,
+    getMaterialDisplayTitle,
+    buildDownloadFileName
+} from '@/utils/filePresentation';
 
 const ANNOUNCEMENT_PREVIEW_LENGTH = 220;
 const MAX_VISIBLE_ANNOUNCEMENTS = 4;
@@ -154,24 +65,26 @@ const OverviewTab = ({ courseData, courseId }) => {
     const [expandedAnnouncements, setExpandedAnnouncements] = useState({});
 
     const sortedAnnouncements = useMemo(() => {
-        return [...announcements].sort((firstAnnouncement, secondAnnouncement) => {
-            const firstTime = dayjs(firstAnnouncement?.createdAt).valueOf();
-            const secondTime = dayjs(secondAnnouncement?.createdAt).valueOf();
-            return secondTime - firstTime;
+        return [...announcements].sort((a, b) => {
+            const timeA = dayjs(a?.createdAt).valueOf();
+            const timeB = dayjs(b?.createdAt).valueOf();
+            return timeB - timeA;
         });
     }, [announcements]);
 
     const visibleAnnouncements = sortedAnnouncements.slice(0, MAX_VISIBLE_ANNOUNCEMENTS);
     const hasMoreAnnouncements = sortedAnnouncements.length > MAX_VISIBLE_ANNOUNCEMENTS;
 
-    const sortedMaterials = [...materials].sort((firstMaterial, secondMaterial) => {
-        const firstTime = dayjs(firstMaterial?.createdAt).valueOf();
-        const secondTime = dayjs(secondMaterial?.createdAt).valueOf();
-        return secondTime - firstTime;
-    });
+    const sortedMaterials = useMemo(() => {
+        return [...materials].sort((a, b) => {
+            const timeA = dayjs(a?.createdAt).valueOf();
+            const timeB = dayjs(b?.createdAt).valueOf();
+            return timeB - timeA;
+        });
+    }, [materials]);
 
     const attendanceRate = attendanceSummary.total > 0
-        ? Math.round((attendanceSummary.present / attendanceSummary.total) * 100)
+        ? Math.round(((attendanceSummary.total - attendanceSummary.absent) / attendanceSummary.total) * 100)
         : 100;
 
     const assignmentStatusCounts = useMemo(() => {
@@ -179,42 +92,44 @@ const OverviewTab = ({ courseData, courseId }) => {
 
         mySubmissions.forEach((submission) => {
             const assignmentRef = submission?.assignment;
-            const assignmentId = normalizeEntityId(assignmentRef?.id ? assignmentRef : assignmentRef);
-            if (!assignmentId || submissionByAssignmentId.has(assignmentId)) return;
-            submissionByAssignmentId.set(assignmentId, submission);
+            const aid = normalizeEntityId(assignmentRef?.id ? assignmentRef : assignmentRef);
+            if (!aid || submissionByAssignmentId.has(aid)) return;
+            submissionByAssignmentId.set(aid, submission);
         });
 
         return courseAssignments.reduce(
             (counts, assignment) => {
-                const assignmentId = normalizeEntityId(assignment);
-                const submission = submissionByAssignmentId.get(assignmentId);
+                const aid = normalizeEntityId(assignment);
+                const submission = submissionByAssignmentId.get(aid);
 
                 if (!submission) {
-                    counts.opening += 1;
+                    const isOverdue = assignment.dueDate && dayjs().isAfter(dayjs(assignment.dueDate));
+                    if (isOverdue) {
+                        counts.overdue += 1;
+                    } else {
+                        counts.opening += 1;
+                    }
                     return counts;
                 }
 
-                if (submission.status === 'GRADED' || (submission.score !== null && submission.score !== undefined)) {
-                    counts.graded += 1;
-                } else {
-                    counts.submitted += 1;
-                }
+                counts.submitted += 1;
 
                 return counts;
             },
-            { opening: 0, submitted: 0, graded: 0 }
+            { opening: 0, submitted: 0, overdue: 0 }
         );
     }, [courseAssignments, mySubmissions]);
 
-    const assignmentTotal = assignmentStatusCounts.opening + assignmentStatusCounts.submitted + assignmentStatusCounts.graded;
+    const assignmentTotal = assignmentStatusCounts.opening + assignmentStatusCounts.submitted + assignmentStatusCounts.overdue;
     const openingPercent = assignmentTotal > 0 ? (assignmentStatusCounts.opening / assignmentTotal) * 100 : 0;
     const submittedPercent = assignmentTotal > 0 ? (assignmentStatusCounts.submitted / assignmentTotal) * 100 : 0;
-    const gradedPercent = assignmentTotal > 0 ? (assignmentStatusCounts.graded / assignmentTotal) * 100 : 0;
+    const overduePercent = assignmentTotal > 0 ? (assignmentStatusCounts.overdue / assignmentTotal) * 100 : 0;
+
     const donutGradient = assignmentTotal > 0
         ? `conic-gradient(
             #3b82f6 0% ${openingPercent}%,
-            #f59e0b ${openingPercent}% ${openingPercent + submittedPercent}%,
-            #16a34a ${openingPercent + submittedPercent}% ${openingPercent + submittedPercent + gradedPercent}%
+            #16a34a ${openingPercent}% ${openingPercent + submittedPercent}%,
+            #ef4444 ${openingPercent + submittedPercent}% 100%
         )`
         : '#e2e8f0';
 
@@ -345,8 +260,8 @@ const OverviewTab = ({ courseData, courseId }) => {
                     ) : (
                         sortedMaterials.map((material) => {
                             const materialId = material._id || material.id;
-                            const presentation = getMaterialPresentation(material.type);
                             const materialTitle = getMaterialDisplayTitle(material);
+                            const presentation = getFilePresentation(material.type || materialTitle);
                             const materialTime = material.createdAt && dayjs(material.createdAt).isValid()
                                 ? dayjs(material.createdAt).format('DD/MM/YYYY - HH:mm')
                                 : '--';
@@ -363,7 +278,7 @@ const OverviewTab = ({ courseData, courseId }) => {
                                         <div className={styles.fileMeta}>
                                             <div className={styles.fileName}>{materialTitle}</div>
                                             <div className={styles.fileSize}>
-                                                {(material.type || 'file').toUpperCase()} • Đã tải lên {materialTime}
+                                                {(material.type || materialTitle.split('.').pop() || 'file').toUpperCase()} • Đã tải lên {materialTime}
                                             </div>
                                         </div>
                                     </div>
@@ -378,47 +293,12 @@ const OverviewTab = ({ courseData, courseId }) => {
                 </div>
             </div>
 
-
             <div className={styles.card} style={{ margin: 0 }}>
                 <div className={styles.cardHeader}>
                     <DatabaseOutlined className={styles.icon} />
-                    Thông tin học phần
+                    Tổng quan
                 </div>
-                <div className={styles.fileList}>
-                    <div className={styles.fileItem}>
-                        <div className={styles.fileInfo}>
-                            <div className={styles.fileIcon} style={{ background: '#dbeafe', color: '#3b82f6' }}>
-                                <UserOutlined />
-                            </div>
-                            <div className={styles.fileMeta}>
-                                <div className={styles.fileName}>Giảng viên</div>
-                                <div className={styles.fileSize}>{courseData?.lecturerId?.fullName || '---'}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className={styles.fileItem}>
-                        <div className={styles.fileInfo}>
-                            <div className={styles.fileIcon} style={{ background: '#dcfce7', color: '#22c55e' }}>
-                                <ScheduleOutlined />
-                            </div>
-                            <div className={styles.fileMeta}>
-                                <div className={styles.fileName}>Học kỳ</div>
-                                <div className={styles.fileSize}>{courseData?.semester || '---'}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className={styles.fileItem}>
-                        <div className={styles.fileInfo}>
-                            <div className={styles.fileIcon} style={{ background: '#fef9c3', color: '#ca8a04' }}>
-                                <DatabaseOutlined />
-                            </div>
-                            <div className={styles.fileMeta}>
-                                <div className={styles.fileName}>Số tín chỉ</div>
-                                <div className={styles.fileSize}>{courseData?.credits != null ? `${courseData.credits} tín chỉ` : '---'}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <div style={{ marginBottom: '20px' }}></div>
 
                 <div className={styles.courseStatsGrid}>
                     <div className={styles.courseStatItem}>
@@ -472,14 +352,14 @@ const OverviewTab = ({ courseData, courseId }) => {
                                         <span className={styles.legendValue}>{assignmentStatusCounts.opening}</span>
                                     </div>
                                     <div className={styles.assignmentLegendItem}>
-                                        <span className={styles.legendDot} style={{ background: '#f59e0b' }} />
+                                        <span className={styles.legendDot} style={{ background: '#16a34a' }} />
                                         <span className={styles.legendLabel}>Đã nộp</span>
                                         <span className={styles.legendValue}>{assignmentStatusCounts.submitted}</span>
                                     </div>
                                     <div className={styles.assignmentLegendItem}>
-                                        <span className={styles.legendDot} style={{ background: '#16a34a' }} />
-                                        <span className={styles.legendLabel}>Đã chấm</span>
-                                        <span className={styles.legendValue}>{assignmentStatusCounts.graded}</span>
+                                        <span className={styles.legendDot} style={{ background: '#ef4444' }} />
+                                        <span className={styles.legendLabel}>Quá hạn</span>
+                                        <span className={styles.legendValue}>{assignmentStatusCounts.overdue}</span>
                                     </div>
                                 </div>
                             </div>
@@ -487,7 +367,6 @@ const OverviewTab = ({ courseData, courseId }) => {
                     )}
                 </div>
             </div>
-
 
             <div className={styles.card} style={{ margin: 0 }}>
                 <div className={styles.cardHeader}>

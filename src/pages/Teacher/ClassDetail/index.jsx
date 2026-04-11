@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import MainLayout from '@/layouts/User/MainLayout';
-import { Tabs } from 'antd';
+import { Tabs, Modal, Button } from 'antd';
 import {
     AppstoreOutlined,
     ReadOutlined,
@@ -36,6 +36,7 @@ const teacherMenuItems = [
 const TeacherClassDetail = () => {
     const { id } = useParams();
     const [searchParams, setSearchParams] = useSearchParams();
+    const [isCourseInfoOpen, setIsCourseInfoOpen] = useState(false);
     const { data: course, isLoading } = useCourseDetail(id);
 
     const activeTab = searchParams.get('tab') || 'overview';
@@ -92,6 +93,14 @@ const TeacherClassDetail = () => {
                         <span className={styles.status} style={{ background: statusColorMap[classInfo.statusType] }}>
                             {classInfo.status}
                         </span>
+                        <Button
+                            type="text"
+                            shape="circle"
+                            aria-label="Xem mô tả lớp học"
+                            className={styles.statusInfoBtn}
+                            onClick={() => setIsCourseInfoOpen(true)}
+                            icon={<InfoCircleOutlined />}
+                        />
                     </div>
                     <h1 className={styles.title}>{classInfo.title}</h1>
                     <div className={styles.details}>
@@ -104,9 +113,9 @@ const TeacherClassDetail = () => {
                         <div className={styles.detailItem}>
                             <CalendarOutlined className={styles.icon} /> Học kỳ: {classInfo.semester}
                         </div>
-                    </div>
-                    <div className={styles.schoolInfo}>
-                        {classInfo.school}
+                        <div className={styles.detailItem}>
+                            <FormOutlined className={styles.icon} /> Tín chỉ: {course.credits || 0}
+                        </div>
                     </div>
                 </div>
 
@@ -152,6 +161,23 @@ const TeacherClassDetail = () => {
                         ]}
                     />
                 </div>
+                <Modal
+                    centered
+                    open={isCourseInfoOpen}
+                    onCancel={() => setIsCourseInfoOpen(false)}
+                    footer={null}
+                    width={720}
+                    zIndex={1400}
+                    destroyOnClose
+                    title="Thông tin học phần"
+                    className={styles.courseInfoModal}
+                >
+                    <div className={styles.courseDescriptionOnly}>
+                        <div className={styles.descriptionText}>
+                            {classInfo.description || 'Chưa có mô tả cho học phần này.'}
+                        </div>
+                    </div>
+                </Modal>
             </div>
         </MainLayout>
     );

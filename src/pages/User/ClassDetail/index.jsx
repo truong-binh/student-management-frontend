@@ -53,45 +53,6 @@ const ClassDetail = () => {
         );
     }
 
-    const courseInfoRows = [
-        {
-            key: 'course-code',
-            label: 'Mã môn học',
-            value: courseData.courseCode || '---',
-            icon: <IdcardOutlined />,
-        },
-        {
-            key: 'course-name',
-            label: 'Tên môn học',
-            value: courseData.courseName || '---',
-            icon: <BookOutlined />,
-        },
-        {
-            key: 'teacher-name',
-            label: 'Tên Giáo viên',
-            value: courseData.lecturerId?.fullName || '---',
-            icon: <SolutionOutlined />,
-        },
-        {
-            key: 'semester',
-            label: 'Học kỳ',
-            value: courseData.semester || '---',
-            icon: <ReadOutlined />,
-        },
-        {
-            key: 'credits',
-            label: 'Số tín chỉ',
-            value: courseData.credits != null ? `${courseData.credits} tín chỉ` : '---',
-            icon: <FormOutlined />,
-        },
-        {
-            key: 'description',
-            label: 'Mô tả lớp học',
-            value: courseData.description || 'Chưa có mô tả cho học phần này.',
-            icon: <InfoCircleOutlined />,
-            isDescription: true,
-        },
-    ];
 
     return (
         <MainLayout>
@@ -114,6 +75,14 @@ const ClassDetail = () => {
                         <div className={styles.detailItem}>
                             <UserOutlined className={styles.icon} />
                             GV: {courseData.lecturerId?.fullName || '---'}
+                        </div>
+                        <div className={styles.detailItem}>
+                            <ReadOutlined className={styles.icon} />
+                            Học kỳ: {courseData.semester || '---'}
+                        </div>
+                        <div className={styles.detailItem}>
+                            <FormOutlined className={styles.icon} />
+                            Tín chỉ: {courseData.credits || '0'}
                         </div>
                         {courseData.schedule && (
                             <div className={styles.detailItem}>
@@ -167,24 +136,10 @@ const ClassDetail = () => {
                     title="Thông tin học phần"
                     className={styles.courseInfoModal}
                 >
-                    <div className={styles.courseInfoHero}>
-                        <span className={styles.courseInfoHeroCode}>{courseData.courseCode || '---'}</span>
-                        <h3 className={styles.courseInfoHeroName}>{courseData.courseName || '---'}</h3>
-                    </div>
-                    <div className={styles.courseInfoList}>
-                        {courseInfoRows.map((row) => (
-                            <div className={styles.courseInfoItem} key={row.key}>
-                                <span className={styles.courseInfoIcon}>{row.icon}</span>
-                                <div className={styles.courseInfoContent}>
-                                    <span className={styles.courseInfoLabel}>{row.label}</span>
-                                    <span
-                                        className={`${styles.courseInfoValue} ${row.isDescription ? styles.courseInfoDescription : ''}`}
-                                    >
-                                        {row.value}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
+                    <div className={styles.courseDescriptionOnly}>
+                        <div className={styles.descriptionText}>
+                            {courseData.description || 'Chưa có mô tả cho học phần này.'}
+                        </div>
                     </div>
                 </Modal>
             </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Tag, Modal } from 'antd';
+import { Button, Tag, Modal, Spin } from 'antd';
 import {
     ArrowLeftOutlined,
     InfoCircleOutlined,
@@ -13,14 +13,25 @@ import {
     CalendarOutlined,
     StarOutlined,
     DownloadOutlined,
+    FullscreenOutlined,
+    FileTextOutlined,
 } from '@ant-design/icons';
+import { getFilePresentation, getFileNameFromUrl, decodePotentialMojibake } from '@/utils/filePresentation';
 import { useNavigate, useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
 import MainLayout from '@/layouts/User/MainLayout';
 import styles from './styles.module.scss';
+import clsx from 'clsx';
 import { useAssignmentDetail } from '@/hooks/useCourseAssignment';
 import { useCourseDetail } from '@/hooks/useCourse';
 import { useMySubmissions } from '@/hooks/useSubmission';
+import {
+    CheckCircleFilled,
+    CloseCircleFilled,
+    BulbOutlined,
+    SafetyCertificateOutlined,
+} from '@ant-design/icons';
+import AICodeReview from '@/components/AICodeReview';
 
 const AssignmentResult = () => {
     const navigate = useNavigate();
@@ -62,7 +73,6 @@ const AssignmentResult = () => {
                     <div className={styles.titleInfo}>
                         <div className={styles.titleRow}>
                             <h1>Kết quả: {displayData.title || 'Đang tải...'}</h1>
-                            <span className={styles.classCode}>{id}</span>
                         </div>
                         <div className={styles.breadcrumbs}>
                             <span>Lớp học phần</span>
@@ -83,20 +93,38 @@ const AssignmentResult = () => {
                             </div>
 
                             {displayData.fileUrl && (
-                                <div style={{ padding: '12px 16px', background: '#f7fafc', border: '1px solid #e2e8f0', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
-                                    <div style={{ width: 40, height: 40, background: '#ebf8ff', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3182ce', fontSize: 22 }}>
-                                        <FilePdfOutlined />
-                                    </div>
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        <div style={{ fontWeight: 600, color: '#2d3748', fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                            {decodeURIComponent(displayData.fileUrl.split('/').pop().split('?')[0])}
-                                        </div>
-                                        <div style={{ fontSize: 12, color: '#718096' }}>Tài liệu / Yêu cầu đề bài</div>
-                                    </div>
-                                    <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-                                        <Button icon={<EyeOutlined />} size="small" onClick={() => setPreviewOpen(true)}>Xem trước</Button>
-                                        <Button icon={<DownloadOutlined />} size="small" type="primary" onClick={() => window.open(displayData.fileUrl, '_blank')}>Tải xuống</Button>
-                                    </div>
+                                <div className={styles.fileList} style={{ marginBottom: 16 }}>
+                                    {(() => {
+                                        const fileName = getFileNameFromUrl(displayData.fileUrl);
+                                        const pres = getFilePresentation(fileName);
+                                        return (
+                                            <div className={styles.fileItem} style={{ border: '1px solid #e2e8f0' }}>
+                                                <div className={styles.fileInfo}>
+                                                    <div className={styles.fileIcon} style={{ background: pres.iconBg, color: pres.iconColor }}>
+                                                        {pres.icon}
+                                                    </div>
+                                                    <div className={styles.fileMeta}>
+                                                        <div className={styles.fileName}>{fileName}</div>
+                                                        <div className={styles.fileSize}>
+                                                            {(fileName.split('.').pop() || 'file').toUpperCase()} • Tài liệu / Yêu cầu đề bài
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div style={{ display: 'flex', gap: 6 }}>
+                                                    <Button
+                                                        icon={<EyeOutlined />}
+                                                        size="small"
+                                                        onClick={() => setPreviewOpen(true)}
+                                                        style={{ border: 'none', background: 'transparent', color: '#64748b' }}
+                                                    />
+                                                    <DownloadOutlined
+                                                        className={styles.downloadBtn}
+                                                        onClick={() => window.open(displayData.fileUrl, '_blank')}
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                             )}
 
@@ -130,36 +158,61 @@ const AssignmentResult = () => {
                             )}
                         </div>
 
-                        {submission?.feedback && (
-                            <div className={styles.feedbackCard}>
-                                <div className={styles.cardTitle}>
-                                    <CommentOutlined /> Nhận xét từ Giảng viên
-                                </div>
-                                <div className={styles.instructorMeta}>
-                                    <div className={styles.avatar}>GV</div>
-                                    <div className={styles.info}>
-                                        <div className={styles.name}>Giảng viên</div>
-                                    </div>
-                                </div>
-                                <div className={styles.commentText}>
-                                    "{submission.feedback}"
+                        <div className={styles.feedbackCard}>
+                            <div className={styles.cardTitle}>
+                                <CommentOutlined /> Nhận xét từ Giảng viên
+                            </div>
+                            <div className={styles.instructorMeta}>
+                                <div className={styles.avatar}>GV</div>
+                                <div className={styles.info}>
+                                    <div className={styles.name}>Giảng viên phụ trách</div>
                                 </div>
                             </div>
-                        )}
+                            <div className={styles.commentText}>
+                                {submission?.feedback ? `"${submission.feedback}"` : "Giảng viên chưa có nhận xét thêm cho bài làm này."}
+                            </div>
+                        </div>
 
-                        {submission?.fileUrl && (
-                            <div className={styles.fileCard}>
-                                <div className={styles.cardTitle}>BÀI LÀM ĐÃ NỘP</div>
-                                <div className={styles.fileItem}>
-                                    <FileZipOutlined className={styles.icon} />
-                                    <div className={styles.info} style={{ flex: 1 }}>
-                                        <div className={styles.name}>{decodeURIComponent(submission.fileUrl.split('/').pop().split('?')[0])}</div>
-                                        <div className={styles.meta}>Nộp lúc: {dayjs(submission.createdAt).format('DD/MM/YYYY')}</div>
-                                    </div>
-                                    <CloudDownloadOutlined className={styles.download} onClick={() => window.open(submission.fileUrl, '_blank')} style={{ cursor: 'pointer' }} />
-                                </div>
+                        <div className={styles.fileCard}>
+                            <div className={styles.cardTitle}>DANH SÁCH BÀI LÀM ĐÃ NỘP</div>
+                            <div className={styles.fileList}>
+                                {(() => {
+                                    const files = submission?.files || [];
+                                    const fallbackUrls = submission?.attachments || submission?.fileUrls || (submission?.fileUrl ? [submission.fileUrl] : []);
+                                    
+                                    if (files.length === 0 && fallbackUrls.length === 0) {
+                                        return <div style={{ color: '#9ca3af', padding: '12px' }}>Không tìm thấy file bài nộp.</div>;
+                                    }
+
+                                    const allFiles = files.length > 0 
+                                        ? files.map(f => ({ url: f.fileUrl, name: f.fileName }))
+                                        : fallbackUrls.map(url => ({ url, name: getFileNameFromUrl(url) }));
+
+                                    return allFiles.map((file, index) => {
+                                        const pres = getFilePresentation(file.name);
+                                        return (
+                                            <div className={styles.fileItem} key={index}>
+                                                <div className={styles.fileInfo}>
+                                                    <div className={styles.fileIcon} style={{ background: pres.iconBg, color: pres.iconColor }}>
+                                                        {pres.icon}
+                                                    </div>
+                                                    <div className={styles.fileMeta}>
+                                                        <div className={styles.fileName}>{decodePotentialMojibake(file.name)}</div>
+                                                        <div className={styles.fileSize}>
+                                                            {(file.name.split('.').pop() || 'file').toUpperCase()} • Nộp ngày {dayjs(submission.createdAt).format('DD/MM/YYYY')}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <DownloadOutlined
+                                                    className={styles.downloadBtn}
+                                                    onClick={() => window.open(file.url, '_blank')}
+                                                />
+                                            </div>
+                                        );
+                                    });
+                                })()}
                             </div>
-                        )}
+                        </div>
                     </div>
 
                     <div className={styles.rightCol}>
@@ -174,8 +227,49 @@ const AssignmentResult = () => {
                                 </div>
                             </div>
                             <div className={styles.aiBody}>
-                                {submission?.aiFeedback ? (
-                                    <div className={styles.commentText} style={{ whiteSpace: 'pre-wrap', padding: '20px', color: '#4b5563', lineHeight: '1.6' }}>
+                                {submission?.aiFeedbackData ? (
+                                    <div className={styles.aiStructuredBody}>
+                                        {submission.aiFeedbackData.summary && (
+                                            <div className={styles.aiSummary}>
+                                                {submission.aiFeedbackData.summary}
+                                            </div>
+                                        )}
+
+                                        {submission.aiFeedbackData.strengths?.length > 0 && (
+                                            <div className={styles.aiSection}>
+                                                <div className={clsx(styles.aiSectionTitle, styles.pros)}>
+                                                    <SafetyCertificateOutlined /> Ưu điểm của bài làm
+                                                </div>
+                                                {submission.aiFeedbackData.strengths.map((str, idx) => (
+                                                    <div key={idx} className={styles.aiStrengthItem}>
+                                                        <CheckCircleFilled className={styles.aiIconSuccess} />
+                                                        <span>{str}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {submission.aiFeedbackData.errors?.length > 0 && (
+                                            <div className={styles.aiSection}>
+                                                <div className={clsx(styles.aiSectionTitle, styles.cons)} style={{ marginBottom: 0 }}>
+                                                    <CloseCircleFilled /> Phân tích chi tiết mã nguồn
+                                                </div>
+                                                
+                                                <AICodeReview 
+                                                    fileUrl={
+                                                        submission?.files?.[0]?.fileUrl ||
+                                                        submission?.attachments?.[0] || 
+                                                        submission?.fileUrls?.[0] || 
+                                                        submission?.fileUrl
+                                                    }
+                                                    errors={submission.aiFeedbackData.errors}
+                                                    summary={submission.aiFeedbackData.feedback}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : submission?.aiFeedback ? (
+                                    <div className={styles.commentText} style={{ whiteSpace: 'pre-wrap', padding: '10px', color: '#4b5563', lineHeight: '1.6' }}>
                                         {submission.aiFeedback}
                                     </div>
                                 ) : (
@@ -202,6 +296,8 @@ const AssignmentResult = () => {
                     </div>
                 </div>
             </div>
+
+
 
             <Modal
                 title="Xem trước tài liệu đề bài"

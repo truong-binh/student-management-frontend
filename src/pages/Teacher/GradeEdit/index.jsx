@@ -10,16 +10,23 @@ import {
     EditOutlined,
     UserOutlined,
     ReadOutlined,
-    CalendarOutlined,
     MessageOutlined,
+    CalendarOutlined,
+    CheckCircleFilled,
+    CloseCircleFilled,
+    BulbOutlined,
+    SafetyCertificateOutlined,
+    FullscreenOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
 import MainLayout from '@/layouts/User/MainLayout';
 import styles from './styles.module.scss';
+import clsx from 'clsx';
 import { useAssignmentDetail } from '@/hooks/useCourseAssignment';
 import { useCourseDetail } from '@/hooks/useCourse';
 import { useSubmissionDetail, useSubmissionFeedback } from '@/hooks/useSubmission';
+import AICodeReview from '@/components/AICodeReview';
 
 const { TextArea } = Input;
 
@@ -53,14 +60,35 @@ const TeacherGradeEdit = () => {
 
     const [newScore, setNewScore] = React.useState(null);
     const [replyText, setReplyText] = React.useState('');
+    const [fileContent, setFileContent] = React.useState('');
+    const [isFetchingFile, setIsFetchingFile] = React.useState(false);
+    const [isCodeModalOpen, setIsCodeModalOpen] = React.useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = React.useState(false);
     const { replyFeedback, isReplying, updateScore, isUpdatingScore } = useSubmissionFeedback(studentId);
 
     React.useEffect(() => {
+        const fetchFileContent = async () => {
+            if (submission?.fileUrl) {
+                setIsFetchingFile(true);
+                try {
+                    const response = await fetch(submission.fileUrl);
+                    const text = await response.text();
+                    setFileContent(text);
+                } catch (error) {
+                    console.error('Error fetching file content:', error);
+                    setFileContent('Không thể tải nội dung file.');
+                } finally {
+                    setIsFetchingFile(false);
+                }
+            }
+        };
+
+        fetchFileContent();
+
         if (submission?.lecturerReply?.content) {
             setReplyText(submission.lecturerReply.content);
         } else if (submission?.instructorReply) {
-            // Fallback for old data if any
+            
             setReplyText(submission.instructorReply);
         }
 
@@ -144,7 +172,6 @@ const TeacherGradeEdit = () => {
                         <div className={styles.titleInfo}>
                             <div className={styles.mainTitleRow}>
                                 <h1>{isPending || isResolved ? 'Phản hồi khiếu nại' : 'Sửa điểm bài tập'}</h1>
-                                <Tag className={styles.classTag}>{id}</Tag>
                             </div>
                             <div className={styles.subTitle}>
                                 {assignment?.title}
@@ -168,12 +195,12 @@ const TeacherGradeEdit = () => {
                     <div className={styles.leftCol}>
                         <div className={styles.studentCard}>
                             <div className={styles.cardTitle}>
-                                <UserOutlined /> Thông tin sinh viên
+                                <UserOutlined style={{ color: '#b71c1c' }} /> Thông tin sinh viên
                             </div>
                             <div className={styles.avatarRow}>
                                 <span
                                     className={styles.avatar}
-                                    style={{ background: '#3182ce' }}
+                                    style={{ background: '#b71c1c' }}
                                 >
                                     {(submission?.student?.fullName || submission?.student?.username || 'S').charAt(0).toUpperCase()}
                                 </span>
@@ -210,14 +237,41 @@ const TeacherGradeEdit = () => {
                         <div className={styles.fileCard}>
                             <div className={styles.cardTitle}>FILE BÀI NỘP</div>
                             {submission?.fileUrl ? (
-                                <div className={styles.fileItem}>
-                                    <FileZipOutlined className={styles.fileIcon} />
-                                    <div className={styles.fileInfo}>
-                                        <div className={styles.fileName}>{decodeURIComponent(submission.fileUrl.split('/').pop().split('?')[0])}</div>
-                                        <div className={styles.fileMeta}>Nộp lúc: {dayjs(submission.createdAt).format('DD/MM/YYYY')}</div>
+                                <>
+                                    <div className={styles.fileItem} style={{ marginBottom: fileContent ? 16 : 0 }}>
+                                        <FileZipOutlined className={styles.fileIcon} />
+                                        <div className={styles.fileInfo}>
+                                            <div className={styles.fileName}>{decodeURIComponent(submission.fileUrl.split('/').pop().split('?')[0])}</div>
+                                            <div className={styles.fileMeta}>Nộp lúc: {dayjs(submission.createdAt).format('DD/MM/YYYY')}</div>
+                                        </div>
+                                        <CloudDownloadOutlined className={styles.downloadIcon} onClick={() => window.open(submission.fileUrl, '_blank')} style={{ cursor: 'pointer' }} />
                                     </div>
-                                    <CloudDownloadOutlined className={styles.downloadIcon} onClick={() => window.open(submission.fileUrl, '_blank')} style={{ cursor: 'pointer' }} />
-                                </div>
+                                    {isFetchingFile ? (
+                                        <div style={{ padding: '20px', textAlign: 'center' }}><Spin size="small" tip="Đang đọc nội dung file..." /></div>
+                                    ) : fileContent ? (
+                                        <div className={styles.codePreview}>
+                                            <div className={styles.codeHeader} onClick={() => setIsCodeModalOpen(true)} style={{ cursor: 'pointer' }}>
+                                                <span>Nội dung mã nguồn</span>
+                                                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                                    <Tag color="blue">Preview</Tag>
+                                                    <FullscreenOutlined style={{ fontSize: 14 }} />
+                                                </div>
+                                            </div>
+                                            <div className={styles.codeBackground}>
+                                                <pre className={styles.preCode}>
+                                                    <code>
+                                                        {fileContent.split('\n').map((line, idx) => (
+                                                            <div key={idx} className={styles.codeLine}>
+                                                                <span className={styles.lineNumber}>{idx + 1}</span>
+                                                                <span className={styles.lineText}>{line}</span>
+                                                            </div>
+                                                        ))}
+                                                    </code>
+                                                </pre>
+                                            </div>
+                                        </div>
+                                    ) : null}
+                                </>
                             ) : (
                                 <div style={{ padding: '10px', color: '#9ca3af' }}>Không có file bài nộp</div>
                             )}
@@ -283,7 +337,7 @@ const TeacherGradeEdit = () => {
 
                         <div className={styles.editCard}>
                             <div className={styles.editCardTitle}>
-                                <EditOutlined /> Chỉnh sửa điểm số
+                                <EditOutlined /> {isPending || isResolved ? 'Cập nhật điểm phúc khảo' : 'Sửa điểm bài làm'}
                             </div>
 
                             <div className={styles.scoreInputRow}>
@@ -317,75 +371,75 @@ const TeacherGradeEdit = () => {
                                 )}
                             </div>
 
-                            <div className={styles.scaleLegend}>
-                                {[
-                                    { range: '9 – 10', label: 'Xuất sắc', color: '#48bb78' },
-                                    { range: '8 – 8.9', label: 'Giỏi', color: '#3182ce' },
-                                    { range: '6.5 – 7.9', label: 'Khá', color: '#d69e2e' },
-                                    { range: '5 – 6.4', label: 'TB', color: '#e53e3e' },
-                                    { range: '< 5', label: 'Yếu', color: '#c53030' },
-                                ].map(s => (
-                                    <span key={s.range} className={styles.scaleItem} style={{ color: s.color }}>
-                                        <span className={styles.scaleDot} style={{ background: s.color }} />
-                                        {s.range}: {s.label}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className={styles.commentCard}>
-                            <div className={styles.editCardTitle}>
-                                <CommentOutlined /> Nhận xét của giáo viên
-                            </div>
-                            <TextArea
-                                className={styles.commentInput}
-                                placeholder="Chưa có nhận xét từ giảng viên"
-                                rows={5}
-                                value={submission?.feedback || ''}
-                                readOnly
-                                maxLength={500}
-                            />
+                            {!isPending && !isResolved && (
+                                <div style={{ marginTop: 24, textAlign: 'right' }}>
+                                    <Button
+                                        type="primary"
+                                        danger
+                                        size="large"
+                                        icon={<EditOutlined />}
+                                        loading={isUpdatingScore}
+                                        disabled={newScore === submission?.score}
+                                        onClick={() => setIsConfirmModalOpen(true)}
+                                    >
+                                        Cập nhật điểm mới
+                                    </Button>
+                                </div>
+                            )}
                         </div>
 
                         <div className={styles.aiFeedbackCard}>
-                            <div className={styles.editCardTitle} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span><RobotOutlined /> Phản hồi AI (tham khảo)</span>
+                            <div className={styles.editCardTitle}>
+                                <RobotOutlined /> Phản hồi từ AI (Review chi tiết)
                             </div>
-                            <div className={styles.aiItems}>
-                                {submission?.aiFeedback ? (
-                                    <div style={{ whiteSpace: 'pre-wrap', color: '#4b5563', padding: '10px' }}>
+                            <div className={styles.aiBody} style={{ padding: '0 12px 12px' }}>
+                                {submission?.aiFeedbackData ? (
+                                    <div className={styles.aiStructuredBody}>
+                                        {submission.aiFeedbackData.summary && (
+                                            <div className={styles.aiSummary} style={{ marginBottom: 16 }}>
+                                                {submission.aiFeedbackData.summary}
+                                            </div>
+                                        )}
+
+                                        {submission.aiFeedbackData.strengths?.length > 0 && (
+                                            <div className={styles.aiSection} style={{ marginBottom: 16 }}>
+                                                <div className={clsx(styles.aiSectionTitle, styles.pros)}>
+                                                    <SafetyCertificateOutlined /> Ưu điểm của bài làm
+                                                </div>
+                                                {submission.aiFeedbackData.strengths.map((str, idx) => (
+                                                    <div key={idx} className={styles.aiStrengthItem}>
+                                                        <CheckCircleFilled className={styles.aiIconSuccess} />
+                                                        <span>{str}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {submission.aiFeedbackData.errors?.length > 0 && (
+                                            <div className={styles.aiSection}>
+                                                <div className={clsx(styles.aiSectionTitle, styles.cons)} style={{ marginBottom: 12 }}>
+                                                    <CloseCircleFilled /> Phân tích chi tiết mã nguồn
+                                                </div>
+                                                
+                                                <AICodeReview 
+                                                    fileUrl={submission?.fileUrl}
+                                                    errors={submission.aiFeedbackData.errors}
+                                                    summary={submission.aiFeedbackData.feedback}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : submission?.aiFeedback ? (
+                                    <div style={{ whiteSpace: 'pre-wrap', color: '#4b5563', padding: '10px', fontSize: 13, lineHeight: '1.6' }}>
                                         {submission.aiFeedback}
                                     </div>
                                 ) : (
-                                    <div style={{ padding: '20px', textAlign: 'center', color: '#9ca3af' }}>
-                                        {submission?.fileUrl && submission.fileUrl.endsWith('.txt')
-                                            ? 'Chưa có nhận xét từ AI. Nhấn nút trên để chấm.'
-                                            : 'Chỉnh chấm AI chỉ hỗ trợ file .txt hiện tại.'}
+                                    <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>
+                                        <InfoCircleOutlined style={{ fontSize: '24px', marginBottom: '12px' }} /><br />
+                                        Chưa có nhận xét chi tiết từ AI cho bài làm này.
                                     </div>
                                 )}
                             </div>
-                        </div>
-                        <div className={styles.actionRow}>
-                            <Button
-                                className={styles.cancelBtn}
-                                size="large"
-                                icon={<ArrowLeftOutlined />}
-                                onClick={handleBack}
-                            >
-                                Quay lại
-                            </Button>
-                            <Button
-                                type="primary"
-                                danger
-                                size="large"
-                                icon={<EditOutlined />}
-                                loading={isUpdatingScore}
-                                disabled={newScore === submission?.score}
-                                style={{ borderRadius: '10px', height: '48px', padding: '0 32px' }}
-                                onClick={() => setIsConfirmModalOpen(true)}
-                            >
-                                Cập nhật điểm mới
-                            </Button>
                         </div>
                     </div>
                 </div>
@@ -414,9 +468,37 @@ const TeacherGradeEdit = () => {
                             <div style={{ fontSize: 24, fontWeight: 700, color: '#e53e3e' }}>{newScore}</div>
                         </div>
                     </div>
-                    <p style={{ color: '#64748b', fontSize: 13, marginTop: 12, textAlign: 'center' }}>
-                        Lưu ý: Sau khi cập nhật, kết quả sẽ được hiển thị ngay lập tức phía sinh viên qua hệ thống.
-                    </p>
+                </div>
+            </Modal>
+
+            <Modal
+                title={
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <RobotOutlined style={{ color: '#3182ce' }} />
+                        <span>Xem chi tiết mã nguồn bài nộp - {submission?.student?.fullName}</span>
+                    </div>
+                }
+                open={isCodeModalOpen}
+                onCancel={() => setIsCodeModalOpen(false)}
+                footer={[
+                    <Button key="close" type="primary" onClick={() => setIsCodeModalOpen(false)}>Đóng</Button>
+                ]}
+                width="90%"
+                style={{ top: 20 }}
+                bodyStyle={{ padding: 0, background: '#1e293b', borderRadius: '0 0 12px 12px' }}
+                destroyOnClose
+            >
+                <div style={{ maxHeight: 'calc(100vh - 200px)', overflow: 'auto' }}>
+                    <pre className={styles.preCode} style={{ padding: '24px 0', fontSize: '15px' }}>
+                        <code>
+                            {fileContent.split('\n').map((line, idx) => (
+                                <div key={idx} className={styles.codeLine} style={{ padding: '0 24px' }}>
+                                    <span className={styles.lineNumber} style={{ width: 48, paddingRight: 20, marginRight: 20 }}>{idx + 1}</span>
+                                    <span className={styles.lineText}>{line}</span>
+                                </div>
+                            ))}
+                        </code>
+                    </pre>
                 </div>
             </Modal>
         </MainLayout>
