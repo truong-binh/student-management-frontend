@@ -74,39 +74,6 @@
     }
 
 
-    .searchBar {
-        flex: 1;
-        max-width: 450px;
-        margin: 0 40px;
-
-        :global {
-            .ant-input-affix-wrapper {
-                height: 44px;
-                border-radius: 22px;
-                background: white;
-                border: 1px solid #edf2f7;
-                padding: 0 20px;
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-                transition: all 0.2s ease;
-                overflow: hidden;
-
-                &:hover,
-                &.ant-input-affix-wrapper-focused {
-                    border-color: #b71c1c !important;
-                    box-shadow: 0 4px 15px rgba(183, 28, 28, 0.1) !important;
-                }
-
-                .ant-input {
-                    background: transparent;
-                    font-size: 14px;
-                    border: none !important;
-                    box-shadow: none !important;
-                    height: 100%;
-                }
-            }
-        }
-    }
-
     .userSection {
         display: flex;
         align-items: center;
@@ -375,11 +342,6 @@
 /* ── Tablet (≤ 1024px) ── */
 @media (max-width: 1024px) {
     .header {
-        .searchBar {
-            max-width: 300px;
-            margin: 0 20px;
-        }
-
         .userSection {
             gap: 12px;
         }
@@ -398,10 +360,6 @@
 
         .welcome h2 {
             font-size: 18px;
-        }
-
-        .searchBar {
-            display: none;
         }
     }
 
@@ -431,9 +389,7 @@
             text-overflow: ellipsis;
         }
 
-        .searchBar {
-            display: none;
-        }
+
 
         .userSection {
             gap: 8px;

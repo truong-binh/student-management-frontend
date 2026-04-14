@@ -5,6 +5,10 @@ export const ForgotPasswordSchema = Joi.object({
         .trim()
         .email({ tlds: { allow: false } })
         .required()
+        .messages({
+            "string.email": "Định dạng email không hợp lệ",
+            "string.empty": "Vui lòng nhập địa chỉ email của bạn",
+        })
         .label("Email"),
 });
 

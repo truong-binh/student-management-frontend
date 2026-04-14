@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
-import { Modal, Form, Input, InputNumber, Button, Space, message } from 'antd';
+import { Modal, Form, Input, InputNumber, Button, Space, message, Select } from 'antd';
 import { useCourse } from '@/hooks/useCourse';
+import { SEMESTER_OPTIONS } from '@/utils/constants';
 
 const { TextArea } = Input;
 
@@ -87,9 +88,9 @@ const CourseModal = ({ isModalOpen, handleCancel, editingCourse }) => {
                         name="semester"
                         label="Học kỳ"
                         style={{ flex: 1 }}
-                        rules={[{ required: true, message: 'Vui lòng nhập học kỳ!' }]}
+                        rules={[{ required: true, message: 'Vui lòng chọn học kỳ!' }]}
                     >
-                        <Input placeholder="VD: Học kỳ 1 - 2026" />
+                        <Select placeholder="Chọn học kỳ" options={SEMESTER_OPTIONS} />
                     </Form.Item>
 
                     <Form.Item

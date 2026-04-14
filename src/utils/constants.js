@@ -31,3 +31,18 @@ export const PERMISSION = {
     UPDATE_PERMISSION_FOR_ROLE: 'update-permission-for-role',
 }
 
+export const SEMESTER_OPTIONS = [
+    { value: 'Học kỳ 1 - 2023', label: 'Học kỳ 1 - 2023' },
+    { value: 'Học kỳ 2 - 2023', label: 'Học kỳ 2 - 2023' },
+    { value: 'Học kỳ Hè - 2023', label: 'Học kỳ Hè - 2023' },
+    { value: 'Học kỳ 1 - 2024', label: 'Học kỳ 1 - 2024' },
+    { value: 'Học kỳ 2 - 2024', label: 'Học kỳ 2 - 2024' },
+    { value: 'Học kỳ Hè - 2024', label: 'Học kỳ Hè - 2024' },
+    { value: 'Học kỳ 1 - 2025', label: 'Học kỳ 1 - 2025' },
+    { value: 'Học kỳ 2 - 2025', label: 'Học kỳ 2 - 2025' },
+    { value: 'Học kỳ Hè - 2025', label: 'Học kỳ Hè - 2025' },
+    { value: 'Học kỳ 1 - 2026', label: 'Học kỳ 1 - 2026' },
+    { value: 'Học kỳ 2 - 2026', label: 'Học kỳ 2 - 2026' },
+    { value: 'Học kỳ Hè - 2026', label: 'Học kỳ Hè - 2026' },
+];
+
