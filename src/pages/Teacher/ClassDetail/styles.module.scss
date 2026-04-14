@@ -912,6 +912,25 @@ textarea.pinkInput {
     }
 }
 
+.sidebarSearch {
+    width: 100% !important;
+    border-radius: 8px !important;
+    border: 1px solid #e2e8f0 !important;
+    background: white !important;
+
+    :global(.ant-input) {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding-left: 8px !important;
+    }
+
+    &:hover,
+    &:focus-within {
+        border-color: #b71c1c !important;
+    }
+}
+
 .studentsTabWrap {
     padding: 0 16px;
     min-width: 0;

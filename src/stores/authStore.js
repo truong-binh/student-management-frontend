@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { removeAuthToken, removeAuthTokenAdmin } from '@/utils/localStorage.js';
 
 export const useAuthStore = create(
   persist(
@@ -13,8 +14,8 @@ export const useAuthStore = create(
       }),
 
       logout: () => {
-        localStorage.removeItem('token_student');
-        localStorage.removeItem('token_admin');
+        removeAuthToken();
+        removeAuthTokenAdmin();
         set({
           isAuthSuccess: false,
           authUser: null

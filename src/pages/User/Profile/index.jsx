@@ -30,6 +30,8 @@ import avatarImg from '@/assets/images/user/default-avatar-point.png';
 import { useAuth } from '@/hooks/useAuth';
 import { useCourse } from '@/hooks/useCourse';
 import { useMySubmissions } from '@/hooks/useSubmission';
+import { useQuery } from '@tanstack/react-query';
+import { userApi } from '@/api/user/user';
 
 ChartJS.register(
     CategoryScale,
@@ -90,7 +92,22 @@ const getGpaRank = (gpa) => {
 };
 
 const Profile = () => {
-    const { user, changePassword, isChangePasswordLoading } = useAuth();
+    const { user: authUser, changePassword, isChangePasswordLoading } = useAuth();
+
+    // Fetch full user profile from the new API
+    const { data: userDetail, isLoading: loadingUser } = useQuery({
+        queryKey: ['user-detail', authUser?._id || authUser?.id],
+        queryFn: async () => {
+            const res = await userApi.getUserById(authUser?._id || authUser?.id);
+            if (!res.success) throw res;
+            return res.data;
+        },
+        enabled: !!(authUser?._id || authUser?.id),
+    });
+
+    // Use detailed data if available, fallback to auth store user
+    const user = userDetail || authUser;
+
     const { courses, isLoading: loadingCourses } = useCourse();
     const { mySubmissions, isLoading: loadingSubmissions } = useMySubmissions();
     const [passwordForm, setPasswordForm] = useState({
@@ -346,7 +363,7 @@ const Profile = () => {
                                 <label>Mã sinh viên</label>
                                 <Input
                                     prefix={<IdcardOutlined style={{ color: '#a0aec0' }} />}
-                                    value={user?.userCode || ""}
+                                    value={user?.userCode || user?.student?.userCode || user?.username || ""}
                                     disabled
                                 />
                             </div>

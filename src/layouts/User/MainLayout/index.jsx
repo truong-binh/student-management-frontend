@@ -344,13 +344,6 @@ function MainLayout(props) {
                         </div>
                     </div>
 
-                    <div className={styles.searchBar}>
-                        <Input
-                            placeholder="Tìm kiếm"
-                            prefix={<SearchOutlined style={{ color: '#a0aec0' }} />}
-                        />
-                    </div>
-
                     <div className={styles.userSection}>
                         <div className={styles.actions}>
                             <Popover

@@ -1,9 +1,8 @@
 import axios from "axios";
 import { getAuthToken, getAuthTokenAdmin } from "@/utils/localStorage.js";
+import { useAuthStore } from "@/stores/authStore";
 
 const baseUrl = import.meta.env.VITE_API_URL;
-const token = getAuthToken();
-const tokenAdmin = getAuthTokenAdmin();
 
 const formatError = (error) => {
   if (error.response && error.response.data) {
@@ -26,12 +25,15 @@ export const apiAxios = axios.create({
   baseURL: `${baseUrl}`,
   headers: {
     'Content-Type': 'application/json',
-    "Authorization": token ? `Bearer ${token}` : ""
   }
 });
 
-apiAxios.interceptors.request.use((request) => {
-  return request
+apiAxios.interceptors.request.use((config) => {
+  const token = getAuthToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 }, (error) => {
   return Promise.reject(error)
 }
@@ -40,6 +42,12 @@ apiAxios.interceptors.request.use((request) => {
 apiAxios.interceptors.response.use(function (response) {
   return response.data;
 }, function (error) {
+  if (error.response?.status === 401) {
+    useAuthStore.getState().logout();
+    if (window.location.pathname !== "/login") {
+      window.location.href = "/login";
+    }
+  }
   return Promise.resolve(formatError(error));
 });
 
@@ -48,12 +56,15 @@ export const apiAdminAxios = axios.create({
   baseURL: `${baseUrl}`,
   headers: {
     'Content-Type': 'application/json',
-    "Authorization": tokenAdmin ? `Bearer ${tokenAdmin}` : ""
   }
 });
 
-apiAdminAxios.interceptors.request.use((request) => {
-  return request
+apiAdminAxios.interceptors.request.use((config) => {
+  const tokenAdmin = getAuthTokenAdmin();
+  if (tokenAdmin) {
+    config.headers.Authorization = `Bearer ${tokenAdmin}`;
+  }
+  return config;
 }, (error) => {
   return Promise.reject(error)
 }
@@ -62,5 +73,11 @@ apiAdminAxios.interceptors.request.use((request) => {
 apiAdminAxios.interceptors.response.use(function (response) {
   return response.data;
 }, function (error) {
+  if (error.response?.status === 401) {
+    useAuthStore.getState().logout();
+    if (window.location.pathname !== "/login") {
+      window.location.href = "/login";
+    }
+  }
   return Promise.resolve(formatError(error));
 });

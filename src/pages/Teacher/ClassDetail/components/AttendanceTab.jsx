@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Select, Button, Pagination, Spin, message, Upload, Modal } from 'antd';
+import { Select, Button, Pagination, Spin, message, Upload, Modal, Input } from 'antd';
 import {
     CheckCircleOutlined,
     FileExcelOutlined,
     FilterOutlined,
     UploadOutlined,
+    SearchOutlined,
 } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
 import styles from '../styles.module.scss';
@@ -18,18 +19,27 @@ const AttendanceTab = () => {
     const { id: courseId } = useParams();
     const [selectedWeek, setSelectedWeek] = useState(1);
     const [currentPage, setCurrentPage] = useState(1);
+    const [search, setSearch] = useState('');
 
     const { attendance: rawAttendance = [], isLoading, refetch } = useClassAttendance(courseId, selectedWeek);
     const attendance = rawAttendance.filter(item => !!item.student);
+
+    const filteredAttendance = attendance.filter(item => {
+        const fullName = item.student?.fullName?.toLowerCase() || '';
+        const userCode = item.student?.userCode?.toLowerCase() || '';
+        const s = search.toLowerCase();
+        return fullName.includes(s) || userCode.includes(s);
+    });
+
     const { importAttendance, isLoading: isImporting } = useAttendanceImport(courseId);
 
-    const total = attendance.length;
+    const total = filteredAttendance.length;
     const presentCount = attendance.filter(s => s.status === 'PRESENT').length;
     const excusedCount = attendance.filter(s => s.status === 'EXCUSED').length;
     const absentCount = attendance.filter(s => s.status === 'ABSENT').length;
     const lateCount = attendance.filter(s => s.status === 'LATE').length;
 
-    const paginated = attendance.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+    const paginated = filteredAttendance.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
     const handleImport = async (file) => {
         const formData = new FormData();
@@ -120,6 +130,21 @@ const AttendanceTab = () => {
                                 </Option>
                             ))}
                         </Select>
+                    </div>
+
+                    <div className={styles.filterGroup} style={{ marginTop: 16 }}>
+                        <label className={styles.filterLabel}>TÌM KIẾM SINH VIÊN</label>
+                        <Input
+                            placeholder="Tên hoặc mã SV..."
+                            prefix={<SearchOutlined />}
+                            value={search}
+                            onChange={(e) => {
+                                setSearch(e.target.value);
+                                setCurrentPage(1);
+                            }}
+                            className={styles.sidebarSearch}
+                            allowClear
+                        />
                     </div>
 
                     <div className={styles.filterDivider} />

@@ -41,16 +41,16 @@ const StudentsTab = ({ courseId }) => {
 
     const handleAddStudent = async () => {
         if (!newStudentId.trim()) {
-            message.warning('Vui lòng nhập ID sinh viên');
+            message.warning('Vui lòng nhập mã sinh viên');
             return;
         }
         try {
-            await addStudent({ studentId: newStudentId });
+            await addStudent({ userCode: newStudentId });
             message.success('Thêm sinh viên thành công');
             setIsAddModalVisible(false);
             setNewStudentId('');
         } catch (error) {
-            message.error(error.response?.data?.message || 'Có lỗi xảy ra khi thêm sinh viên');
+            message.error(error.message || 'Có lỗi xảy ra khi thêm sinh viên');
         }
     };
 
@@ -59,7 +59,7 @@ const StudentsTab = ({ courseId }) => {
             await removeStudent(studentId);
             message.success('Xóa sinh viên thành công');
         } catch (error) {
-            message.error(error.response?.data?.message || 'Có lỗi xảy ra khi xóa sinh viên');
+            message.error(error.message || 'Có lỗi xảy ra khi xóa sinh viên');
         }
     };
 
@@ -75,7 +75,7 @@ const StudentsTab = ({ courseId }) => {
             message.success('Import sinh viên từ Excel thành công');
             onSuccess("Ok");
         } catch (error) {
-            message.error(error.response?.data?.message || 'Import thất bại');
+            message.error(error.message || 'Import thất bại');
             onError(error);
         }
     };
@@ -196,10 +196,10 @@ const StudentsTab = ({ courseId }) => {
                 confirmLoading={isAdding}
             >
                 <div style={{ marginBottom: 16 }}>
-                    Nhập ID của sinh viên để thêm vào lớp học phần này:
+                    Nhập mã sinh viên của sinh viên để thêm vào lớp học phần này:
                 </div>
                 <Input
-                    placeholder="Nhập ID sinh viên"
+                    placeholder="Nhập mã sinh viên (Ví dụ: B23DCCC007)"
                     value={newStudentId}
                     onChange={(e) => setNewStudentId(e.target.value)}
                     onPressEnter={handleAddStudent}

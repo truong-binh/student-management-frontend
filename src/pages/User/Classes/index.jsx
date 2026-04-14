@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/layouts/User/MainLayout';
-import { Input, Select, Progress, Button, Pagination } from 'antd';
+import { Input, Select, Progress, Button, Pagination, Spin } from 'antd';
 import {
     SearchOutlined,
     BookOutlined,
@@ -14,6 +14,9 @@ import {
     TranslationOutlined
 } from '@ant-design/icons';
 import { useCourse } from '@/hooks/useCourse';
+import { useMySubmissions } from '@/hooks/useSubmission';
+import { assignmentApi } from '@/api/admin/assignment';
+import { useQuery } from '@tanstack/react-query';
 import styles from './styles.module.scss';
 
 const { Option } = Select;
@@ -23,12 +26,37 @@ const ICONS = [<CodeOutlined />, <GlobalOutlined />, <DesktopOutlined />, <Apart
 
 const MyClasses = () => {
     const navigate = useNavigate();
-    const { courses, isLoading } = useCourse();
+    const { courses, isLoading: coursesLoading } = useCourse();
+    const { mySubmissions, isLoading: submissionsLoading } = useMySubmissions();
 
     const [searchText, setSearchText] = useState('');
     const [semesterFilter, setSemesterFilter] = useState('All');
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 8;
+
+    const allCourseIds = useMemo(() => (Array.isArray(courses) ? courses.map(c => c._id || c.id).filter(Boolean) : []), [courses]);
+
+    const { data: assignmentsData = {}, isLoading: assignmentsLoading } = useQuery({
+        queryKey: ['courses-assignments-summary', allCourseIds],
+        enabled: allCourseIds.length > 0,
+        queryFn: async () => {
+            const results = await Promise.all(
+                allCourseIds.map(id => assignmentApi.getAssignmentsByCourseId(id)
+                    .then(res => ({
+                        id,
+                        data: res.success ? (res.data?.assignments || res.data?.items || res.data || []) : []
+                    }))
+                    .catch(() => ({ id, data: [] }))
+                )
+            );
+            return results.reduce((acc, curr) => {
+                acc[String(curr.id)] = curr.data;
+                return acc;
+            }, {});
+        }
+    });
+
+    const isLoading = coursesLoading || assignmentsLoading;
 
     const uniqueSemesters = useMemo(() => {
         return Array.from(new Set((Array.isArray(courses) ? courses : []).map(c => c.semester).filter(Boolean)));
@@ -43,6 +71,26 @@ const MyClasses = () => {
     });
 
     const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+    const getCourseProgress = (courseId) => {
+        const assignments = assignmentsData[String(courseId)] || [];
+        const total = assignments.length;
+        if (total === 0) return { completed: 0, total: 0, percent: 0 };
+
+        const completed = assignments.filter(a =>
+            mySubmissions.some(s => {
+                const subAssignmentId = s.assignment?._id || s.assignment?.id || s.assignment;
+                const assignmentId = a._id || a.id;
+                return String(subAssignmentId) === String(assignmentId);
+            })
+        ).length;
+
+        return {
+            completed,
+            total,
+            percent: Math.round((completed / total) * 100)
+        };
+    };
 
     return (
         <MainLayout>
@@ -79,16 +127,19 @@ const MyClasses = () => {
 
                 <div className={styles.classGrid}>
                     {isLoading ? (
-                        <div className="w-full text-center py-10" style={{ gridColumn: '1 / -1' }}>Đang tải danh sách...</div>
+                        <div className="w-full text-center py-20" style={{ gridColumn: '1 / -1' }}>
+                            <Spin size="large" tip="Đang tải danh sách lớp học..." />
+                        </div>
                     ) : paginated.length === 0 ? (
                         <div className="w-full text-center py-10" style={{ gridColumn: '1 / -1' }}>Không có lớp học nào phù hợp.</div>
                     ) : (
                         paginated.map((item, index) => {
                             const color = COLORS[index % COLORS.length];
                             const icon = ICONS[index % ICONS.length];
+                            const progress = getCourseProgress(item._id || item.id);
 
                             return (
-                                <div key={item._id} className={styles.classCard}>
+                                <div key={item._id || item.id} className={styles.classCard}>
                                     <div
                                         className={styles.cardHeader}
                                         style={{ backgroundColor: color }}
@@ -109,13 +160,20 @@ const MyClasses = () => {
                                             <span className={styles.name}>{item.lecturerId?.fullName || '---'}</span>
                                         </div>
 
-                                        <div className={styles.progressSection} style={{ marginBottom: '16px' }}>
+                                        <div className={styles.progressSection}>
                                             <div className={styles.progressHeader}>
-                                                <span className={styles.progressLabel}>Mô tả</span>
+                                                <span className={styles.progressLabel}>Tiến độ bài tập</span>
+                                                <span className={styles.progressValue}>
+                                                    {progress.completed}/{progress.total}
+                                                </span>
                                             </div>
-                                            <div style={{ color: '#718096', fontSize: '13px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginTop: '8px', minHeight: '39px', lineHeight: '1.5' }}>
-                                                {item.description || 'Chưa có mô tả cho học phần này.'}
-                                            </div>
+                                            <Progress
+                                                percent={progress.percent}
+                                                size="small"
+                                                strokeColor={color}
+                                                showInfo={false}
+                                                trailColor={`${color}10`}
+                                            />
                                         </div>
 
                                         <Button
@@ -124,7 +182,7 @@ const MyClasses = () => {
                                                 backgroundColor: `${color}15`,
                                                 color: color
                                             }}
-                                            onClick={() => navigate(`/classes/${item._id}`)}
+                                            onClick={() => navigate(`/classes/${item._id || item.id}`)}
                                         >
                                             Truy cập lớp học
                                         </Button>

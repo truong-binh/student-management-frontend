@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Table, Button, Space, Modal, Form, Input, InputNumber, Popconfirm, message, Tag } from 'antd';
+import { Table, Button, Space, Modal, Form, Input, InputNumber, Popconfirm, message, Tag, Select } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, ReadOutlined, AppstoreOutlined, CalendarOutlined, UserOutlined, MessageOutlined, BookOutlined } from '@ant-design/icons';
 import MainLayout from '@/layouts/User/MainLayout';
 import { useCourse } from '@/hooks/useCourse';
+import { SEMESTER_OPTIONS } from '@/utils/constants';
 import styles from './styles.module.scss';
 import dayjs from 'dayjs';
 
@@ -202,9 +203,9 @@ const TeacherCourseManage = () => {
                                 name="semester"
                                 label="Học kỳ"
                                 style={{ flex: 1 }}
-                                rules={[{ required: true, message: 'Vui lòng nhập học kỳ!' }]}
+                                rules={[{ required: true, message: 'Vui lòng chọn học kỳ!' }]}
                             >
-                                <Input placeholder="VD: Học kỳ 1 - 2026" />
+                                <Select placeholder="Chọn học kỳ" options={SEMESTER_OPTIONS} />
                             </Form.Item>
 
                             <Form.Item
