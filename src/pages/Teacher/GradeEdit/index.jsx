@@ -3,6 +3,7 @@ import { Button, Input, InputNumber, Tag, message, Spin, Popconfirm, Modal } fro
 import {
     ArrowLeftOutlined,
     InfoCircleOutlined,
+    ExclamationCircleOutlined,
     RobotOutlined,
     CommentOutlined,
     FileZipOutlined,
@@ -318,6 +319,7 @@ const TeacherGradeEdit = () => {
                                         description={newScore !== null && newScore !== submission?.score
                                             ? `Bạn sẽ gửi phản hồi và cập nhật điểm thành ${newScore}. Tiếp tục?`
                                             : "Xác nhận gửi nội dung phản hồi này?"}
+                                        overlayClassName="customPopconfirm"
                                         onConfirm={handleReply}
                                         okText="Xác nhận"
                                         cancelText="Hủy"
@@ -454,18 +456,23 @@ const TeacherGradeEdit = () => {
                 cancelText="Hủy"
                 confirmLoading={isUpdatingScore}
                 centered
+                wrapClassName={styles.scoreConfirmModal}
             >
-                <div style={{ padding: '20px 0' }}>
-                    <p style={{ fontSize: 16 }}>Bạn có chắc chắn muốn cập nhật điểm số cho sinh viên này không?</p>
-                    <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, marginTop: 16, display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
-                        <div style={{ textAlign: 'center' }}>
-                            <div style={{ color: '#64748b', fontSize: 13, marginBottom: 4 }}>Điểm cũ</div>
-                            <div style={{ fontSize: 24, fontWeight: 700, color: '#94a3b8' }}>{submission?.score || 0}</div>
+                <div className={styles.confirmModalBody}>
+                    <div className={styles.confirmModalIntro}>
+                        <ExclamationCircleOutlined className={styles.confirmModalIcon} />
+                        <p>Bạn có chắc chắn muốn cập nhật điểm số cho sinh viên này không?</p>
+                    </div>
+
+                    <div className={styles.confirmScoreDiff}>
+                        <div className={styles.confirmScoreItem}>
+                            <span className={styles.confirmScoreLabel}>Điểm cũ</span>
+                            <span className={styles.confirmScoreOldValue}>{submission?.score ?? 0}</span>
                         </div>
-                        <div style={{ fontSize: 20, color: '#3182ce' }}>→</div>
-                        <div style={{ textAlign: 'center' }}>
-                            <div style={{ color: '#64748b', fontSize: 13, marginBottom: 4 }}>Điểm mới</div>
-                            <div style={{ fontSize: 24, fontWeight: 700, color: '#e53e3e' }}>{newScore}</div>
+                        <span className={styles.confirmArrow}>→</span>
+                        <div className={styles.confirmScoreItem}>
+                            <span className={styles.confirmScoreLabel}>Điểm mới</span>
+                            <span className={styles.confirmScoreNewValue}>{newScore ?? 0}</span>
                         </div>
                     </div>
                 </div>

@@ -261,8 +261,9 @@ const GradeFeedback = () => {
                                         {submission.feedbackStatus !== 'RESOLVED' && (
                                             <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
                                                 <Popconfirm
-                                                    title="Thu hồi thắc mắc?"
-                                                    description="Bạn có chắc chắn muốn thu hồi yêu cầu phúc khảo này không?"
+                                                    title="Xác nhận thu hồi yêu cầu"
+                                                    description="Sau khi thu hồi, giảng viên sẽ không còn thấy yêu cầu này trong danh sách chờ xử lý."
+                                                    overlayClassName="customPopconfirm"
                                                     onConfirm={handleDeleteFeedback}
                                                     okText="Đồng ý"
                                                     cancelText="Hủy"
