@@ -1,11 +1,37 @@
 @import "../../assets/scss/variables";
 
 .headerWrap {
-  @apply p-6 border-b border-gray-95 text-xl font-semibold
+  @apply px-7 py-5 text-lg font-semibold text-white flex items-center gap-3;
+  background: linear-gradient(135deg, $colorBrandb 0%, darken(#b71c1c, 10%) 100%);
+  position: relative;
+  overflow: hidden;
+  min-height: 64px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -10%;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.07);
+    pointer-events: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -40%;
+    right: 10%;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    pointer-events: none;
+  }
 }
 
 .mainWrap {
-  @apply p-8 max-h-[90vh] overflow-y-auto
+  @apply p-7 max-h-[80vh] overflow-y-auto;
 }
-
-

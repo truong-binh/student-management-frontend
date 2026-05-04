@@ -471,6 +471,118 @@
     }
 }
 
+/* ── Score confirm modal ── */
+.scoreConfirmModal {
+    :global(.ant-modal-content) {
+        border-radius: 18px;
+        overflow: hidden;
+    }
+
+    :global(.ant-modal-header) {
+        border-bottom: 1px solid #f1f5f9;
+        padding: 18px 20px 14px;
+    }
+
+    :global(.ant-modal-title) {
+        font-size: 17px;
+        font-weight: 800;
+        color: #1f2937;
+    }
+
+    :global(.ant-modal-body) {
+        padding: 18px 20px;
+    }
+
+    :global(.ant-modal-footer) {
+        border-top: 1px solid #f1f5f9;
+        padding: 14px 20px 18px;
+        margin-top: 0;
+    }
+}
+
+.confirmModalBody {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.confirmModalIntro {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+
+    p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.6;
+        color: #7c2d12;
+        font-weight: 600;
+    }
+}
+
+.confirmModalIcon {
+    font-size: 17px;
+    margin-top: 2px;
+    color: #ea580c;
+}
+
+.confirmScoreDiff {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 12px;
+    align-items: stretch;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 14px;
+}
+
+.confirmScoreItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 12px 10px;
+}
+
+.confirmScoreLabel {
+    font-size: 12px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 700;
+}
+
+.confirmScoreOldValue,
+.confirmScoreNewValue {
+    font-size: 28px;
+    line-height: 1;
+    font-weight: 900;
+}
+
+.confirmScoreOldValue {
+    color: #64748b;
+}
+
+.confirmScoreNewValue {
+    color: #b91c1c;
+}
+
+.confirmArrow {
+    align-self: center;
+    font-size: 22px;
+    color: #0f766e;
+    font-weight: 700;
+}
+
 /* ── Responsive ── */
 @media (max-width: 900px) {
     .mainLayout {
@@ -661,6 +773,14 @@
     .successBackBtn {
         width: 100%;
         padding: 0 16px;
+    }
+
+    .confirmScoreDiff {
+        grid-template-columns: 1fr;
+    }
+
+    .confirmArrow {
+        transform: rotate(90deg);
     }
 }
 
@@ -875,4 +995,4 @@
     color: #3b82f6;
     margin-top: 2px;
     font-size: 16px;
-}
+}
