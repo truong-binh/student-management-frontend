@@ -134,4 +134,35 @@ export const courseApi = {
             url: `/api/courses/${courseId}/materials/${materialId}`,
         });
     },
+
+    updateGradeConfig: async (courseId, data) => {
+        return await apiAxios({
+            method: "patch",
+            url: `/api/courses/${courseId}/grade-config`,
+            data,
+        });
+    },
+
+    updateComponentGrade: async (courseId, studentId, componentId, score) => {
+        return await apiAxios({
+            method: "patch",
+            url: `/api/courses/${courseId}/grades/students/${studentId}/components/${componentId}`,
+            data: { score },
+        });
+    },
+
+    updateFinalGrade: async (courseId, studentId, score) => {
+        return await apiAxios({
+            method: "patch",
+            url: `/api/courses/${courseId}/grades/students/${studentId}/final`,
+            data: { score },
+        });
+    },
+
+    getFinalGrade: async (courseId, studentId) => {
+        return await apiAxios({
+            method: "get",
+            url: `/api/courses/${courseId}/grades/students/${studentId}/final`,
+        });
+    },
 };

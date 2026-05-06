@@ -795,59 +795,92 @@
 }
 
 .aiErrorItem {
-    padding: 12px;
+    padding: 16px;
     background: #fff;
-    border: 1px solid #fee2e2;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    border: 1px solid #e1e4e8;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s;
+
+    &:hover {
+        transform: translateY(-2px);
+    }
+
+    &.error { 
+        border-left: 4px solid #ef4444; 
+        background: #fffafa;
+    }
+    &.warning { 
+        border-left: 4px solid #f59e0b; 
+        background: #fffcf5;
+    }
+    &.suggestion { 
+        border-left: 4px solid #10b981; 
+        background: #f8fffb;
+    }
 }
 
 .aiErrorHeader {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 12px;
 
+    .aiSeverityTag {
+        border-radius: 20px;
+        font-weight: 800;
+        font-size: 10px;
+        padding: 0 10px;
+    }
+
     .aiLocation {
-        display: inline-flex;
-        padding: 4px 10px;
-        background: #f1f5f9;
+        padding: 2px 8px;
+        background: rgba(0,0,0,0.05);
         color: #475569;
         border-radius: 6px;
         font-size: 11px;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        width: fit-content;
-    }
-
-    .aiIssue {
-        font-size: 15px;
         font-weight: 700;
-        color: #991b1b;
-        line-height: 1.5;
+    }
+}
+
+.aiIssueText {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    line-height: 1.5;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 12px;
+
+    svg {
+        margin-top: 3px;
+        font-size: 16px;
     }
 }
 
 .aiSuggestion {
-    display: flex;
-    gap: 10px;
-    padding: 12px;
-    background: #f0f9ff;
+    background: #ffffff;
     border-radius: 8px;
-    border-left: 3px solid #3b82f6;
-    margin-top: 8px;
+    border: 1px solid rgba(0,0,0,0.08);
+    overflow: hidden;
 
-    .aiIconSuggestion {
-        color: #3b82f6;
-        margin-top: 2px;
-        font-size: 16px;
+    .aiSuggestHeader {
+        padding: 4px 12px;
+        background: rgba(0,0,0,0.03);
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    span {
-        font-size: 13.5px;
-        color: #1e40af;
+    .aiSuggestVal {
+        padding: 10px 12px;
+        font-size: 13px;
+        color: #334155;
         line-height: 1.5;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     }
 }
 
