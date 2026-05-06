@@ -17,6 +17,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import OverviewTab from './components/OverviewTab';
 import AttendanceTab from './components/AttendanceTab';
 import AssignmentsTab from './components/AssignmentsTab';
+import GradesTab from './components/GradesTab';
 import { useCourseDetail } from '@/hooks/useCourse';
 
 const { TabPane } = Tabs;
@@ -121,6 +122,9 @@ const ClassDetail = () => {
                         </Tabs.TabPane>
                         <Tabs.TabPane tab={<span><FormOutlined /> Bài tập</span>} key="assignments">
                             <AssignmentsTab />
+                        </Tabs.TabPane>
+                        <Tabs.TabPane tab={<span><BookOutlined /> Bảng điểm</span>} key="grades">
+                            <GradesTab courseId={courseData?._id || id} />
                         </Tabs.TabPane>
                     </Tabs>
                 </div>

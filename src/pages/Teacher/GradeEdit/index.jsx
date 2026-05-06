@@ -27,6 +27,7 @@ import { useAssignmentDetail } from '@/hooks/useCourseAssignment';
 import { useCourseDetail } from '@/hooks/useCourse';
 import { useSubmissionDetail, useSubmissionFeedback } from '@/hooks/useSubmission';
 import AICodeReview from '@/components/AICodeReview';
+import { getFileNameFromUrl, decodePotentialMojibake, getFilePresentation } from '@/utils/filePresentation';
 
 const { TextArea } = Input;
 
@@ -66,12 +67,26 @@ const TeacherGradeEdit = () => {
     const [isConfirmModalOpen, setIsConfirmModalOpen] = React.useState(false);
     const { replyFeedback, isReplying, updateScore, isUpdatingScore } = useSubmissionFeedback(studentId);
 
+    const submissionFiles = React.useMemo(() => {
+        if (!submission) return [];
+        const files = submission.files || [];
+        const fallbackUrls = submission.attachments || submission.fileUrls || (submission.fileUrl ? [submission.fileUrl] : []);
+        
+        if (files.length > 0) {
+            return files.map(f => ({ url: f.fileUrl, name: f.fileName }));
+        }
+        return fallbackUrls.map(url => ({ url, name: getFileNameFromUrl(url) }));
+    }, [submission]);
+
+    const activeFileUrl = submissionFiles[0]?.url;
+
     React.useEffect(() => {
         const fetchFileContent = async () => {
-            if (submission?.fileUrl) {
+            if (activeFileUrl) {
                 setIsFetchingFile(true);
                 try {
-                    const response = await fetch(submission.fileUrl);
+                    const response = await fetch(activeFileUrl);
+                    if (!response.ok) throw new Error('Network response was not ok');
                     const text = await response.text();
                     setFileContent(text);
                 } catch (error) {
@@ -80,6 +95,8 @@ const TeacherGradeEdit = () => {
                 } finally {
                     setIsFetchingFile(false);
                 }
+            } else {
+                setFileContent('');
             }
         };
 
@@ -88,14 +105,13 @@ const TeacherGradeEdit = () => {
         if (submission?.lecturerReply?.content) {
             setReplyText(submission.lecturerReply.content);
         } else if (submission?.instructorReply) {
-            
             setReplyText(submission.instructorReply);
         }
 
         if (submission?.score !== undefined && submission?.score !== null) {
             setNewScore(submission.score);
         }
-    }, [submission]);
+    }, [submission, activeFileUrl]);
 
     const handleBack = () => {
         navigate(`/teacher/classes/${id}?tab=assignments&assignmentId=${assignmentId}`);
@@ -236,22 +252,45 @@ const TeacherGradeEdit = () => {
 
                         <div className={styles.fileCard}>
                             <div className={styles.cardTitle}>FILE BÀI NỘP</div>
-                            {submission?.fileUrl ? (
+                            {submissionFiles.length > 0 ? (
                                 <>
-                                    <div className={styles.fileItem} style={{ marginBottom: fileContent ? 16 : 0 }}>
-                                        <FileZipOutlined className={styles.fileIcon} />
-                                        <div className={styles.fileInfo}>
-                                            <div className={styles.fileName}>{decodeURIComponent(submission.fileUrl.split('/').pop().split('?')[0])}</div>
-                                            <div className={styles.fileMeta}>Nộp lúc: {dayjs(submission.createdAt).format('DD/MM/YYYY')}</div>
-                                        </div>
-                                        <CloudDownloadOutlined className={styles.downloadIcon} onClick={() => window.open(submission.fileUrl, '_blank')} style={{ cursor: 'pointer' }} />
-                                    </div>
+                                    {submissionFiles.map((file, index) => {
+                                        const { icon, iconBg, iconColor } = getFilePresentation(file.name);
+                                        return (
+                                            <div key={index} className={styles.fileItem} style={{ marginBottom: (index === 0 && fileContent) ? 16 : 8 }}>
+                                                <div style={{ 
+                                                    background: iconBg, 
+                                                    color: iconColor,
+                                                    width: 32,
+                                                    height: 32,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    borderRadius: 6,
+                                                    marginRight: 12,
+                                                    fontSize: 16
+                                                }}>
+                                                    {icon}
+                                                </div>
+                                                <div className={styles.fileInfo}>
+                                                    <div className={styles.fileName}>{decodePotentialMojibake(file.name)}</div>
+                                                    <div className={styles.fileMeta}>Nộp lúc: {dayjs(submission.createdAt).format('DD/MM/YYYY')}</div>
+                                                </div>
+                                                <CloudDownloadOutlined 
+                                                    className={styles.downloadIcon} 
+                                                    onClick={() => window.open(file.url, '_blank')} 
+                                                    style={{ cursor: 'pointer' }} 
+                                                />
+                                            </div>
+                                        );
+                                    })}
+
                                     {isFetchingFile ? (
                                         <div style={{ padding: '20px', textAlign: 'center' }}><Spin size="small" tip="Đang đọc nội dung file..." /></div>
                                     ) : fileContent ? (
                                         <div className={styles.codePreview}>
                                             <div className={styles.codeHeader} onClick={() => setIsCodeModalOpen(true)} style={{ cursor: 'pointer' }}>
-                                                <span>Nội dung mã nguồn</span>
+                                                <span>Nội dung mã nguồn {submissionFiles.length > 1 && '(File đầu tiên)'}</span>
                                                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                                                     <Tag color="blue">Preview</Tag>
                                                     <FullscreenOutlined style={{ fontSize: 14 }} />
@@ -422,7 +461,7 @@ const TeacherGradeEdit = () => {
                                                 </div>
                                                 
                                                 <AICodeReview 
-                                                    fileUrl={submission?.fileUrl}
+                                                    fileUrl={activeFileUrl}
                                                     errors={submission.aiFeedbackData.errors}
                                                     summary={submission.aiFeedbackData.feedback}
                                                 />

@@ -5,9 +5,16 @@ import MainLayout from '@/layouts/User/MainLayout';
 import { useCourse } from '@/hooks/useCourse';
 import { SEMESTER_OPTIONS } from '@/utils/constants';
 import styles from './styles.module.scss';
-import dayjs from 'dayjs';
 
 const { TextArea } = Input;
+const defaultGradeComponents = [
+    { name: "Điểm danh (Bắt buộc)", type: "ATTENDANCE", weight: 10, isMandatory: true },
+    { name: "Bài tập (Tùy chọn)", type: "ASSIGNMENT", weight: 15, isMandatory: false },
+    { name: "Thuyết trình (Tùy chọn)", type: "OTHER", weight: 10, isMandatory: false },
+    { name: "Bài tập nhóm (Tùy chọn)", type: "OTHER", weight: 10, isMandatory: false },
+    { name: "Giữa kỳ (Tùy chọn)", type: "MIDTERM", weight: 15, isMandatory: false },
+    { name: "Cuối kỳ (Bắt buộc)", type: "FINAL_EXAM", weight: 40, isMandatory: true }
+];
 
 const teacherMenuItems = [
     { key: 'dashboard', label: 'Tổng quan', icon: <AppstoreOutlined />, path: '/teacher/dashboard' },
@@ -28,6 +35,9 @@ const TeacherCourseManage = () => {
     const openCreateModal = () => {
         setEditingCourse(null);
         form.resetFields();
+        form.setFieldsValue({
+            gradeComponents: defaultGradeComponents
+        });
         setIsModalOpen(true);
     };
 
@@ -39,8 +49,8 @@ const TeacherCourseManage = () => {
             semester: record.semester,
             credits: record.credits,
             description: record.description,
-            // Since lecturerId is an object or string, try to extract its ID or string representation
-            lecturerId: typeof record.lecturerId === 'object' && record.lecturerId ? record.lecturerId._id : record.lecturerId
+            lecturerId: typeof record.lecturerId === 'object' && record.lecturerId ? record.lecturerId._id : record.lecturerId,
+            gradeComponents: record.gradeComponents || defaultGradeComponents
         });
         setIsModalOpen(true);
     };
@@ -53,8 +63,26 @@ const TeacherCourseManage = () => {
 
     const handleSubmit = async (values) => {
         try {
+            const totalWeight = values.gradeComponents.reduce((acc, curr) => acc + (curr.weight || 0), 0);
+            if (totalWeight !== 100) {
+                message.error(`Tổng hệ số phải bằng 100%. Hiện tại là ${totalWeight}%`);
+                return;
+            }
+
+            const payload = {
+                courseInfo: {
+                    courseCode: values.courseCode,
+                    courseName: values.courseName,
+                    semester: values.semester,
+                    credits: values.credits,
+                    description: values.description,
+                    lecturerId: values.lecturerId
+                },
+                gradeComponents: values.gradeComponents
+            };
+
             if (editingCourse) {
-                updateCourse(editingCourse._id, values, {
+                updateCourse(editingCourse._id, payload, {
                     onSuccess: () => {
                         message.success('Cập nhật khóa học thành công');
                         handleCancel();
@@ -64,7 +92,7 @@ const TeacherCourseManage = () => {
                     }
                 });
             } else {
-                createCourse(values, {
+                createCourse(payload, {
                     onSuccess: () => {
                         message.success('Thêm mới khóa học thành công');
                         handleCancel();
@@ -176,6 +204,9 @@ const TeacherCourseManage = () => {
                     onCancel={handleCancel}
                     footer={null}
                     destroyOnClose
+                    width={850}
+                    centered
+                    bodyStyle={{ maxHeight: '80vh', overflowY: 'auto', padding: '24px' }}
                 >
                     <Form
                         form={form}
@@ -233,7 +264,64 @@ const TeacherCourseManage = () => {
                             <TextArea rows={4} placeholder="Nhập mô tả lớp học..." />
                         </Form.Item>
 
-                        <Form.Item className={styles.formActions}>
+                        <div style={{ 
+                            marginTop: 32, 
+                            padding: 20, 
+                            border: '1px solid #d9d9d9', 
+                            borderRadius: '8px',
+                            background: '#fafafa'
+                        }}>
+                            <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Cấu trúc điểm học phần</h4>
+                                <Tag color="orange">Tổng hệ số phải bằng 100%</Tag>
+                            </div>
+                            
+                            <Form.List name="gradeComponents">
+                                {(fields) => (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                        {fields.map(({ key, name, ...restField }) => (
+                                            <Space key={key} style={{ width: '100%', justifyContent: 'space-between' }} align="baseline">
+                                                <Form.Item
+                                                    {...restField}
+                                                    name={[name, 'name']}
+                                                    style={{ marginBottom: 0 }}
+                                                    rules={[{ required: true, message: 'Tên đầu điểm' }]}
+                                                >
+                                                    <Input placeholder="Tên đầu điểm" style={{ width: 250 }} />
+                                                </Form.Item>
+                                                
+                                                <Form.Item
+                                                    {...restField}
+                                                    name={[name, 'weight']}
+                                                    rules={[{ required: true, message: 'Nhập %' }]}
+                                                    style={{ marginBottom: 0 }}
+                                                >
+                                                    <InputNumber min={0} max={100} style={{ width: 110 }} addonAfter="%" />
+                                                </Form.Item>
+
+                                                <Form.Item
+                                                    {...restField}
+                                                    name={[name, 'isMandatory']}
+                                                    valuePropName="checked"
+                                                    style={{ marginBottom: 0 }}
+                                                >
+                                                    <Select style={{ width: 120 }}>
+                                                        <Select.Option value={true}>Bắt buộc</Select.Option>
+                                                        <Select.Option value={false}>Tùy chọn</Select.Option>
+                                                    </Select>
+                                                </Form.Item>
+                                                
+                                                <div style={{ width: 80, textAlign: 'right' }}>
+                                                    <Tag color="cyan">{form.getFieldValue(['gradeComponents', name, 'type']) || 'OTHER'}</Tag>
+                                                </div>
+                                            </Space>
+                                        ))}
+                                    </div>
+                                )}
+                            </Form.List>
+                        </div>
+
+                        <Form.Item className={styles.formActions} style={{ marginTop: 24, textAlign: 'right' }}>
                             <Space>
                                 <Button onClick={handleCancel}>Hủy</Button>
                                 <Button type="primary" htmlType="submit" loading={isCreating || isUpdating}>

@@ -142,6 +142,14 @@ const GradeFeedback = () => {
                                     </div>
                                     {gradeInfo && <Tag className={styles.statusTag} style={{ background: gradeInfo.color + '20', color: gradeInfo.color }}>{gradeInfo.label}</Tag>}
                                 </div>
+                                <Button 
+                                    type="link" 
+                                    icon={<BookOutlined />} 
+                                    style={{ marginTop: 8, padding: 0 }}
+                                    onClick={() => navigate(`/classes/${id}?tab=grades`)}
+                                >
+                                    Xem toàn bộ bảng điểm học phần
+                                </Button>
                             </div>
 
                             <div className={styles.section}>
@@ -177,23 +185,59 @@ const GradeFeedback = () => {
                                                         <CloseCircleFilled /> Cần cải thiện
                                                     </div>
                                                     <div className={styles.aiErrorList}>
-                                                        {submission.aiFeedbackData.errors.slice(0, 10).map((err, idx) => (
-                                                            <div key={idx} className={styles.aiErrorItem}>
-                                                                <div className={styles.aiErrorHeader}>
-                                                                    <span className={styles.aiLocation}>{err.location}</span>
-                                                                    <span className={styles.aiIssue}>{err.issue}</span>
-                                                                </div>
-                                                                {err.suggestion && (
-                                                                    <div className={styles.aiSuggestion}>
-                                                                        <BulbOutlined className={styles.aiIconSuggestion} />
-                                                                        <span>{err.suggestion}</span>
+                                                        {(() => {
+                                                            const getSeverity = (err) => {
+                                                                const text = (err.issue + ' ' + (err.type || '')).toLowerCase();
+                                                                if (text.includes('warning') || text.includes('cảnh báo') || text.includes('nên')) return 'warning';
+                                                                if (text.includes('suggestion') || text.includes('gợi ý') || text.includes('tối ưu')) return 'suggestion';
+                                                                return 'error';
+                                                            };
+
+                                                            return submission.aiFeedbackData.errors.slice(0, 5).map((err, idx) => {
+                                                                const severity = getSeverity(err);
+                                                                return (
+                                                                    <div key={idx} className={clsx(styles.aiErrorItem, styles[severity])}>
+                                                                        <div className={styles.aiErrorHeader}>
+                                                                            <Tag className={styles.aiSeverityTag} color={
+                                                                                severity === 'error' ? 'red' : 
+                                                                                severity === 'warning' ? 'orange' : 'green'
+                                                                            }>
+                                                                                {severity === 'error' ? 'LỖI' : 
+                                                                                 severity === 'warning' ? 'CẢNH BÁO' : 'GỢI Ý'}
+                                                                            </Tag>
+                                                                            <span className={styles.aiLocation}>{err.location || `Dòng ${err.line}`}</span>
+                                                                        </div>
+                                                                        <div className={styles.aiIssueText}>
+                                                                            {severity === 'error' ? <CloseCircleFilled style={{ color: '#ef4444' }} /> :
+                                                                             severity === 'warning' ? <ExclamationCircleOutlined style={{ color: '#f59e0b' }} /> :
+                                                                             <InfoCircleOutlined style={{ color: '#3b82f6' }} />}
+                                                                            <span>{err.issue}</span>
+                                                                        </div>
+                                                                        {err.suggestion && (
+                                                                            <div className={styles.aiSuggestion}>
+                                                                                <div className={styles.aiSuggestHeader}>Gợi ý:</div>
+                                                                                <div className={styles.aiSuggestVal}>{err.suggestion}</div>
+                                                                            </div>
+                                                                        )}
                                                                     </div>
-                                                                )}
-                                                            </div>
-                                                        ))}
-                                                        {submission.aiFeedbackData.errors.length > 10 && (
-                                                            <div style={{ fontSize: '11px', color: '#64748b', textAlign: 'center', fontStyle: 'italic' }}>
-                                                                Và {submission.aiFeedbackData.errors.length - 10} lỗi khác...
+                                                                );
+                                                            });
+                                                        })()}
+                                                        {submission.aiFeedbackData.errors.length > 5 && (
+                                                            <div 
+                                                                style={{ 
+                                                                    fontSize: '13px', 
+                                                                    color: '#3182ce', 
+                                                                    textAlign: 'center', 
+                                                                    cursor: 'pointer',
+                                                                    padding: '8px',
+                                                                    background: '#ebf8ff',
+                                                                    borderRadius: '8px',
+                                                                    fontWeight: 600
+                                                                }}
+                                                                onClick={() => navigate(`/classes/${id}/assignments/${assignmentId}/result`)}
+                                                            >
+                                                                Xem chi tiết tất cả {submission.aiFeedbackData.errors.length} nhận xét &gt;
                                                             </div>
                                                         )}
                                                     </div>

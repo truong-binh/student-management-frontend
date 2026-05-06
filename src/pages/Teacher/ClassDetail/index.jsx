@@ -21,6 +21,7 @@ import StudentsTab from './components/StudentsTab';
 import AttendanceTab from './components/AttendanceTab';
 import AssignmentsTab from './components/AssignmentsTab';
 import CreateAssignmentTab from './components/CreateAssignmentTab';
+import GradesTab from './components/GradesTab';
 
 import { useCourseDetail } from '@/hooks/useCourse';
 import { Spin } from 'antd';
@@ -157,6 +158,11 @@ const TeacherClassDetail = () => {
                                 key: 'create-assignment',
                                 label: <span className={styles.tabLabel}><EditOutlined /> <span>Tạo bài tập</span></span>,
                                 children: <CreateAssignmentTab classInfo={classInfo} courseId={course._id} />,
+                            },
+                            {
+                                key: 'grades',
+                                label: <span className={styles.tabLabel}><BookOutlined /> <span>Bảng điểm</span></span>,
+                                children: <GradesTab courseId={course._id} />,
                             },
                         ]}
                     />
