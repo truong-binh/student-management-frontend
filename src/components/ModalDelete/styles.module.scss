@@ -1,5 +1,6 @@
 @import "../../assets/scss/variables";
 
 .mainWrap {
-  @apply p-[20px] flex justify-center items-center flex-col;
+  @apply flex flex-col justify-center items-center;
+  padding: 36px 32px 32px;
 }

@@ -142,7 +142,13 @@ const TeacherClassDetail = () => {
                             {
                                 key: 'students',
                                 label: <span className={styles.tabLabel}><UserOutlined /> <span>DS sinh viên</span></span>,
-                                children: <StudentsTab courseId={course._id} />,
+                                children: (
+                                    <StudentsTab
+                                        courseId={course._id}
+                                        courseCode={classInfo.code}
+                                        courseName={classInfo.title}
+                                    />
+                                ),
                             },
                             {
                                 key: 'attendance',

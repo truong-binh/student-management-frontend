@@ -1,16 +1,70 @@
 import React, { useState } from 'react';
 import { Table, Button, Input, Modal, Upload, message, Popconfirm, Space } from 'antd';
-import { UserAddOutlined, UploadOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
+import { UserAddOutlined, UploadOutlined, DeleteOutlined, SearchOutlined, DownloadOutlined } from '@ant-design/icons';
 import { useCourseStudents } from '@/hooks/useCourseStudent';
+import { courseApi } from '@/api/admin/course';
+import * as XLSX from 'xlsx-js-style';
 import styles from '../styles.module.scss';
 
+const EXPORT_COLUMNS = [
+    'Mã SV',
+    'Họ và tên',
+    'email',
+    'thời gian tham gia',
+    'Trạng thái thi',
+    'Chuyên cần',
+    'Bài tập, thảo luận',
+    'Điểm giữa kỳ',
+    'Điểm cuối kỳ',
+];
 
+const EXPORT_COLUMN_WIDTHS = [14, 26, 32, 22, 16, 14, 20, 14, 14];
+const EXPORT_COLUMN_ALIGNMENTS = ['center', 'left', 'left', 'center', 'center', 'center', 'center', 'center', 'center'];
 
-const StudentsTab = ({ courseId }) => {
+const BASE_BORDER = {
+    top: { style: 'thin', color: { rgb: 'D9D9D9' } },
+    right: { style: 'thin', color: { rgb: 'D9D9D9' } },
+    bottom: { style: 'thin', color: { rgb: 'D9D9D9' } },
+    left: { style: 'thin', color: { rgb: 'D9D9D9' } },
+};
+
+const getCellStyle = (isHeader, horizontalAlign) => ({
+    font: {
+        name: 'Calibri',
+        sz: 11,
+        bold: isHeader,
+        color: { rgb: isHeader ? 'FFFFFF' : '1F2937' },
+    },
+    fill: {
+        patternType: 'solid',
+        fgColor: { rgb: isHeader ? 'B71C1C' : 'FFFFFF' },
+    },
+    alignment: {
+        horizontal: horizontalAlign,
+        vertical: 'center',
+        wrapText: true,
+    },
+    border: BASE_BORDER,
+});
+
+const sanitizeFilePart = (value = '') => {
+    return String(value)
+        .replace(/[\\/:*?"<>|]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+};
+
+const formatJoinedAtForExport = (joinedAt) => {
+    if (!joinedAt) return '';
+    return new Date(joinedAt).toLocaleString('vi-VN');
+};
+
+const StudentsTab = ({ courseId, courseCode, courseName }) => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const [search, setSearch] = useState('');
     const [searchValue, setSearchValue] = useState('');
+    const [isExportingExcel, setIsExportingExcel] = useState(false);
 
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
     const [newStudentId, setNewStudentId] = useState('');
@@ -77,6 +131,74 @@ const StudentsTab = ({ courseId }) => {
         } catch (error) {
             message.error(error.message || 'Import thất bại');
             onError(error);
+        }
+    };
+
+    const handleExportExcel = async () => {
+        if (!courseId) {
+            message.error('Không xác định được lớp học để xuất dữ liệu');
+            return;
+        }
+
+        setIsExportingExcel(true);
+
+        try {
+            const response = await courseApi.getCourseStudents(courseId, {
+                page: 1,
+                limit: 10000,
+                search: '',
+            });
+
+            if (!response?.success) {
+                throw response;
+            }
+
+            const allStudents = (Array.isArray(response.data) ? response.data : (response.data?.items || []))
+                .filter((item) => item?.student);
+
+            const excelRows = allStudents.map((item) => ([
+                item.student?.userCode || '',
+                item.student?.fullName || '',
+                item.student?.email || '',
+                formatJoinedAtForExport(item.joinedAt),
+                '',
+                '',
+                '',
+                '',
+                '',
+            ]));
+
+            const sheetData = [EXPORT_COLUMNS, ...excelRows];
+            const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
+
+            worksheet['!cols'] = EXPORT_COLUMN_WIDTHS.map((width) => ({ wch: width }));
+            worksheet['!rows'] = sheetData.map((_, rowIndex) => ({ hpt: rowIndex === 0 ? 24 : 20 }));
+
+            for (let rowIndex = 0; rowIndex < sheetData.length; rowIndex += 1) {
+                for (let colIndex = 0; colIndex < EXPORT_COLUMNS.length; colIndex += 1) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: rowIndex, c: colIndex });
+                    const cell = worksheet[cellAddress];
+                    if (!cell) continue;
+
+                    const isHeader = rowIndex === 0;
+                    const horizontalAlign = EXPORT_COLUMN_ALIGNMENTS[colIndex] || 'left';
+                    cell.s = getCellStyle(isHeader, horizontalAlign);
+                }
+            }
+
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Danh sach sinh vien');
+
+            const safeCourseCode = sanitizeFilePart(courseCode || courseId || 'MON_HOC');
+            const safeCourseName = sanitizeFilePart(courseName || 'Khong xac dinh');
+            const fileName = `${safeCourseCode} - ${safeCourseName} - DANH SÁCH SINH VIÊN.xlsx`;
+
+            XLSX.writeFile(workbook, fileName);
+            message.success(`Xuất danh sách sinh viên thành công (${allStudents.length} sinh viên)`);
+        } catch (error) {
+            message.error(error?.message || 'Có lỗi xảy ra khi xuất file Excel');
+        } finally {
+            setIsExportingExcel(false);
         }
     };
 
@@ -166,6 +288,13 @@ const StudentsTab = ({ courseId }) => {
                             Import Excel
                         </Button>
                     </Upload>
+                    <Button
+                        icon={<DownloadOutlined />}
+                        loading={isExportingExcel}
+                        onClick={handleExportExcel}
+                    >
+                        Export Excel
+                    </Button>
                 </Space>
             </div>
 

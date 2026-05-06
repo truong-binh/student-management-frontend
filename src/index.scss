@@ -689,3 +689,164 @@ html *::-webkit-scrollbar-thumb {
   @apply bg-[#bec3cd];
   @apply rounded-lg;
 }
+
+/* ─── Global Popconfirm Styles ─── */
+.ant-popover.customPopconfirm,
+.ant-popover.ant-popconfirm {
+  .ant-popover-inner {
+    padding: 20px 24px 16px !important;
+    border-radius: 16px !important;
+    box-shadow:
+      0 20px 48px -8px rgba(0, 0, 0, 0.16),
+      0 0 0 1px rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid #f0f0f0 !important;
+    min-width: 260px;
+  }
+
+  .ant-popover-inner-content {
+    padding: 0 !important;
+  }
+
+  .ant-popconfirm-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 14px !important;
+  }
+
+  .ant-popconfirm-message-icon {
+    margin-top: 2px;
+    font-size: 17px !important;
+  }
+
+  .ant-popconfirm-title {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: #1a202c !important;
+    line-height: 1.4;
+    margin-bottom: 2px !important;
+  }
+
+  .ant-popconfirm-description {
+    font-size: 13px !important;
+    color: #64748b !important;
+    line-height: 1.6;
+    margin-top: 4px !important;
+  }
+
+  .ant-popconfirm-buttons {
+    display: flex !important;
+    justify-content: flex-end;
+    gap: 8px !important;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 12px;
+    margin-top: 4px;
+
+    button {
+      border-radius: 8px !important;
+      height: 34px !important;
+      padding: 0 16px !important;
+      font-weight: 600 !important;
+      font-size: 13px !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .ant-btn-default {
+      background: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+      color: #475569 !important;
+
+      &:hover {
+        background: #f1f5f9 !important;
+        border-color: #cbd5e1 !important;
+        color: #1e293b !important;
+      }
+    }
+
+    .ant-btn-primary.ant-btn-dangerous {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+      border: none !important;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35) !important;
+
+      &:hover {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.45) !important;
+        transform: translateY(-1px);
+      }
+
+      .ant-btn-primary {
+        background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%) !important;
+        border: none !important;
+        box-shadow: 0 2px 8px rgba(13, 148, 136, 0.3) !important;
+
+        &:hover {
+          background: linear-gradient(135deg, #115e59 0%, #0f766e 100%) !important;
+          box-shadow: 0 4px 12px rgba(13, 148, 136, 0.4) !important;
+          transform: translateY(-1px);
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .ant-popover.customPopconfirm,
+  .ant-popover.ant-popconfirm {
+    .ant-popover-inner {
+      min-width: 220px;
+      max-width: calc(100vw - 24px);
+      padding: 16px 16px 12px !important;
+    }
+
+    .ant-popconfirm-buttons {
+      button {
+        padding: 0 12px !important;
+      }
+    }
+  }
+}
+
+/* ─── Confirm Modal (ant Modal with okType=danger) ─── */
+.ant-modal-confirm {
+  .ant-modal-content {
+    border-radius: 20px !important;
+    padding: 0 !important;
+    overflow: hidden;
+    box-shadow:
+      0 32px 64px -12px rgba(0, 0, 0, 0.18),
+      0 0 0 1px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  .ant-modal-confirm-body {
+    padding: 28px 28px 8px !important;
+    gap: 12px !important;
+
+    .ant-modal-confirm-title {
+      font-size: 18px !important;
+      font-weight: 800 !important;
+      color: #1a202c !important;
+    }
+
+    .ant-modal-confirm-content {
+      font-size: 14px !important;
+      color: #4b5563 !important;
+      line-height: 1.7 !important;
+    }
+  }
+
+  .ant-modal-confirm-btns {
+    padding: 16px 28px 24px !important;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+
+    button {
+      border-radius: 10px !important;
+      height: 40px !important;
+      padding: 0 20px !important;
+      font-weight: 600 !important;
+      font-size: 14px !important;
+    }
+  }
+}
