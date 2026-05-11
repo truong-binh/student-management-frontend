@@ -3,6 +3,45 @@ import { Modal, Form, Input, InputNumber, Button, Space, message, Select } from 
 import { useCourse } from '@/hooks/useCourse';
 import { SEMESTER_OPTIONS } from '@/utils/constants';
 
+const defaultGradeComponents = [
+    {
+        name: "Điểm danh (Bắt buộc)",
+        type: "ATTENDANCE",
+        weight: 10,
+        isMandatory: true
+    },
+    {
+        name: "Bài tập (Tùy chọn), đổi thành `true` nếu muốn sử dụng điểm thành phần này",
+        type: "ASSIGNMENT",
+        weight: 15,
+        isMandatory: false
+    },
+    {
+        name: "Thuyết trình (Tùy chọn), đổi thành `true` nếu muốn sử dụng điểm thành phần này",
+        type: "OTHER",
+        weight: 10,
+        isMandatory: false
+    },
+    {
+        name: "Bài tập nhóm (Tùy chọn), đổi thành `true` nếu muốn sử dụng điểm thành phần này",
+        type: "OTHER",
+        weight: 10,
+        isMandatory: false
+    },
+    {
+        name: "Giữa kỳ (Tùy chọn), đổi thành `true` nếu muốn sử dụng điểm thành phần này",
+        type: "MIDTERM",
+        weight: 15,
+        isMandatory: false
+    },
+    {
+        name: "Cuối kỳ (Bắt buộc)",
+        type: "FINAL_EXAM",
+        weight: 40,
+        isMandatory: true
+    }
+];
+
 const { TextArea } = Input;
 
 const CourseModal = ({ isModalOpen, handleCancel, editingCourse }) => {
@@ -29,7 +68,15 @@ const CourseModal = ({ isModalOpen, handleCancel, editingCourse }) => {
     const onSubmit = async (values) => {
         try {
             if (editingCourse) {
-                updateCourse(editingCourse._id, values, {
+                const flatPayload = {
+                    courseCode: values.courseCode,
+                    courseName: values.courseName,
+                    semester: values.semester,
+                    credits: values.credits,
+                    description: values.description,
+                    lecturerId: values.lecturerId
+                };
+                updateCourse(editingCourse._id, flatPayload, {
                     onSuccess: () => {
                         message.success('Cập nhật khóa học thành công');
                         handleCancel();
@@ -39,7 +86,18 @@ const CourseModal = ({ isModalOpen, handleCancel, editingCourse }) => {
                     }
                 });
             } else {
-                createCourse(values, {
+                const nestedPayload = {
+                    courseInfo: {
+                        courseCode: values.courseCode,
+                        courseName: values.courseName,
+                        semester: values.semester,
+                        credits: values.credits,
+                        description: values.description,
+                        lecturerId: values.lecturerId
+                    },
+                    gradeComponents: defaultGradeComponents
+                };
+                createCourse(nestedPayload, {
                     onSuccess: () => {
                         message.success('Thêm mới khóa học thành công');
                         handleCancel();

@@ -69,20 +69,16 @@ const TeacherCourseManage = () => {
                 return;
             }
 
-            const payload = {
-                courseInfo: {
+            if (editingCourse) {
+                const flatPayload = {
                     courseCode: values.courseCode,
                     courseName: values.courseName,
                     semester: values.semester,
                     credits: values.credits,
                     description: values.description,
                     lecturerId: values.lecturerId
-                },
-                gradeComponents: values.gradeComponents
-            };
-
-            if (editingCourse) {
-                updateCourse(editingCourse._id, payload, {
+                };
+                updateCourse(editingCourse._id, flatPayload, {
                     onSuccess: () => {
                         message.success('Cập nhật khóa học thành công');
                         handleCancel();
@@ -92,7 +88,18 @@ const TeacherCourseManage = () => {
                     }
                 });
             } else {
-                createCourse(payload, {
+                const nestedPayload = {
+                    courseInfo: {
+                        courseCode: values.courseCode,
+                        courseName: values.courseName,
+                        semester: values.semester,
+                        credits: values.credits,
+                        description: values.description,
+                        lecturerId: values.lecturerId
+                    },
+                    gradeComponents: values.gradeComponents
+                };
+                createCourse(nestedPayload, {
                     onSuccess: () => {
                         message.success('Thêm mới khóa học thành công');
                         handleCancel();
@@ -264,10 +271,10 @@ const TeacherCourseManage = () => {
                             <TextArea rows={4} placeholder="Nhập mô tả lớp học..." />
                         </Form.Item>
 
-                        <div style={{ 
-                            marginTop: 32, 
-                            padding: 20, 
-                            border: '1px solid #d9d9d9', 
+                        <div style={{
+                            marginTop: 32,
+                            padding: 20,
+                            border: '1px solid #d9d9d9',
                             borderRadius: '8px',
                             background: '#fafafa'
                         }}>
@@ -275,7 +282,7 @@ const TeacherCourseManage = () => {
                                 <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Cấu trúc điểm học phần</h4>
                                 <Tag color="orange">Tổng hệ số phải bằng 100%</Tag>
                             </div>
-                            
+
                             <Form.List name="gradeComponents">
                                 {(fields) => (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -289,7 +296,7 @@ const TeacherCourseManage = () => {
                                                 >
                                                     <Input placeholder="Tên đầu điểm" style={{ width: 250 }} />
                                                 </Form.Item>
-                                                
+
                                                 <Form.Item
                                                     {...restField}
                                                     name={[name, 'weight']}
@@ -310,7 +317,7 @@ const TeacherCourseManage = () => {
                                                         <Select.Option value={false}>Tùy chọn</Select.Option>
                                                     </Select>
                                                 </Form.Item>
-                                                
+
                                                 <div style={{ width: 80, textAlign: 'right' }}>
                                                     <Tag color="cyan">{form.getFieldValue(['gradeComponents', name, 'type']) || 'OTHER'}</Tag>
                                                 </div>
