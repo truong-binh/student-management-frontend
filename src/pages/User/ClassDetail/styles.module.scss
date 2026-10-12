@@ -983,15 +983,6 @@
                     }
                 }
 
-                .assignAction {
-                    width: 100%;
-
-                    :global(.ant-btn) {
-                        width: 100%;
-                        min-width: 0;
-                    }
-                }
-
                 .assignFooter {
                     grid-column: 1 / -1;
                     flex-direction: column;
@@ -1002,6 +993,17 @@
                         min-width: 0;
                         align-items: flex-start;
                         text-align: left;
+                    }
+
+                    /* .assignAction nằm trong .assignFooter ở quy tắc gốc nên phải
+                       lồng y hệt, nếu không sẽ bị selector gốc ghi đè */
+                    .assignAction {
+                        width: 100%;
+
+                        :global(.ant-btn) {
+                            width: 100%;
+                            min-width: 0;
+                        }
                     }
                 }
             }

@@ -21,7 +21,11 @@ import {
 import userDefault from '@/assets/images/logos/user_default.png';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import useMediaQuery from '@/utils/hooks/useMediaQuery';
+
+// Trùng với breakpoint ẩn sidebar trong styles.module.scss
+const MOBILE_QUERY = '(max-width: 992px)';
 
 const NOTIFICATION_LIMIT = 6;
 
@@ -130,7 +134,9 @@ function MainLayout(props) {
     const { children, menuItems } = props;
     const { user } = useAuth();
     const navigate = useNavigate();
-    
+    const location = useLocation();
+    const isMobile = useMediaQuery(MOBILE_QUERY);
+
     // State cho menu mobile (từ teacher2)
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -145,6 +151,27 @@ function MainLayout(props) {
     useEffect(() => {
         localStorage.setItem('sidebar_collapsed', collapsed);
     }, [collapsed]);
+
+    // Quay về desktop thì đóng drawer để tránh kẹt overlay
+    useEffect(() => {
+        if (!isMobile) setSidebarOpen(false);
+    }, [isMobile]);
+
+    // Đổi trang thì đóng drawer
+    useEffect(() => {
+        setSidebarOpen(false);
+    }, [location.pathname]);
+
+    // Khoá scroll nền khi drawer đang mở
+    useEffect(() => {
+        if (!sidebarOpen) return undefined;
+
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = previousOverflow;
+        };
+    }, [sidebarOpen]);
 
     const {
         notifications,
@@ -324,8 +351,8 @@ function MainLayout(props) {
                 isOpen={sidebarOpen}
                 onClose={() => setSidebarOpen(false)}
                 setIsMobileMenuOpen={setSidebarOpen}
-                // Các props cho desktop
-                collapsed={collapsed}
+                // Các props cho desktop (trên mobile luôn mở rộng để thấy nhãn menu)
+                collapsed={!isMobile && collapsed}
                 setCollapsed={setCollapsed}
             />
             
@@ -336,7 +363,13 @@ function MainLayout(props) {
                 <header className={styles.header}>
                     <div className={styles.headerLeft}>
                         {/* Nút hamburger mở menu trên mobile */}
-                        <button className={styles.menuBtn} onClick={() => setSidebarOpen(true)}>
+                        <button
+                            type="button"
+                            className={styles.menuBtn}
+                            aria-label="Mở menu"
+                            aria-expanded={sidebarOpen}
+                            onClick={() => setSidebarOpen(true)}
+                        >
                             <MenuOutlined />
                         </button>
                         <div className={styles.welcome}>

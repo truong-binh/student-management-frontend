@@ -137,7 +137,8 @@
 
     .deadlineGrid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        /* min() để cột không bao giờ rộng hơn khung chứa trên màn hình nhỏ */
+        grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
         gap: 24px;
 
         .deadlineCard {
@@ -220,10 +221,145 @@
 }
 
 @media (max-width: 1200px) {
-    .page { margin: 16px; border-radius: 16px; padding: 24px; }
+    .page { margin: 16px 0; border-radius: 16px; padding: 24px; }
+}
+
+@media (max-width: 992px) {
+    .page {
+        .header {
+            margin-bottom: 24px;
+
+            .titleSection h1 {
+                font-size: 26px;
+            }
+        }
+
+        .metricsContainer {
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .filterCard {
+            margin-bottom: 24px;
+        }
+
+        .deadlineGrid {
+            gap: 16px;
+        }
+    }
 }
 
 @media (max-width: 768px) {
-    .metricsContainer { grid-template-columns: 1fr; }
-    .filterCard { :global(.ant-card-body) { flex-direction: column; } .timeFilter { width: 100%; } }
+    /* Phải lồng trong .page: các class con được khai báo lồng nhau nên
+       selector .page .metricsContainer có độ ưu tiên cao hơn .metricsContainer */
+    .page {
+        padding: 18px 14px;
+
+        .metricsContainer {
+            grid-template-columns: 1fr;
+        }
+
+        .filterCard {
+            :global(.ant-card-body) {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .timeFilter {
+                width: 100%;
+            }
+        }
+    }
+}
+
+@media (max-width: 640px) {
+    .page {
+        margin: 10px 0;
+        padding: 16px 12px;
+        border-radius: 14px;
+        min-height: 0;
+
+        .header {
+            margin-bottom: 18px;
+
+            .titleSection {
+                h1 {
+                    font-size: 20px;
+                    letter-spacing: -0.2px;
+                }
+
+                p {
+                    font-size: 13px;
+                }
+            }
+        }
+
+        .metricsContainer {
+            gap: 12px;
+            margin-bottom: 20px;
+
+            .metricCard {
+                padding: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                text-align: left;
+
+                .metricValue {
+                    font-size: 26px;
+                    margin-bottom: 0;
+                }
+
+                .metricLabel {
+                    font-size: 11px;
+                    letter-spacing: 0.5px;
+                }
+            }
+        }
+
+        .filterCard {
+            margin-bottom: 18px;
+
+            :global(.ant-card-body) {
+                padding: 14px;
+                gap: 10px;
+            }
+        }
+
+        .deadlineGrid {
+            grid-template-columns: 1fr;
+            gap: 14px;
+
+            .deadlineCard {
+                border-radius: 16px;
+
+                .cardHeader {
+                    padding: 12px 14px;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                }
+
+                .cardBody {
+                    padding: 16px 14px;
+
+                    .assignmentTitle {
+                        font-size: 16px;
+                        height: auto;
+                    }
+
+                    .courseName {
+                        margin-bottom: 14px;
+                    }
+                }
+
+                .cardFooter {
+                    padding: 12px 14px;
+                }
+            }
+        }
+
+        .emptyState {
+            padding: 48px 12px;
+        }
+    }
 }

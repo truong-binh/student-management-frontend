@@ -126,6 +126,8 @@
 
 .codeCell {
     padding: 2px 16px;
+    /* Bảng dùng table-layout: fixed nên ô code không nở theo nội dung;
+       dòng code dài sẽ cuộn ngang bên trong <pre> thay vì làm tràn trang */
 
     pre {
         margin: 0;
@@ -134,6 +136,14 @@
         line-height: 22px;
         color: #1f2328;
         white-space: pre;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
+
+        &::-webkit-scrollbar {
+            height: 4px;
+        }
     }
 }
 
@@ -300,6 +310,7 @@
         color: #1a7f37;
         background: #f0fff4;
         white-space: pre-wrap;
+        overflow-wrap: anywhere;
     }
 }
 
@@ -323,5 +334,109 @@
         font-size: 14px;
         color: #656d76;
         line-height: 1.7;
+    }
+}
+
+/* ─────────── Responsive ─────────── */
+@media (max-width: 768px) {
+    .codeReviewContainer {
+        margin: 14px 0;
+        border-radius: 10px;
+    }
+
+    .reviewHeader {
+        padding: 12px 14px;
+
+        .headerInfo {
+            gap: 12px;
+            align-items: flex-start;
+
+            .iconCircle {
+                width: 34px;
+                height: 34px;
+                font-size: 17px;
+                border-radius: 9px;
+                flex-shrink: 0;
+            }
+
+            h4 {
+                font-size: 15px;
+            }
+
+            .statsRow {
+                flex-wrap: wrap;
+                row-gap: 6px;
+            }
+        }
+    }
+
+    .loadingArea {
+        padding: 48px 16px;
+    }
+
+    .lineNum {
+        width: 40px;
+        min-width: 40px;
+        padding: 0 8px;
+        font-size: 11px;
+    }
+
+    .codeCell {
+        padding: 2px 10px;
+
+        pre {
+            font-size: 12px;
+            line-height: 20px;
+        }
+    }
+
+    .commentGutter {
+        padding-top: 14px;
+
+        .aiAvatar {
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+        }
+    }
+
+    .commentCell {
+        padding: 10px 10px 18px;
+    }
+
+    .commentHeader {
+        padding: 8px 10px;
+        flex-wrap: wrap;
+        gap: 8px;
+
+        .locationTag {
+            margin-left: 0;
+        }
+    }
+
+    .commentBody {
+        padding: 12px;
+
+        .issueText {
+            font-size: 13px;
+        }
+    }
+
+    .reviewFooter {
+        padding: 16px;
+
+        .summaryTitle {
+            font-size: 15px;
+        }
+
+        p {
+            font-size: 13px;
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .commentBox::before {
+        display: none;
     }
 }

@@ -850,3 +850,149 @@ html *::-webkit-scrollbar-thumb {
     }
   }
 }
+/* ─────────────────────────────────────────────────────────────
+   RESPONSIVE GLOBAL
+   Những quy tắc dùng chung cho mọi trang để tránh tràn ngang
+   trên tablet / điện thoại.
+   ───────────────────────────────────────────────────────────── */
+
+/* Ảnh, video, iframe, canvas không bao giờ rộng hơn khung chứa */
+img,
+video,
+canvas,
+svg:not(:root),
+iframe {
+  max-width: 100%;
+}
+
+img,
+video {
+  height: auto;
+}
+
+/* Không cho từ dài / URL dài làm vỡ layout */
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+li,
+td,
+th,
+label,
+span {
+  overflow-wrap: break-word;
+}
+
+/* ─── antd Modal ───
+   Nhiều modal đang đặt width cố định 560–860px nên sẽ tràn ngang
+   trên điện thoại. Giới hạn lại theo bề rộng màn hình. */
+@media (max-width: 920px) {
+  .ant-modal {
+    max-width: calc(100vw - 24px) !important;
+    margin: 12px auto !important;
+    top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .ant-modal-centered .ant-modal {
+    top: 0;
+  }
+
+  .ant-modal-content {
+    padding: 16px !important;
+  }
+
+  .ant-modal-body {
+    max-height: calc(100dvh - 160px);
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .ant-modal-confirm {
+    .ant-modal-content {
+      padding: 0 !important;
+    }
+
+    .ant-modal-confirm-body {
+      padding: 20px 20px 8px !important;
+    }
+
+    .ant-modal-confirm-btns {
+      padding: 12px 20px 20px !important;
+    }
+  }
+
+  /* Footer modal: nút xếp đầy chiều ngang cho dễ bấm */
+  .ant-modal-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+
+    > button {
+      margin-inline-start: 0 !important;
+    }
+  }
+}
+
+@media (max-width: 575px) {
+  .ant-modal-footer {
+    > button {
+      flex: 1 1 100%;
+    }
+  }
+}
+
+/* ─── antd Drawer: không rộng hơn màn hình ─── */
+@media (max-width: 575px) {
+  .ant-drawer-right .ant-drawer-content-wrapper,
+  .ant-drawer-left .ant-drawer-content-wrapper {
+    max-width: 100vw !important;
+    width: 100vw !important;
+  }
+}
+
+/* ─── antd Tabs: thanh tab cuộn ngang thay vì tràn ─── */
+@media (max-width: 768px) {
+  .ant-tabs-nav-wrap {
+    overflow-x: auto !important;
+  }
+
+  .ant-tabs-top > .ant-tabs-nav .ant-tabs-tab {
+    white-space: nowrap;
+  }
+}
+
+/* ─── antd Table: luôn cuộn ngang được trên màn hình nhỏ ─── */
+@media (max-width: 768px) {
+  .ant-table-wrapper .ant-table-content {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ─── antd dropdown (Select / DatePicker) không vượt màn hình ─── */
+@media (max-width: 575px) {
+  .ant-select-dropdown,
+  .ant-picker-dropdown {
+    max-width: calc(100vw - 16px);
+  }
+
+  .ant-picker-panels {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* ─── Thông báo toast ─── */
+@media (max-width: 575px) {
+  .Toastify__toast-container {
+    width: calc(100vw - 16px) !important;
+    left: 8px !important;
+    right: 8px !important;
+    padding: 0 !important;
+  }
+}

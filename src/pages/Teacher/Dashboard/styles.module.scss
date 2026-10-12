@@ -583,7 +583,9 @@
             height: 220px;
         }
 
-        .chartLegend {
+        /* .chartLegend được khai báo lồng trong .chartHeader nên phải lồng y hệt,
+           nếu không quy tắc này bị selector gốc (độ ưu tiên cao hơn) ghi đè */
+        .chartHeader .chartLegend {
             flex-wrap: wrap;
             row-gap: 8px;
         }

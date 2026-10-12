@@ -158,10 +158,99 @@
 }
 
 @media (max-width: 1200px) {
-    .page { margin: 16px; border-radius: 16px; padding: 24px; }
+    .page { margin: 16px 0; border-radius: 16px; padding: 24px; }
 }
 
 @media (max-width: 992px) {
-    .statsContainer { grid-template-columns: 1fr; }
-    .filterCard { :global(.ant-card-body) { flex-direction: column; } .courseFilter { width: 100%; } }
+    .page {
+        .header {
+            margin-bottom: 24px;
+
+            .titleSection h1 { font-size: 26px; }
+        }
+
+        .statsContainer {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .filterCard {
+            margin-bottom: 24px;
+
+            :global(.ant-card-body) { flex-direction: column; align-items: stretch; gap: 12px; }
+            .courseFilter { width: 100%; }
+        }
+
+        .tableCard {
+            :global(.ant-table-content) {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            :global(.ant-table-thead > tr > th),
+            :global(.ant-table-tbody > tr > td) {
+                padding: 14px 16px;
+            }
+        }
+    }
+}
+
+@media (max-width: 640px) {
+    .page {
+        margin: 10px 0;
+        padding: 16px 12px;
+        border-radius: 14px;
+        min-height: 0;
+
+        .header {
+            margin-bottom: 18px;
+
+            .titleSection {
+                h1 { font-size: 20px; letter-spacing: -0.2px; }
+                p { font-size: 13px; }
+            }
+        }
+
+        .statsContainer {
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+
+            .statCard {
+                padding: 16px;
+                gap: 14px;
+                border-radius: 16px;
+
+                .statIcon {
+                    width: 42px;
+                    height: 42px;
+                    font-size: 18px;
+                    border-radius: 12px;
+                    flex-shrink: 0;
+                }
+
+                .statInfo {
+                    min-width: 0;
+
+                    .statValue { font-size: 22px; }
+                }
+            }
+        }
+
+        .filterCard {
+            margin-bottom: 18px;
+
+            :global(.ant-card-body) { padding: 14px; }
+        }
+
+        .tableCard {
+            border-radius: 16px;
+
+            :global(.ant-table-thead > tr > th),
+            :global(.ant-table-tbody > tr > td) {
+                padding: 12px 14px;
+            }
+        }
+    }
 }

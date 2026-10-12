@@ -1940,6 +1940,15 @@ textarea.pinkInput {
 }
 
 /* ── Student table ── */
+.adTableScroll {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    overscroll-behavior-x: contain;
+}
+
 .adTable {
     width: 100%;
     border-collapse: collapse;
@@ -2142,6 +2151,10 @@ textarea.pinkInput {
     .adActions {
         width: 100%;
         flex-wrap: wrap;
+    }
+
+    .adTable {
+        min-width: 760px;
     }
 }
 

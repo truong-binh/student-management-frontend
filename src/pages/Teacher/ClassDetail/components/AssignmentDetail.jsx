@@ -350,99 +350,101 @@ const AssignmentDetail = ({ assignment, classInfo = {}, onBack }) => {
                     />
                 </div>
 
-                <table className={styles.adTable}>
-                    <thead>
-                        <tr>
-                            <th>SINH VIÊN</th>
-                            <th>MÃ SV</th>
-                            <th>TRẠNG THÁI</th>
-                            <th>ĐIỂM</th>
-                            <th>BÀI LÀM</th>
-                            <th>SỬA ĐIỂM</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {paginated.map(s => (
-                            <tr
-                                key={s.id}
-                                className={clsx(s.isPending && styles.adFeedbackRow)}
-                                style={s.isPending ? { background: '#fffbeb' } : {}}
-                            >
-                                <td>
-                                    <div className={styles.adStudentName}>
-                                        <span className={styles.adAvatar} style={{ background: s.color }}>
-                                            {s.initials}
-                                        </span>
-                                        <div className={styles.adNameCol}>
-                                            <div className={styles.adRealName}>{s.name}</div>
-                                            {s.hasFeedback && s.feedbackContent && (
-                                                <div className={styles.adFeedbackSnippet}>
-                                                    <MessageOutlined style={{ fontSize: 11, color: '#d97706' }} /> {truncateText(s.feedbackContent, 40)}
-                                                </div>
+                <div className={styles.adTableScroll}>
+                    <table className={styles.adTable}>
+                        <thead>
+                            <tr>
+                                <th>SINH VIÊN</th>
+                                <th>MÃ SV</th>
+                                <th>TRẠNG THÁI</th>
+                                <th>ĐIỂM</th>
+                                <th>BÀI LÀM</th>
+                                <th>SỬA ĐIỂM</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {paginated.map(s => (
+                                <tr
+                                    key={s.id}
+                                    className={clsx(s.isPending && styles.adFeedbackRow)}
+                                    style={s.isPending ? { background: '#fffbeb' } : {}}
+                                >
+                                    <td>
+                                        <div className={styles.adStudentName}>
+                                            <span className={styles.adAvatar} style={{ background: s.color }}>
+                                                {s.initials}
+                                            </span>
+                                            <div className={styles.adNameCol}>
+                                                <div className={styles.adRealName}>{s.name}</div>
+                                                {s.hasFeedback && s.feedbackContent && (
+                                                    <div className={styles.adFeedbackSnippet}>
+                                                        <MessageOutlined style={{ fontSize: 11, color: '#d97706' }} /> {truncateText(s.feedbackContent, 40)}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className={styles.adMsvCell}>{s.msv}</td>
+                                    <td>
+                                        <div className={styles.adStatusCell}>
+                                            {statusBadge(s)}
+                                            {s.hasFeedback && (
+                                                <span className={styles.adFeedbackBadge}>
+                                                    <MessageOutlined style={{ fontSize: 10 }} /> CÓ PHẢN HỒI
+                                                </span>
                                             )}
                                         </div>
-                                    </div>
-                                </td>
-                                <td className={styles.adMsvCell}>{s.msv}</td>
-                                <td>
-                                    <div className={styles.adStatusCell}>
-                                        {statusBadge(s)}
-                                        {s.hasFeedback && (
-                                            <span className={styles.adFeedbackBadge}>
-                                                <MessageOutlined style={{ fontSize: 10 }} /> CÓ PHẢN HỒI
-                                            </span>
-                                        )}
-                                    </div>
-                                </td>
-                                <td className={`${styles.adScoreCell} ${s.score ? styles.adScoreValue : ''}`}>
-                                    {s.score !== null ? s.score : '—'}
-                                </td>
-                                <td className={styles.adDownloadCell}>
-                                    {s.status !== 'missing' ? (
-                                        <Button
-                                            type="text"
-                                            size="small"
-                                            icon={<DownloadOutlined style={{ fontSize: 20 }} />}
-                                            style={{ color: '#b71c1c', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}
-                                            onClick={() => window.open(s.fileUrl, '_blank')}
-                                            title="Tải xuống bài làm"
-                                        />
-                                    ) : (
-                                        <span style={{ color: '#cbd5e0' }}>—</span>
-                                    )}
-                                </td>
-                                <td className={styles.adActionCell}>
-                                    {s.status !== 'missing' ? (
-                                        <>
+                                    </td>
+                                    <td className={`${styles.adScoreCell} ${s.score ? styles.adScoreValue : ''}`}>
+                                        {s.score !== null ? s.score : '—'}
+                                    </td>
+                                    <td className={styles.adDownloadCell}>
+                                        {s.status !== 'missing' ? (
                                             <Button
+                                                type="text"
                                                 size="small"
-                                                type={s.status === 'graded' ? 'default' : 'primary'}
-                                                danger={s.status === 'graded'}
-                                                icon={<EditOutlined />}
-                                                className={styles.adGradeBtn}
-                                                onClick={() => navigate(`/teacher/classes/${courseId}/assignments/${assignmentId}/grade-edit/${s.id}`)}
-                                            >
-                                                {s.status === 'graded' ? 'SỬA ĐIỂM' : 'CHẤM ĐIỂM'}
-                                            </Button>
-
-                                            {s.fileUrl && s.fileUrl.endsWith('.txt') && (
+                                                icon={<DownloadOutlined style={{ fontSize: 20 }} />}
+                                                style={{ color: '#b71c1c', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}
+                                                onClick={() => window.open(s.fileUrl, '_blank')}
+                                                title="Tải xuống bài làm"
+                                            />
+                                        ) : (
+                                            <span style={{ color: '#cbd5e0' }}>—</span>
+                                        )}
+                                    </td>
+                                    <td className={styles.adActionCell}>
+                                        {s.status !== 'missing' ? (
+                                            <>
                                                 <Button
                                                     size="small"
-                                                    type="primary"
-                                                    style={{ background: '#805ad5', borderColor: '#805ad5', color: '#fff', fontSize: 12 }}
-                                                    icon={<RobotOutlined />}
-                                                    onClick={() => handleAIGrade(s.id)}
+                                                    type={s.status === 'graded' ? 'default' : 'primary'}
+                                                    danger={s.status === 'graded'}
+                                                    icon={<EditOutlined />}
+                                                    className={styles.adGradeBtn}
+                                                    onClick={() => navigate(`/teacher/classes/${courseId}/assignments/${assignmentId}/grade-edit/${s.id}`)}
                                                 >
-                                                    AI Chấm
+                                                    {s.status === 'graded' ? 'SỬA ĐIỂM' : 'CHẤM ĐIỂM'}
                                                 </Button>
-                                            )}
-                                        </>
-                                    ) : null}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+
+                                                {s.fileUrl && s.fileUrl.endsWith('.txt') && (
+                                                    <Button
+                                                        size="small"
+                                                        type="primary"
+                                                        style={{ background: '#805ad5', borderColor: '#805ad5', color: '#fff', fontSize: 12 }}
+                                                        icon={<RobotOutlined />}
+                                                        onClick={() => handleAIGrade(s.id)}
+                                                    >
+                                                        AI Chấm
+                                                    </Button>
+                                                )}
+                                            </>
+                                        ) : null}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
 
                 <div className={styles.adTableFooter}>
                     <span className={styles.adTableInfo}>

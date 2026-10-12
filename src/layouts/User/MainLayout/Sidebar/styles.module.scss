@@ -1,6 +1,11 @@
 .sidebar {
     width: 250px;
+    max-width: 85vw;
     height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
     background-color: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(12px);
     border-right: 1px solid rgba(255, 255, 255, 0.2);
@@ -247,13 +252,55 @@
         transform: translateX(-100%);
         background-color: rgba(255, 255, 255, 0.98);
         box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+        padding-top: 52px;
 
         .collapseBtn {
             display: none;
+        }
+
+        /* Trên mobile luôn hiện sidebar đầy đủ, không dùng trạng thái thu gọn
+           của desktop (nếu không menu sẽ chỉ còn icon và không mở rộng được) */
+        &.collapsed {
+            width: 250px;
+            max-width: 85vw;
+            padding: 52px 12px 24px;
+
+            .navLink {
+                justify-content: flex-start;
+                padding: 12px 20px;
+
+                .icon {
+                    margin-right: 12px;
+                }
+            }
+
+            .logoutBtn {
+                justify-content: flex-start;
+                padding: 0 14px;
+            }
         }
     }
 
     .closeBtn {
         display: flex;
+    }
+}
+
+/* ── Màn hình thấp: logo nhỏ lại để menu không bị đẩy khuất ── */
+@media (max-height: 700px) {
+    .sidebar {
+        .logo {
+            margin-bottom: 18px;
+
+            .logoIcon {
+                width: 64px;
+                height: 64px;
+                margin-bottom: 8px;
+            }
+
+            .logoText {
+                font-size: 18px;
+            }
+        }
     }
 }

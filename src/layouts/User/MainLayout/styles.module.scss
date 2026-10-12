@@ -59,10 +59,14 @@
         display: flex;
         align-items: center;
         gap: 16px;
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow: hidden;
     }
 
     .welcome {
-        flex: 1;
+        flex: 1 1 auto;
+        min-width: 0;
 
         h2 {
             margin: 0;
@@ -70,6 +74,9 @@
             font-size: 24px;
             font-weight: 700;
             font-family: 'Outfit', 'Inter', sans-serif;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     }
 
@@ -78,6 +85,7 @@
         display: flex;
         align-items: center;
         gap: 24px;
+        flex: 0 0 auto;
 
         .actions {
             display: flex;
@@ -110,6 +118,10 @@
                 font-weight: 700;
                 color: #b71c1c;
                 font-size: 15px;
+                max-width: 180px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             .status {
@@ -350,7 +362,12 @@
 
 /* ── Tablet compact (≤ 992px) ── */
 @media (max-width: 992px) {
-    .mainContent {
+
+    /* Phải liệt kê cả .sidebarCollapsed .mainContent: selector đó có độ ưu tiên
+       cao hơn .mainContent nên nếu không ghi đè, nội dung vẫn bị đẩy 80px
+       sang phải khi người dùng từng thu gọn sidebar ở desktop. */
+    .mainContent,
+    .sidebarCollapsed .mainContent {
         margin-left: 0;
     }
 

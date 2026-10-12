@@ -201,17 +201,8 @@
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
 }
 
-.desktopTableWrapper {
+.desktopFeedbackTable {
     display: block;
-}
-
-.feedbackTableScroll {
-    width: 100%;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-x;
-    overscroll-behavior-x: contain;
 }
 
 .mobileFeedbackList {
@@ -1205,7 +1196,13 @@
         gap: 14px;
     }
 
-    .feedbackTableScroll {
+    .feedbackTable {
+        :global(.ant-table-content) {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-x: contain;
+        }
+
         :global(table) {
             min-width: 860px;
         }
@@ -1306,7 +1303,7 @@
         }
     }
 
-    .desktopTableWrapper {
+    .desktopFeedbackTable {
         display: none;
     }
 
@@ -1341,7 +1338,7 @@
         }
     }
 
-    .feedbackTableScroll {
+    .feedbackTable {
         :global(table) {
             min-width: 760px;
         }
