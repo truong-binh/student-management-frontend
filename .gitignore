@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 .env
 public/firebase-messaging-sw.js
+
+# file dump/artifact, khong commit
+source_dump.txt
+repo.bundle
